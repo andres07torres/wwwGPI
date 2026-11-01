@@ -1,0 +1,18 @@
+{
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/var": true,
+    "**/public/build": true,
+    "**/public/bundles": true,
+    "**/.phpunit.cache": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/vendor/**": true,
+    "**/var/**": true,
+    "**/public/build/**": true,
+    "**/public/bundles/**": true,
+    "**/.phpunit.cache/**": true
+  }
+}
