@@ -69,7 +69,8 @@
 					<h2>Crea tu cuenta</h2>
 					<p class="sub">Completa tus datos para solicitar acceso.</p>
 
-					<form id="f-reg" novalidate>
+					<form id="f-reg" action="{{ path('app_register') }}" method="post" novalidate>
+						<input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
 						<div class="two">
 							<div class="field">
 								<label for="r-name">Nombre completo</label>
@@ -107,13 +108,13 @@
 
 						<div class="field">
 							<label class="chk">
-								<input type="checkbox" id="r-terms">
+								<input type="checkbox" id="r-terms" name="terms">
 								Acepto las políticas de uso y el tratamiento de datos de la plataforma.
 							</label>
 							<div class="err" data-for="r-terms"></div>
 						</div>
 
-						<button class="btn" type="submit">Crear cuenta</button>
+						<button class="btn" type="submit" id="btn-reg">Crear cuenta</button>
 						<div class="ok" id="ok-reg" role="status"></div>
 					</form>
 				</section>
@@ -238,9 +239,37 @@
 	      if (f) f.focus();
 	      return;
 	    }
-	
-	    ok.textContent = 'Listo. Tu cuenta se creará y quedará pendiente de aprobación del administrador.';
-	    ok.classList.add('show');
+
+	    var btn = $('#btn-reg');
+	    btn.disabled = true;
+	    btn.textContent = 'Procesando...';
+
+	    fetch('{{ path('app_register') }}', {
+	      method: 'POST',
+	      body: new FormData(this)
+	    })
+	    .then(function(r) { return r.json(); })
+	    .then(function(data) {
+	      btn.disabled = false;
+	      btn.textContent = 'Crear cuenta';
+	      if (data.success) {
+	        ok.textContent = data.message;
+	        ok.classList.add('show');
+	        $('#f-reg').reset();
+	        $('#meter').dataset.s = 0;
+	      } else if (data.errors) {
+	        ok.classList.remove('show');
+	        Object.keys(data.errors).forEach(function(k) {
+	          setErr(k, data.errors[k]);
+	        });
+	      }
+	    })
+	    .catch(function() {
+	      btn.disabled = false;
+	      btn.textContent = 'Crear cuenta';
+	      ok.textContent = 'Ocurrió un error al procesar tu solicitud.';
+	      ok.classList.add('show');
+	    });
 	  });
 	})();
 	</script>
