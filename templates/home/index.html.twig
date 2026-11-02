@@ -1,29 +1,38 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Hello HomeController!
+{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h1 class="display-6 fw-bold text-primary mb-3">Hello {{ controller_name }}!</h1>
-            <p class="lead">Bootstrap 5.3 se ha integrado correctamente con Vite en tu proyecto Symfony.</p>
-            <div class="alert alert-success d-flex align-items-center" role="alert">
-                <div>
-                    <strong>¡Todo listo!</strong> Los estilos y componentes interactivos de Bootstrap están cargados.
-                </div>
-            </div>
-            <hr class="my-4">
-            <p class="mb-2 text-muted">Archivos de referencia:</p>
-            <ul class="list-group list-group-flush mb-3">
-                <li class="list-group-item px-0">Controlador: <code>src/Controller/HomeController.php</code></li>
-                <li class="list-group-item px-0">Plantilla: <code>templates/home/index.html.twig</code></li>
-                <li class="list-group-item px-0">Assets: <code>assets/app.js</code></li>
-            </ul>
-            <button type="button" class="btn btn-primary" data-bs-toggle="tooltip" title="Bootstrap funcionando">
-                Botón Bootstrap de prueba
-            </button>
-        </div>
-    </div>
-</div>
+	<div class="container py-5">
+		<div class="card shadow-sm border-0">
+			<div class="card-body p-4">
+				<h1 class="display-6 fw-bold text-primary mb-3">Hello
+					{{ controller_name }}!</h1>
+				<p class="lead">Bootstrap 5.3 se ha integrado correctamente con Vite en tu proyecto Symfony.</p>
+				<div class="alert alert-success d-flex align-items-center" role="alert">
+					<div>
+						<strong>¡Todo listo!</strong>
+						Los estilos y componentes interactivos de Bootstrap están cargados.
+					</div>
+				</div>
+				<hr class="my-4">
+				<p class="mb-2 text-muted">Archivos de referencia:</p>
+				<ul class="list-group list-group-flush mb-3">
+					<li class="list-group-item px-0">Controlador:
+						<code>src/Controller/HomeController.php</code>
+					</li>
+					<li class="list-group-item px-0">Plantilla:
+						<code>templates/home/index.html.twig</code>
+					</li>
+					<li class="list-group-item px-0">Assets:
+						<code>assets/app.js</code>
+					</li>
+				</ul>
+				<button type="button" class="btn btn-primary" data-bs-toggle="tooltip" title="Bootstrap funcionando">
+					Botón Bootstrap de prueba
+				</button>
+			</div>
+		</div>
+	</div>
 {% endblock %}
