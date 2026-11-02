@@ -176,11 +176,29 @@
 	    });
 	  });
 	
+	  function autoDismiss(el, delay) {
+	    if (!el) return;
+	    setTimeout(function() {
+	      el.classList.add('alert-fade-out');
+	      setTimeout(function() {
+	        el.style.display = 'none';
+	        el.classList.remove('alert-fade-out');
+	      }, 500);
+	    }, delay || 5000);
+	  }
+
+	  var serverAlert = document.querySelector('.server-alert');
+	  if (serverAlert) {
+	    autoDismiss(serverAlert, 5000);
+	  }
+
 	  $('#forgot').addEventListener('click', function(e) {
 	    e.preventDefault();
 	    var ok = $('#ok-login');
 	    ok.textContent = 'Escribe tu correo; te enviaremos un enlace para restablecer la contraseña.';
+	    ok.style.display = 'block';
 	    ok.classList.add('show');
+	    autoDismiss(ok, 5000);
 	  });
 	
 	  $('#f-login').addEventListener('submit', function(e) {
@@ -254,7 +272,9 @@
 	      btn.textContent = 'Crear cuenta';
 	      if (data.success) {
 	        ok.textContent = data.message;
+	        ok.style.display = 'block';
 	        ok.classList.add('show');
+	        autoDismiss(ok, 6000);
 	        $('#f-reg').reset();
 	        $('#meter').dataset.s = 0;
 	      } else if (data.errors) {
