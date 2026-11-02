@@ -7,7 +7,7 @@
 	<div class="shell">
 		<aside>
 			<div class="brand">
-				<img src="{{ asset('images/logo.svg') }}" alt="Logo GPI" class="brand-logo">
+				<img src="{{ asset('images/logo-white.svg') }}" alt="Logo GPI" class="brand-logo">
 			</div>
 			<div class="hero">
 				<h1>Cada cliente en su propio espacio.</h1>
@@ -17,6 +17,11 @@
 
 		<main>
 			<div class="card">
+				<!-- Logo centrado visible únicamente en móviles -->
+				<div class="mobile-brand">
+					<img src="{{ asset('images/logo.svg') }}" alt="Logo GPI" class="mobile-logo">
+				</div>
+
 				<div class="tabs" role="tablist">
 					<button class="tab" role="tab" id="t-login" aria-controls="p-login" aria-selected="true">Iniciar sesión</button>
 					<button class="tab" role="tab" id="t-register" aria-controls="p-register" aria-selected="false">Crear cuenta</button>

@@ -348,6 +348,11 @@ a:hover {
   display: none !important;
 }
 
+/* Logo móvil oculto en pantallas de escritorio */
+.mobile-brand {
+  display: none;
+}
+
 /* ==========================================================================
    5. RESPONSIVE
    ========================================================================== */
@@ -356,14 +361,24 @@ a:hover {
     grid-template-columns: 1fr;
   }
   aside {
-    padding: 28px 24px;
-    gap: 20px;
+    display: none !important; /* Ocultar franja izquierda por completo en móvil */
   }
-  aside h1 {
-    max-width: none;
+  main {
+    padding: 36px 20px;
+    min-height: 100vh;
+    align-content: center;
+    background: #FFFFFF;
   }
-  aside p {
-    display: none;
+  .mobile-brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .mobile-brand .mobile-logo {
+    height: 70px;
+    width: auto;
+    max-width: 260px;
+    display: block;
   }
 }
 
