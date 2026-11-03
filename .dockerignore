@@ -1,0 +1,12 @@
+.git
+.github
+.agents
+.vscode
+.phpunit.cache
+var/
+vendor/
+node_modules/
+public/build/
+.env.local
+.env.*.local
+*.log
