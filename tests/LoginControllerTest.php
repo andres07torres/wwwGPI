@@ -72,6 +72,7 @@ class LoginControllerTest extends WebTestCase
 
         $user = new User();
         $user->setName('Usuario Exitoso');
+        $user->setUsername('login_success_user');
         $user->setEmail($testEmail);
         $user->setPassword($hasher->hashPassword($user, 'ClaveCorrecta#2026'));
         $em->persist($user);
@@ -81,7 +82,7 @@ class LoginControllerTest extends WebTestCase
         $csrfToken = $crawler->filter('form#f-login input[name="_csrf_token"]')->attr('value');
 
         $client->request('POST', '/', [
-            '_username' => $testEmail,
+            '_username' => 'login_success_user',
             '_password' => 'ClaveCorrecta#2026',
             '_csrf_token' => $csrfToken,
         ]);
@@ -89,7 +90,7 @@ class LoginControllerTest extends WebTestCase
         // Redirige al home configurado en default_target_path
         $this->assertResponseRedirects('http://localhost/home');
 
-        $log = $em->getRepository(AuthenticationLog::class)->findOneBy(['email' => $testEmail]);
+        $log = $em->getRepository(AuthenticationLog::class)->findOneBy(['email' => 'login_success_user']);
         $this->assertNotNull($log);
         $this->assertSame('SUCCESS', $log->getStatus());
 
@@ -98,7 +99,7 @@ class LoginControllerTest extends WebTestCase
         if ($userToRemove) {
             $em->remove($userToRemove);
         }
-        $logToRemove = $em->getRepository(AuthenticationLog::class)->findOneBy(['email' => $testEmail]);
+        $logToRemove = $em->getRepository(AuthenticationLog::class)->findOneBy(['email' => 'login_success_user']);
         if ($logToRemove) {
             $em->remove($logToRemove);
         }

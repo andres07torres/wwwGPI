@@ -16,8 +16,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\UniqueConstraint(name: 'UNIQ_TENANT_USER_EMAIL', fields: ['tenant', 'email'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_TENANT_USERNAME', fields: ['tenant', 'username'])]
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['tenant', 'email'], message: 'Ya existe un usuario con este correo electrónico en este tenant')]
+#[UniqueEntity(fields: ['tenant', 'username'], message: 'Ya existe este nombre de usuario en este tenant')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -33,6 +35,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne(targetEntity: Role::class, inversedBy: 'users')]
     #[ORM\JoinColumn(name: 'role_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Role $role = null;
+
+    #[ORM\Column(length: 60)]
+    #[Assert\NotBlank(message: 'El nombre de usuario es obligatorio')]
+    #[Assert\Length(min: 3, max: 60)]
+    #[Assert\Regex(pattern: '/^[a-zA-Z0-9_.-]+$/', message: 'El usuario solo puede contener letras, números, puntos, guiones y guiones bajos')]
+    private ?string $username = null;
 
     #[ORM\Column(length: 120)]
     #[Assert\NotBlank(message: 'El nombre completo es obligatorio')]
@@ -96,6 +104,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRole(?Role $role): static
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): static
+    {
+        $this->username = mb_strtolower(trim($username));
 
         return $this;
     }
@@ -177,7 +197,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string) ($this->username ?? $this->email);
     }
 
     /**

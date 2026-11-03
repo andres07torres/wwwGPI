@@ -30,7 +30,7 @@
 				<!-- LOGIN -->
 				<section id="p-login" role="tabpanel" aria-labelledby="t-login">
 					<h2>Bienvenido de vuelta</h2>
-					<p class="sub">Ingresa con tu correo y tu contraseña.</p>
+					<p class="sub">Ingresa con tu usuario y contraseña.</p>
 
 					{% if error %}
 						<div class="server-alert" role="alert">
@@ -40,9 +40,9 @@
 
 					<form id="f-login" action="{{ path('app_login') }}" method="post" novalidate>
 						<div class="field">
-							<label for="l-mail">Correo electrónico</label>
-							<input type="email" id="l-mail" name="_username" value="{{ last_username }}" autocomplete="username" placeholder="nombre@empresa.com" required autofocus>
-							<div class="err" data-for="l-mail"></div>
+							<label for="l-user">Usuario</label>
+							<input type="text" id="l-user" name="_username" value="{{ last_username }}" autocomplete="username" placeholder="ej. ctorres o admin" required autofocus>
+							<div class="err" data-for="l-user"></div>
 						</div>
 
 						<div class="field">
@@ -83,10 +83,16 @@
 								<div class="err" data-for="r-name"></div>
 							</div>
 							<div class="field">
-								<label for="r-mail">Correo electrónico</label>
-								<input type="email" id="r-mail" name="email" autocomplete="email" placeholder="nombre@empresa.com">
-								<div class="err" data-for="r-mail"></div>
+								<label for="r-user">Usuario</label>
+								<input type="text" id="r-user" name="username" autocomplete="username" placeholder="ej. ctorres">
+								<div class="err" data-for="r-user"></div>
 							</div>
+						</div>
+
+						<div class="field">
+							<label for="r-mail">Correo electrónico</label>
+							<input type="email" id="r-mail" name="email" autocomplete="email" placeholder="nombre@empresa.com">
+							<div class="err" data-for="r-mail"></div>
 						</div>
 
 						<div class="field">
@@ -207,14 +213,14 @@
 	  });
 	
 	  $('#f-login').addEventListener('submit', function(e) {
-	    var mail = $('#l-mail').value.trim();
+	    var user = $('#l-user').value.trim();
 	    var pw = $('#l-pass').value;
 	    var bad = false;
 	
-	    setErr('l-mail', !emailRe.test(mail) ? 'Escribe un correo válido.' : '');
+	    setErr('l-user', !user ? 'Ingresa tu usuario.' : '');
 	    setErr('l-pass', !pw ? 'Ingresa tu contraseña.' : '');
 	
-	    bad = !emailRe.test(mail) || !pw;
+	    bad = !user || !pw;
 	    if (bad) {
 	      e.preventDefault();
 	      var f = $('#f-login [aria-invalid="true"]');
@@ -238,11 +244,13 @@
 	  $('#f-reg').addEventListener('submit', function(e) {
 	    e.preventDefault();
 	    var name = $('#r-name').value.trim();
+	    var user = $('#r-user').value.trim();
 	    var mail = $('#r-mail').value.trim();
 	    var p1 = $('#r-pass').value;
 	    var p2 = $('#r-pass2').value;
 	    var terms = $('#r-terms').checked;
 	
+	    var e1 = user.length < 3 ? 'El usuario debe tener al menos 3 caracteres.' : '';
 	    var e2 = name.length < 3 ? 'Escribe tu nombre completo.' : '';
 	    var e3 = !emailRe.test(mail) ? 'Escribe un correo válido.' : '';
 	    var e4 = strength(p1) < 4 ? 'La contraseña debe tener 12+ caracteres, mayúsculas, números y símbolos.' : '';
@@ -250,13 +258,14 @@
 	    var e6 = !terms ? 'Debes aceptar las políticas para continuar.' : '';
 	
 	    setErr('r-name', e2);
+	    setErr('r-user', e1);
 	    setErr('r-mail', e3);
 	    setErr('r-pass', e4);
 	    setErr('r-pass2', e5);
 	    setErr('r-terms', e6);
 	
 	    var ok = $('#ok-reg');
-	    if (e2 || e3 || e4 || e5 || e6) {
+	    if (e1 || e2 || e3 || e4 || e5 || e6) {
 	      ok.classList.remove('show');
 	      var f = $('#f-reg [aria-invalid="true"]');
 	      if (f) f.focus();

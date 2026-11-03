@@ -50,6 +50,7 @@ class RegistrationControllerTest extends WebTestCase
 
         $client->request('POST', '/register', [
             'name' => 'Carlos Torres',
+            'username' => 'ctorres_test',
             'email' => $testEmail,
             'password' => 'SuperSegura#2026',
             'password2' => 'SuperSegura#2026',

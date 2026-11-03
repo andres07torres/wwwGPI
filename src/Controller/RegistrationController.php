@@ -26,6 +26,7 @@ final class RegistrationController extends AbstractController
     ): JsonResponse {
         $data = $request->request->all();
         $name = trim((string) ($data['name'] ?? ''));
+        $username = mb_strtolower(trim((string) ($data['username'] ?? '')));
         $email = mb_strtolower(trim((string) ($data['email'] ?? '')));
         $password = (string) ($data['password'] ?? '');
         $password2 = (string) ($data['password2'] ?? '');
@@ -47,14 +48,23 @@ final class RegistrationController extends AbstractController
             $errors['r-name'] = 'El nombre completo debe tener al menos 3 caracteres.';
         }
 
-        // 3. Validación de Correo
+        // 3. Validación de Usuario
+        if (mb_strlen($username) < 3) {
+            $errors['r-user'] = 'El nombre de usuario debe tener al menos 3 caracteres.';
+        } elseif (!preg_match('/^[a-zA-Z0-9_.-]+$/', $username)) {
+            $errors['r-user'] = 'El usuario solo puede contener letras, números, puntos, guiones y guiones bajos.';
+        } elseif ($userRepository->findOneBy(['username' => $username])) {
+            $errors['r-user'] = 'Este nombre de usuario ya está registrado.';
+        }
+
+        // 4. Validación de Correo
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['r-mail'] = 'Escribe un correo electrónico válido.';
         } elseif ($userRepository->findOneBy(['email' => $email])) {
             $errors['r-mail'] = 'Este correo electrónico ya está registrado.';
         }
 
-        // 4. Políticas de Contraseña Estricta (Mínimo 12 caracteres, mayúsculas, números y símbolos)
+        // 5. Políticas de Contraseña Estricta (Mínimo 12 caracteres, mayúsculas, números y símbolos)
         if (mb_strlen($password) < 12) {
             $errors['r-pass'] = 'La contraseña debe tener al menos 12 caracteres.';
         } elseif (!preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/\d/', $password) || !preg_match('/[^A-Za-z0-9]/', $password)) {
@@ -77,6 +87,7 @@ final class RegistrationController extends AbstractController
         // 6. Creación segura del Usuario con Hashing de contraseña (Argon2id/Sodium)
         $user = new User();
         $user->setName($name);
+        $user->setUsername($username);
         $user->setEmail($email);
         $user->setIsVerified(false); // Para flujo de activación / Double Opt-In
         $user->setPassword(

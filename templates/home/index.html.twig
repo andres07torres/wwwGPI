@@ -36,8 +36,8 @@
 				</li>
 			</ul>
 
-			<!-- Sección: Módulos del Sistema -->
-			<div class="sidebar-section-title">Módulos del Sistema</div>
+			<!-- Sección: Sistema -->
+			<div class="sidebar-section-title">Sistema</div>
 			<ul class="sidebar-nav">
 				<!-- 1. Mesa de Ayuda -->
 				<li>
@@ -154,31 +154,69 @@
 					</div>
 				</li>
 			</ul>
+
+			<!-- Sección: Usuarios -->
+			<div class="sidebar-section-title">Usuarios</div>
+			<ul class="sidebar-nav">
+				<!-- Módulo: Usuarios -->
+				<li>
+					<a class="sidebar-link" data-bs-toggle="collapse" href="#menuUsuarios" role="button" aria-expanded="false" aria-controls="menuUsuarios">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+							<circle cx="9" cy="7" r="4"/>
+							<path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+							<path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+						</svg>
+						<span>Usuarios</span>
+						<svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+					</a>
+					<div class="collapse" id="menuUsuarios">
+						<ul class="sidebar-submenu">
+							<li><a href="#" class="sidebar-sublink">Directorio de Usuarios</a></li>
+							<li><a href="#" class="sidebar-sublink">Nuevo Usuario</a></li>
+							<li><a href="#" class="sidebar-sublink">Roles y Permisos</a></li>
+							<li><a href="#" class="sidebar-sublink">Auditoría de Accesos</a></li>
+						</ul>
+					</div>
+				</li>
+			</ul>
 		</div>
 
 		<!-- Pie del Sidebar con Perfil de Usuario y Logout -->
 		<div class="sidebar-footer">
 			<div class="sidebar-user">
 				<div class="sidebar-avatar">
-					{{ app.user ? (app.user.userIdentifier|slice(0, 2)|upper) : 'GP' }}
+					{{ app.user ? (app.user.name|default(app.user.userIdentifier)|slice(0, 2)|upper) : 'GP' }}
 					<span class="status-dot" title="En línea"></span>
 				</div>
 				<div class="sidebar-user-info">
-					<div class="sidebar-user-name" title="{{ app.user ? app.user.userIdentifier : 'Administrador' }}">
-						{{ app.user ? app.user.userIdentifier : 'Administrador' }}
+					<div class="sidebar-user-name" title="{{ app.user ? app.user.name|default(app.user.userIdentifier) : 'Administrador' }}">
+						{{ app.user ? app.user.name|default(app.user.userIdentifier) : 'Administrador' }}
 					</div>
 					<div class="sidebar-user-role">
-						{{ app.user and app.user.roles is defined and app.user.roles|length > 0 ? app.user.roles[0]|replace({'ROLE_': ''}) : 'Admin' }}
+						{% if app.user %}
+							{% if 'ROLE_SUPER_ADMIN' in app.user.roles %}
+								Super Admin
+							{% elseif 'ROLE_ADMIN' in app.user.roles %}
+								Administrador
+							{% elseif 'ROLE_AGENT' in app.user.roles %}
+								Especialista TI
+							{% else %}
+								Usuario
+							{% endif %}
+						{% else %}
+							Invitado
+						{% endif %}
 					</div>
 				</div>
-				<a href="{{ path('app_logout') }}" class="sidebar-logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
-					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-						<polyline points="16 17 21 12 16 7"/>
-						<line x1="21" x2="9" y1="12" y2="12"/>
-					</svg>
-				</a>
 			</div>
+			<a href="{{ path('app_logout') }}" class="sidebar-logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
+				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+					<polyline points="16 17 21 12 16 7"/>
+					<line x1="21" x2="9" y1="12" y2="12"/>
+				</svg>
+			</a>
 		</div>
 	</aside>
 
@@ -199,21 +237,25 @@
 				</button>
 			</div>
 
-			<!-- Acciones a la derecha: Campanita de notificaciones, Período y Perfil con desplegable -->
+			<!-- Acciones a la derecha: Reloj Ecuador, Campanita de notificaciones y Perfil con desplegable -->
 			<div class="d-flex align-items-center gap-3 ms-auto">
+				<!-- Reloj Simple Ecuador / Guayaquil (UTC-5) -->
+				<div class="topbar-clock-simple me-1" data-controller="clock" title="Hora de Guayaquil, Ecuador (UTC-5)">
+					<span id="topbarClock" data-clock-target="time">{{ "now"|date("g:i A", "America/Guayaquil") }}</span>
+				</div>
+
 				<!-- Campanita de Notificaciones con Desplegable -->
 				<div class="dropdown">
 					<button class="topbar-action-btn" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notificaciones" aria-label="Notificaciones">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
 							<path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
 						</svg>
-						<span class="topbar-bell-badge">0</span>
 					</button>
 					<div class="dropdown-menu dropdown-menu-end notifications-dropdown-menu" aria-labelledby="notifDropdown">
 						<div class="p-3 border-bottom d-flex align-items-center justify-content-between">
 							<span class="fw-bold text-dark small">Notificaciones</span>
-							<span class="badge bg-light text-muted border">0 nuevas</span>
+							<span class="badge bg-light text-muted border">Al día</span>
 						</div>
 						<div class="p-4 text-center text-muted small">
 							<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 text-secondary opacity-50"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -232,11 +274,11 @@
 						<div class="user-dropdown-header">
 							<img src="{{ asset('images/avatar-default.svg') }}" alt="Usuario" class="user-dropdown-avatar">
 							<div class="min-w-0">
-								<div class="user-dropdown-name" title="{{ app.user ? (app.user.name|default(app.user.userIdentifier)) : 'CARLOS ANDRES TORRES GUAMAN' }}">
-									{{ app.user ? (app.user.name|default(app.user.userIdentifier)|upper) : 'CARLOS ANDRES TORRES GUAMAN' }}
+								<div class="user-dropdown-name" title="{{ app.user ? (app.user.name|default(app.user.userIdentifier)) : 'Usuario Administrador' }}">
+									{{ app.user ? (app.user.name|default(app.user.userIdentifier)) : 'Usuario Administrador' }}
 								</div>
 								<div class="user-dropdown-email">
-									{{ app.user ? app.user.email : 'ctorresg3@unemi.edu.ec' }}
+									{{ app.user and app.user.email ? app.user.email : 'admin@gpi.local' }}
 								</div>
 							</div>
 						</div>
@@ -265,6 +307,27 @@
 				</div>
 			</div>
 		</header>
+
+		<script>
+			(function() {
+				function updateEcuadorClock() {
+					try {
+						const el = document.getElementById('topbarClock');
+						if (!el) return;
+						const now = new Date();
+						const formatter = new Intl.DateTimeFormat('en-US', {
+							timeZone: 'America/Guayaquil',
+							hour: 'numeric',
+							minute: '2-digit',
+							hour12: true
+						});
+						el.textContent = formatter.format(now);
+					} catch (e) {}
+				}
+				updateEcuadorClock();
+				setInterval(updateEcuadorClock, 1000);
+			})();
+		</script>
 
 		<!-- Contenedor del contenido -->
 		<main class="app-content">

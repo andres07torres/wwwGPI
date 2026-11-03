@@ -74,6 +74,7 @@ class ItmsEntitiesTest extends KernelTestCase
 
         $user = new User();
         $user->setName('Juan Perez');
+        $user->setUsername('jperez_' . $suffix);
         $user->setEmail('juan.perez.' . $suffix . '@acme.com');
         $user->setPassword('secure_hashed_password');
         $user->setTenant($tenant);
