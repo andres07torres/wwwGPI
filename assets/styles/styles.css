@@ -715,19 +715,17 @@ a:hover {
 }
 
 /* ==========================================================================
-   TRANSICIÓN SUAVE DE DESPLIEGUE PARA TODOS LOS MÓDULOS DEL SIDEBAR
+   DESPLIEGUE DIRECTO (SIN ANIMACIÓN NI SLIDE) PARA MÓDULOS DEL SIDEBAR
    ========================================================================== */
 .sidebar-nav .collapsing {
-  height: 0;
-  overflow: hidden;
-  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: none !important;
 }
 
 .sidebar-chevron {
   margin-left: auto;
   width: 16px !important;
   height: 16px !important;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease !important;
+  transition: transform 0.15s ease, opacity 0.15s ease !important;
   opacity: 0.55 !important;
 }
 
@@ -765,23 +763,24 @@ a:hover {
 .sidebar-sublink {
   display: block;
   padding: 6px 12px;
-  border-radius: 6px;
   color: var(--panel-mute);
   font-size: 13px;
   text-decoration: none;
-  transition: color 0.18s ease, background-color 0.18s ease;
+  background: transparent;
+  transition: color 0.15s ease;
 }
 
-.sidebar-sublink:hover {
+.sidebar-sublink:hover,
+.sidebar-sublink:focus {
   color: #FFFFFF;
-  background-color: rgba(255, 255, 255, 0.06);
+  background: transparent;
   text-decoration: none;
 }
 
 .sidebar-sublink.active {
   color: #FFFFFF;
   font-weight: 600;
-  background-color: rgba(31, 85, 214, 0.18);
+  background: transparent;
 }
 
 
