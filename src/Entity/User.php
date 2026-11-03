@@ -1,72 +1,101 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[UniqueEntity(fields: ['email'], message: 'Ya existe una cuenta con este correo electrónico')]
+#[ORM\Table(name: 'users')]
+#[ORM\UniqueConstraint(name: 'UNIQ_TENANT_USER_EMAIL', fields: ['tenant', 'email'])]
+#[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['tenant', 'email'], message: 'Ya existe un usuario con este correo electrónico en este tenant')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    private ?Uuid $id = null;
+
+    #[ORM\ManyToOne(targetEntity: Tenant::class, inversedBy: 'users')]
+    #[ORM\JoinColumn(name: 'tenant_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Tenant $tenant = null;
+
+    #[ORM\ManyToOne(targetEntity: Role::class, inversedBy: 'users')]
+    #[ORM\JoinColumn(name: 'role_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Role $role = null;
+
+    #[ORM\Column(length: 120)]
+    #[Assert\NotBlank(message: 'El nombre completo es obligatorio')]
+    #[Assert\Length(min: 3, max: 120)]
+    private ?string $name = null;
 
     #[ORM\Column(length: 180)]
     #[Assert\NotBlank(message: 'El correo electrónico es obligatorio')]
     #[Assert\Email(message: 'El correo electrónico "{{ value }}" no es válido')]
     private ?string $email = null;
 
-    #[ORM\Column(length: 100)]
-    #[Assert\NotBlank(message: 'El nombre completo es obligatorio')]
-    #[Assert\Length(min: 3, max: 100, minMessage: 'El nombre debe tener al menos {{ limit }} caracteres')]
-    private ?string $name = null;
+    #[ORM\Column(name: 'password_hash', length: 255)]
+    private ?string $passwordHash = null;
 
-    /**
-     * @var list<string> The user roles
-     */
-    #[ORM\Column]
-    private array $roles = [];
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $status = true;
 
-    /**
-     * @var string The hashed password
-     */
-    #[ORM\Column]
-    private ?string $password = null;
-
-    #[ORM\Column(type: 'boolean')]
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isVerified = false;
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column]
+    private \DateTimeImmutable $updatedAt;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->roles = ['ROLE_USER'];
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?Uuid
     {
         return $this->id;
     }
 
-    public function getEmail(): ?string
+    public function getTenant(): ?Tenant
     {
-        return $this->email;
+        return $this->tenant;
     }
 
-    public function setEmail(string $email): static
+    public function setTenant(?Tenant $tenant): static
     {
-        $this->email = mb_strtolower(trim($email));
+        $this->tenant = $tenant;
+
+        return $this;
+    }
+
+    public function getRole(): ?Role
+    {
+        return $this->role;
+    }
+
+    public function setRole(?Role $role): static
+    {
+        $this->role = $role;
 
         return $this;
     }
@@ -83,59 +112,55 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
-    public function getUserIdentifier(): string
+    public function getEmail(): ?string
     {
-        return (string) $this->email;
+        return $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
-    public function getRoles(): array
+    public function setEmail(string $email): static
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        $this->email = mb_strtolower(trim($email));
 
-        return array_unique($roles);
+        return $this;
     }
 
-    /**
-     * @param list<string> $roles
-     */
-    public function setRoles(array $roles): static
+    public function getPasswordHash(): ?string
     {
-        $this->roles = $roles;
+        return $this->passwordHash;
+    }
+
+    public function setPasswordHash(string $passwordHash): static
+    {
+        $this->passwordHash = $passwordHash;
 
         return $this;
     }
 
     /**
-     * @see PasswordAuthenticatedUserInterface
+     * PasswordAuthenticatedUserInterface compatibility
      */
     public function getPassword(): ?string
     {
-        return $this->password;
+        return $this->passwordHash;
     }
 
     public function setPassword(string $password): static
     {
-        $this->password = $password;
+        $this->passwordHash = $password;
 
         return $this;
     }
 
-    /**
-     * Ensure sensitive data is cleared
-     */
-    public function eraseCredentials(): void
+    public function isStatus(): bool
     {
-        // If you store any temporary, sensitive data on the user, clear it here
+        return $this->status;
+    }
+
+    public function setStatus(bool $status): static
+    {
+        $this->status = $status;
+
+        return $this;
     }
 
     public function isVerified(): bool
@@ -150,6 +175,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getRoles(): array
+    {
+        $roles = ['ROLE_USER'];
+
+        if ($this->role) {
+            $roleName = strtoupper($this->role->getName() ?? '');
+            if (!str_starts_with($roleName, 'ROLE_')) {
+                $roleName = 'ROLE_' . str_replace(' ', '_', $roleName);
+            }
+            $roles[] = $roleName;
+        }
+
+        return array_values(array_unique($roles));
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
@@ -158,6 +210,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
