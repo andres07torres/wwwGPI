@@ -1,7 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}GPI · Acceso
-{% endblock %}
+{% block title %}GPI · Iniciar sesión{% endblock %}
 
 {% block body %}
 	<div class="shell">
@@ -22,149 +21,57 @@
 					<img src="/images/logo.svg?v=2" alt="Logo GPI" class="mobile-logo">
 				</div>
 
-				<div class="tabs" role="tablist">
-					<button class="tab" role="tab" id="t-login" aria-controls="p-login" aria-selected="true">Iniciar sesión</button>
-					<button class="tab" role="tab" id="t-register" aria-controls="p-register" aria-selected="false">Crear cuenta</button>
+				<h2>Bienvenido de vuelta</h2>
+				<p class="sub">Ingresa con tu usuario y contraseña.</p>
+
+				{% if error %}
+					<div class="server-alert" role="alert">
+						{{ error.messageKey|trans(error.messageData, 'security') }}
+					</div>
+				{% endif %}
+
+				<form id="f-login" action="{{ path('app_login') }}" method="post" novalidate data-turbo="false">
+					<div class="field">
+						<label for="l-user">Usuario</label>
+						<input type="text" id="l-user" name="_username" value="{{ last_username }}" autocomplete="username" placeholder="ej. ctorres o admin" required autofocus>
+						<div class="err" data-for="l-user"></div>
+					</div>
+
+					<div class="field">
+						<label for="l-pass">Contraseña</label>
+						<div class="pw">
+							<input type="password" id="l-pass" name="_password" autocomplete="current-password" required>
+							<button type="button" data-toggle="l-pass" aria-label="Mostrar contraseña">Mostrar</button>
+						</div>
+						<div class="err" data-for="l-pass"></div>
+					</div>
+
+					<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+					<div class="row">
+						<label class="chk">
+							<input type="checkbox" name="_remember_me">
+							Mantener sesión en este equipo
+						</label>
+						<a href="#login" id="forgot">¿Olvidaste tu contraseña?</a>
+					</div>
+
+					<button class="btn" type="submit">Iniciar sesión</button>
+					<div class="ok" id="ok-login" role="status"></div>
+				</form>
+
+				<div class="auth-switch">
+					<span>¿No tienes una cuenta?</span>
+					<a href="{{ path('app_register') }}">Crear cuenta</a>
 				</div>
-
-				<!-- LOGIN -->
-				<section id="p-login" role="tabpanel" aria-labelledby="t-login">
-					<h2>Bienvenido de vuelta</h2>
-					<p class="sub">Ingresa con tu usuario y contraseña.</p>
-
-					{% if error %}
-						<div class="server-alert" role="alert">
-							{{ error.messageKey|trans(error.messageData, 'security') }}
-						</div>
-					{% endif %}
-
-					<form id="f-login" action="{{ path('app_login') }}" method="post" novalidate data-turbo="false">
-						<div class="field">
-							<label for="l-user">Usuario</label>
-							<input type="text" id="l-user" name="_username" value="{{ last_username }}" autocomplete="username" placeholder="ej. ctorres o admin" required autofocus>
-							<div class="err" data-for="l-user"></div>
-						</div>
-
-						<div class="field">
-							<label for="l-pass">Contraseña</label>
-							<div class="pw">
-								<input type="password" id="l-pass" name="_password" autocomplete="current-password" required>
-								<button type="button" data-toggle="l-pass" aria-label="Mostrar contraseña">Mostrar</button>
-							</div>
-							<div class="err" data-for="l-pass"></div>
-						</div>
-
-						<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-						<div class="row">
-							<label class="chk">
-								<input type="checkbox" name="_remember_me">
-								Mantener sesión en este equipo
-							</label>
-							<a href="#login" id="forgot">¿Olvidaste tu contraseña?</a>
-						</div>
-
-						<button class="btn" type="submit">Iniciar sesión</button>
-						<div class="ok" id="ok-login" role="status"></div>
-					</form>
-				</section>
-
-				<!-- REGISTRO -->
-				<section id="p-register" role="tabpanel" aria-labelledby="t-register" hidden>
-					<h2>Crea tu cuenta</h2>
-					<p class="sub">Completa tus datos para solicitar acceso.</p>
-
-					<form id="f-reg" action="{{ path('app_register') }}" method="post" novalidate>
-						<input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
-						<div class="two">
-							<div class="field">
-								<label for="r-name">Nombre completo</label>
-								<input type="text" id="r-name" name="name" autocomplete="name" placeholder="Tu nombre">
-								<div class="err" data-for="r-name"></div>
-							</div>
-							<div class="field">
-								<label for="r-user">Usuario</label>
-								<input type="text" id="r-user" name="username" autocomplete="username" placeholder="ej. ctorres">
-								<div class="err" data-for="r-user"></div>
-							</div>
-						</div>
-
-						<div class="field">
-							<label for="r-mail">Correo electrónico</label>
-							<input type="email" id="r-mail" name="email" autocomplete="email" placeholder="nombre@empresa.com">
-							<div class="err" data-for="r-mail"></div>
-						</div>
-
-						<div class="field">
-							<label for="r-pass">Contraseña</label>
-							<div class="pw">
-								<input type="password" id="r-pass" name="password" autocomplete="new-password" aria-describedby="r-hint">
-								<button type="button" data-toggle="r-pass" aria-label="Mostrar contraseña">Mostrar</button>
-							</div>
-							<div class="meter" id="meter" data-s="0" aria-hidden="true">
-								<i></i>
-								<i></i>
-								<i></i>
-								<i></i>
-							</div>
-							<div class="hint" id="r-hint">Mínimo 12 caracteres, con mayúsculas, números y símbolos.</div>
-							<div class="err" data-for="r-pass"></div>
-						</div>
-
-						<div class="field">
-							<label for="r-pass2">Confirmar contraseña</label>
-							<input type="password" id="r-pass2" name="password2" autocomplete="new-password">
-							<div class="err" data-for="r-pass2"></div>
-						</div>
-
-						<div class="field">
-							<label class="chk">
-								<input type="checkbox" id="r-terms" name="terms">
-								Acepto las políticas de uso y el tratamiento de datos de la plataforma.
-							</label>
-							<div class="err" data-for="r-terms"></div>
-						</div>
-
-						<button class="btn" type="submit" id="btn-reg">Crear cuenta</button>
-						<div class="ok" id="ok-reg" role="status"></div>
-					</form>
-				</section>
 			</div>
 		</main>
 	</div>
 
-	 <script>
+	<script>
 	(function(){
 	  var $ = function(s, r) { return (r || document).querySelector(s); };
-	  var tabs = { login: $('#t-login'), register: $('#t-register') };
-	  var panels = { login: $('#p-login'), register: $('#p-register') };
-	
-	  function show(name) {
-	    if (!tabs[name]) name = 'login';
-	    Object.keys(tabs).forEach(function(k) {
-	      var on = k === name;
-	      tabs[k].setAttribute('aria-selected', on);
-	      tabs[k].tabIndex = on ? 0 : -1;
-	      panels[k].hidden = !on;
-	    });
-	  }
-	
-	  function route() { show((location.hash || '').replace('#', '')); }
-	
-	  Object.keys(tabs).forEach(function(k) {
-	    tabs[k].addEventListener('click', function() { location.hash = k; });
-	    tabs[k].addEventListener('keydown', function(e) {
-	      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-	        var o = k === 'login' ? 'register' : 'login';
-	        location.hash = o;
-	        tabs[o].focus();
-	      }
-	    });
-	  });
-	
-	  window.addEventListener('hashchange', route);
-	  route();
-	
+
 	  function setErr(id, msg) {
 	    var el = $('[data-for="' + id + '"]');
 	    var inp = document.getElementById(id);
@@ -174,9 +81,7 @@
 	      else inp.removeAttribute('aria-invalid');
 	    }
 	  }
-	
-	  var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-	
+
 	  document.querySelectorAll('[data-toggle]').forEach(function(b) {
 	    b.addEventListener('click', function() {
 	      var i = document.getElementById(b.dataset.toggle);
@@ -186,7 +91,7 @@
 	      b.setAttribute('aria-label', h ? 'Ocultar contraseña' : 'Mostrar contraseña');
 	    });
 	  });
-	
+
 	  function autoDismiss(el, delay) {
 	    if (!el) return;
 	    setTimeout(function() {
@@ -211,99 +116,21 @@
 	    ok.classList.add('show');
 	    autoDismiss(ok, 5000);
 	  });
-	
+
 	  $('#f-login').addEventListener('submit', function(e) {
 	    var user = $('#l-user').value.trim();
 	    var pw = $('#l-pass').value;
 	    var bad = false;
-	
+
 	    setErr('l-user', !user ? 'Ingresa tu usuario.' : '');
 	    setErr('l-pass', !pw ? 'Ingresa tu contraseña.' : '');
-	
+
 	    bad = !user || !pw;
 	    if (bad) {
 	      e.preventDefault();
 	      var f = $('#f-login [aria-invalid="true"]');
 	      if (f) f.focus();
 	    }
-	  });
-	
-	  function strength(p) {
-	    var s = 0;
-	    if (p.length >= 12) s++;
-	    if (/[a-z]/.test(p) && /[A-Z]/.test(p)) s++;
-	    if (/\d/.test(p)) s++;
-	    if (/[^A-Za-z0-9]/.test(p)) s++;
-	    return p ? Math.max(s, 1) : 0;
-	  }
-	
-	  $('#r-pass').addEventListener('input', function() {
-	    $('#meter').dataset.s = strength(this.value);
-	  });
-	
-	  $('#f-reg').addEventListener('submit', function(e) {
-	    e.preventDefault();
-	    var name = $('#r-name').value.trim();
-	    var user = $('#r-user').value.trim();
-	    var mail = $('#r-mail').value.trim();
-	    var p1 = $('#r-pass').value;
-	    var p2 = $('#r-pass2').value;
-	    var terms = $('#r-terms').checked;
-	
-	    var e1 = user.length < 3 ? 'El usuario debe tener al menos 3 caracteres.' : '';
-	    var e2 = name.length < 3 ? 'Escribe tu nombre completo.' : '';
-	    var e3 = !emailRe.test(mail) ? 'Escribe un correo válido.' : '';
-	    var e4 = strength(p1) < 4 ? 'La contraseña debe tener 12+ caracteres, mayúsculas, números y símbolos.' : '';
-	    var e5 = p1 !== p2 ? 'Las contraseñas no coinciden.' : '';
-	    var e6 = !terms ? 'Debes aceptar las políticas para continuar.' : '';
-	
-	    setErr('r-name', e2);
-	    setErr('r-user', e1);
-	    setErr('r-mail', e3);
-	    setErr('r-pass', e4);
-	    setErr('r-pass2', e5);
-	    setErr('r-terms', e6);
-	
-	    var ok = $('#ok-reg');
-	    if (e1 || e2 || e3 || e4 || e5 || e6) {
-	      ok.classList.remove('show');
-	      var f = $('#f-reg [aria-invalid="true"]');
-	      if (f) f.focus();
-	      return;
-	    }
-
-	    var btn = $('#btn-reg');
-	    btn.disabled = true;
-	    btn.textContent = 'Procesando...';
-
-	    fetch('{{ path('app_register') }}', {
-	      method: 'POST',
-	      body: new FormData(this)
-	    })
-	    .then(function(r) { return r.json(); })
-	    .then(function(data) {
-	      btn.disabled = false;
-	      btn.textContent = 'Crear cuenta';
-	      if (data.success) {
-	        ok.textContent = data.message;
-	        ok.style.display = 'block';
-	        ok.classList.add('show');
-	        autoDismiss(ok, 6000);
-	        $('#f-reg').reset();
-	        $('#meter').dataset.s = 0;
-	      } else if (data.errors) {
-	        ok.classList.remove('show');
-	        Object.keys(data.errors).forEach(function(k) {
-	          setErr(k, data.errors[k]);
-	        });
-	      }
-	    })
-	    .catch(function() {
-	      btn.disabled = false;
-	      btn.textContent = 'Crear cuenta';
-	      ok.textContent = 'Ocurrió un error al procesar tu solicitud.';
-	      ok.classList.add('show');
-	    });
 	  });
 	})();
 	</script>

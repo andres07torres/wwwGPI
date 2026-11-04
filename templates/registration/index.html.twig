@@ -1,0 +1,206 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}GPI · Crear cuenta{% endblock %}
+
+{% block body %}
+	<div class="shell">
+		<aside>
+			<div class="brand">
+				<img src="/images/logo-white.svg?v=2" alt="Logo GPI" class="brand-logo">
+			</div>
+			<div class="hero">
+				<h1>Cada cliente en su propio espacio.</h1>
+				<p>Tickets, inventario y SLAs de cada organización viven aislados. Tu acceso abre solo el entorno que te corresponde.</p>
+			</div>
+		</aside>
+
+		<main>
+			<div class="card">
+				<!-- Logo centrado visible únicamente en móviles -->
+				<div class="mobile-brand">
+					<img src="/images/logo.svg?v=2" alt="Logo GPI" class="mobile-logo">
+				</div>
+
+				<h2>Crea tu cuenta</h2>
+				<p class="sub">Completa tus datos para solicitar acceso.</p>
+
+				<form id="f-reg" action="{{ path('app_register') }}" method="post" novalidate>
+					<input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
+					<div class="two">
+						<div class="field">
+							<label for="r-name">Nombre completo</label>
+							<input type="text" id="r-name" name="name" autocomplete="name" placeholder="Tu nombre" required>
+							<div class="err" data-for="r-name"></div>
+						</div>
+						<div class="field">
+							<label for="r-user">Usuario</label>
+							<input type="text" id="r-user" name="username" autocomplete="username" placeholder="ej. ctorres" required>
+							<div class="err" data-for="r-user"></div>
+						</div>
+					</div>
+
+					<div class="field">
+						<label for="r-mail">Correo electrónico</label>
+						<input type="email" id="r-mail" name="email" autocomplete="email" placeholder="nombre@empresa.com" required>
+						<div class="err" data-for="r-mail"></div>
+					</div>
+
+					<div class="field">
+						<label for="r-pass">Contraseña</label>
+						<div class="pw">
+							<input type="password" id="r-pass" name="password" autocomplete="new-password" aria-describedby="r-hint" required>
+							<button type="button" data-toggle="r-pass" aria-label="Mostrar contraseña">Mostrar</button>
+						</div>
+						<div class="meter" id="meter" data-s="0" aria-hidden="true">
+							<i></i>
+							<i></i>
+							<i></i>
+							<i></i>
+						</div>
+						<div class="hint" id="r-hint">Mínimo 12 caracteres, con mayúsculas, números y símbolos.</div>
+						<div class="err" data-for="r-pass"></div>
+					</div>
+
+					<div class="field">
+						<label for="r-pass2">Confirmar contraseña</label>
+						<input type="password" id="r-pass2" name="password2" autocomplete="new-password" required>
+						<div class="err" data-for="r-pass2"></div>
+					</div>
+
+					<div class="field">
+						<label class="chk">
+							<input type="checkbox" id="r-terms" name="terms" required>
+							Acepto las políticas de uso y el tratamiento de datos de la plataforma.
+						</label>
+						<div class="err" data-for="r-terms"></div>
+					</div>
+
+					<button class="btn" type="submit" id="btn-reg">Crear cuenta</button>
+					<div class="ok" id="ok-reg" role="status"></div>
+				</form>
+
+				<div class="auth-switch">
+					<span>¿Ya tienes una cuenta?</span>
+					<a href="{{ path('app_login') }}">Inicia sesión</a>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<script>
+	(function(){
+	  var $ = function(s, r) { return (r || document).querySelector(s); };
+
+	  function setErr(id, msg) {
+	    var el = $('[data-for="' + id + '"]');
+	    var inp = document.getElementById(id);
+	    if (el) el.textContent = msg || '';
+	    if (inp && inp.type !== 'checkbox') {
+	      if (msg) inp.setAttribute('aria-invalid', 'true');
+	      else inp.removeAttribute('aria-invalid');
+	    }
+	  }
+
+	  var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+	  document.querySelectorAll('[data-toggle]').forEach(function(b) {
+	    b.addEventListener('click', function() {
+	      var i = document.getElementById(b.dataset.toggle);
+	      var h = i.type === 'password';
+	      i.type = h ? 'text' : 'password';
+	      b.textContent = h ? 'Ocultar' : 'Mostrar';
+	      b.setAttribute('aria-label', h ? 'Ocultar contraseña' : 'Mostrar contraseña');
+	    });
+	  });
+
+	  function autoDismiss(el, delay) {
+	    if (!el) return;
+	    setTimeout(function() {
+	      el.classList.add('alert-fade-out');
+	      setTimeout(function() {
+	        el.style.display = 'none';
+	        el.classList.remove('alert-fade-out');
+	      }, 500);
+	    }, delay || 5000);
+	  }
+
+	  function strength(p) {
+	    var s = 0;
+	    if (p.length >= 12) s++;
+	    if (/[a-z]/.test(p) && /[A-Z]/.test(p)) s++;
+	    if (/\d/.test(p)) s++;
+	    if (/[^A-Za-z0-9]/.test(p)) s++;
+	    return p ? Math.max(s, 1) : 0;
+	  }
+
+	  $('#r-pass').addEventListener('input', function() {
+	    $('#meter').dataset.s = strength(this.value);
+	  });
+
+	  $('#f-reg').addEventListener('submit', function(e) {
+	    e.preventDefault();
+	    var name = $('#r-name').value.trim();
+	    var user = $('#r-user').value.trim();
+	    var mail = $('#r-mail').value.trim();
+	    var p1 = $('#r-pass').value;
+	    var p2 = $('#r-pass2').value;
+	    var terms = $('#r-terms').checked;
+
+	    var e1 = user.length < 3 ? 'El usuario debe tener al menos 3 caracteres.' : '';
+	    var e2 = name.length < 3 ? 'Escribe tu nombre completo.' : '';
+	    var e3 = !emailRe.test(mail) ? 'Escribe un correo válido.' : '';
+	    var e4 = strength(p1) < 4 ? 'La contraseña debe tener 12+ caracteres, mayúsculas, números y símbolos.' : '';
+	    var e5 = p1 !== p2 ? 'Las contraseñas no coinciden.' : '';
+	    var e6 = !terms ? 'Debes aceptar las políticas para continuar.' : '';
+
+	    setErr('r-name', e2);
+	    setErr('r-user', e1);
+	    setErr('r-mail', e3);
+	    setErr('r-pass', e4);
+	    setErr('r-pass2', e5);
+	    setErr('r-terms', e6);
+
+	    var ok = $('#ok-reg');
+	    if (e1 || e2 || e3 || e4 || e5 || e6) {
+	      ok.classList.remove('show');
+	      var f = $('#f-reg [aria-invalid="true"]');
+	      if (f) f.focus();
+	      return;
+	    }
+
+	    var btn = $('#btn-reg');
+	    btn.disabled = true;
+	    btn.textContent = 'Procesando...';
+
+	    fetch('{{ path('app_register') }}', {
+	      method: 'POST',
+	      body: new FormData(this)
+	    })
+	    .then(function(r) { return r.json(); })
+	    .then(function(data) {
+	      btn.disabled = false;
+	      btn.textContent = 'Crear cuenta';
+	      if (data.success) {
+	        ok.textContent = data.message;
+	        ok.style.display = 'block';
+	        ok.classList.add('show');
+	        autoDismiss(ok, 6000);
+	        $('#f-reg').reset();
+	        $('#meter').dataset.s = 0;
+	      } else if (data.errors) {
+	        ok.classList.remove('show');
+	        Object.keys(data.errors).forEach(function(k) {
+	          setErr(k, data.errors[k]);
+	        });
+	      }
+	    })
+	    .catch(function() {
+	      btn.disabled = false;
+	      btn.textContent = 'Crear cuenta';
+	      ok.textContent = 'Ocurrió un error al procesar tu solicitud.';
+	      ok.classList.add('show');
+	    });
+	  });
+	})();
+	</script>
+{% endblock %}

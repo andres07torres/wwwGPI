@@ -20,7 +20,7 @@ class RegistrationControllerTest extends WebTestCase
     public function testRegistrationValidationFailsOnShortPassword(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/');
+        $crawler = $client->request('GET', '/register');
         $token = $crawler->filter('form#f-reg input[name="_csrf_token"]')->attr('value');
 
         $client->request('POST', '/register', [
@@ -45,7 +45,7 @@ class RegistrationControllerTest extends WebTestCase
         $testEmail = 'carlos_test@example.com';
         $this->cleanUser($em, $testEmail);
 
-        $crawler = $client->request('GET', '/');
+        $crawler = $client->request('GET', '/register');
         $token = $crawler->filter('form#f-reg input[name="_csrf_token"]')->attr('value');
 
         $client->request('POST', '/register', [
