@@ -373,7 +373,11 @@ a:hover {
   .shell main {
     padding: 36px 20px;
     min-height: 100vh;
-    align-content: center;
+    align-content: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
     background: #FFFFFF;
   }
   .mobile-brand {
@@ -1142,4 +1146,5 @@ a:hover {
     font-size: 12px;
   }
 }
+
 
