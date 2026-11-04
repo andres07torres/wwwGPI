@@ -11,5 +11,8 @@
         "@symfony/ux-turbo": "^3.6.0",
         "vite": "^8.0",
         "vite-plugin-symfony": "^8.2"
+    },
+    "dependencies": {
+        "bootstrap": "^5.3.8"
     }
 }
