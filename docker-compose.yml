@@ -7,6 +7,7 @@ services:
     container_name: symfony_php
     restart: unless-stopped
     ports:
+      # Expuesto localmente en el servidor para que tu Cloudflare Tunnel existente apunte a http://localhost:8000
       - "${HTTP_PORT:-8000}:80"
       - "${HTTPS_PORT:-8443}:443"
       - "${HTTP3_PORT:-8443}:443/udp"
@@ -47,7 +48,7 @@ services:
     networks:
       - app-network
 
-  # Gestor de Base de Datos PhpMyAdmin (equivalente a PgAdmin para MySQL)
+  # Gestor de Base de Datos PhpMyAdmin (accesible localmente en http://localhost:5050)
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     container_name: symfony_phpmyadmin
@@ -59,19 +60,6 @@ services:
       - "${PMA_PORT:-5050}:80"
     depends_on:
       - database
-    networks:
-      - app-network
-
-  # Cloudflare Tunnel (Expone la app de forma segura sin abrir puertos en el router)
-  cloudflare:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflare_tunnel
-    restart: unless-stopped
-    command: tunnel run
-    environment:
-      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
-    depends_on:
-      - php
     networks:
       - app-network
 
