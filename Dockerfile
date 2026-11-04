@@ -8,7 +8,10 @@ RUN apk add --no-cache \
     git \
     nodejs \
     npm \
-    bash
+    bash \
+    curl \
+    zip \
+    unzip
 
 # Extensiones de PHP requeridas por Symfony y MySQL
 RUN install-php-extensions \
@@ -17,6 +20,7 @@ RUN install-php-extensions \
     intl \
     opcache \
     pdo_mysql \
+    gd \
     zip
 
 # Configuración personalizada de PHP
@@ -24,6 +28,7 @@ COPY docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/app.ini
 
 WORKDIR /app
 
+# Variables de entorno por defecto
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV SERVER_NAME=":80"
 

@@ -1,8 +1,10 @@
 services:
+  # Aplicación Symfony con FrankenPHP (PHP 8.4 + Servidor Web Caddy integrado)
   php:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: symfony_php
     restart: unless-stopped
     ports:
       - "${HTTP_PORT:-8000}:80"
@@ -12,26 +14,86 @@ services:
       SERVER_NAME: ":80"
       APP_ENV: ${APP_ENV:-dev}
       APP_DEBUG: ${APP_DEBUG:-1}
-      # Al usar base de datos en tu máquina host (Windows), apunta a host.docker.internal:
-      DATABASE_URL: "mysql://root:@host.docker.internal:3306/db_GPI?serverVersion=8.0.32&charset=utf8mb4"
+      DATABASE_URL: "mysql://${MYSQL_USER:-user_gpi}:${MYSQL_PASSWORD:-user_password}@database:3306/${MYSQL_DATABASE:-db_GPI}?serverVersion=8.0.32&charset=utf8mb4"
     volumes:
       - ./:/app:rw
       - caddy_data:/data
       - caddy_config:/config
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
 
-###> symfony/mailer ###
+  # Base de Datos MySQL 8.0
+  database:
+    image: mysql:8.0
+    container_name: symfony_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-db_GPI}
+      MYSQL_USER: ${MYSQL_USER:-user_gpi}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-user_password}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  # Gestor de Base de Datos PhpMyAdmin (equivalente a PgAdmin para MySQL)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: symfony_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+    ports:
+      - "${PMA_PORT:-5050}:80"
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  # Cloudflare Tunnel (Expone la app de forma segura sin abrir puertos en el router)
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare_tunnel
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - php
+    networks:
+      - app-network
+
+  # Mailpit para intercepción y pruebas de correo en desarrollo
   mailer:
     image: axllent/mailpit
+    container_name: symfony_mailer
+    restart: unless-stopped
     ports:
       - "1025:1025"
       - "8025:8025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
-###< symfony/mailer ###
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   caddy_data:
   caddy_config:
+  mysql_data:
