@@ -13,6 +13,11 @@ final class LoginController extends AbstractController
     #[Route('/login', name: 'app_login_alias')]
     public function index(AuthenticationUtils $authenticationUtils): Response
     {
+        // Si el usuario ya está autenticado, redirigir directamente al dashboard
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+
         // Obtener el error de login si existe
         $error = $authenticationUtils->getLastAuthenticationError();
 
