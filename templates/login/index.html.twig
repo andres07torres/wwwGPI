@@ -38,7 +38,7 @@
 						</div>
 					{% endif %}
 
-					<form id="f-login" action="{{ path('app_login') }}" method="post" novalidate>
+					<form id="f-login" action="{{ path('app_login') }}" method="post" novalidate data-turbo="false">
 						<div class="field">
 							<label for="l-user">Usuario</label>
 							<input type="text" id="l-user" name="_username" value="{{ last_username }}" autocomplete="username" placeholder="ej. ctorres o admin" required autofocus>
