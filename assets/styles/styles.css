@@ -1148,3 +1148,24 @@ a:hover {
 }
 
 
+
+/* Enlace para alternar entre Login y Register */
+.auth-switch {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 14px;
+  color: var(--mute);
+}
+
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 6px;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}

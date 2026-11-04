@@ -16,14 +16,23 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 final class RegistrationController extends AbstractController
 {
-    #[Route('/register', name: 'app_register', methods: ['POST'])]
+    #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
     public function register(
         Request $request,
         UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $entityManager,
         UserRepository $userRepository,
         CsrfTokenManagerInterface $csrfTokenManager,
-    ): JsonResponse {
+    ): Response {
+        // En peticiones GET, renderizamos la vista de Registro
+        if ($request->isMethod('GET')) {
+            if ($this->getUser()) {
+                return $this->redirectToRoute('app_home');
+            }
+
+            return $this->render('registration/index.html.twig');
+        }
+
         $data = $request->request->all();
         $name = trim((string) ($data['name'] ?? ''));
         $username = mb_strtolower(trim((string) ($data['username'] ?? '')));
