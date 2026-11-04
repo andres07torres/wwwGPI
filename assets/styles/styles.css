@@ -21,8 +21,6 @@
   --bs-body-font-family: 'Plus Jakarta Sans', 'Instrument Sans', system-ui, -apple-system, sans-serif;
   --bs-font-sans-serif: 'Plus Jakarta Sans', 'Instrument Sans', system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ==========================================================================
@@ -34,12 +32,17 @@
 
 html {
   height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   scroll-padding-top: env(safe-area-inset-top, 0px);
 }
 
 body {
   margin: 0;
   min-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--bs-body-font-family);
@@ -57,6 +60,10 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
   min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .shell aside {
@@ -109,10 +116,16 @@ body {
    4. PANEL DERECHO (FONDO BLANCO PURO) Y FORMULARIOS
    ========================================================================== */
 .shell main {
-  display: grid;
-  place-items: center;
-  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 48px 32px 32px;
   background: #FFFFFF;
+  width: 100%;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .shell .card {
@@ -123,6 +136,7 @@ body {
   box-shadow: none;
   border-radius: 0;
   padding: 0;
+  margin: 0;
 }
 
 .tabs {
@@ -245,13 +259,18 @@ input[aria-invalid="true"] {
   border-radius: 6px;
 }
 
-.shell .row {
+.shell .row,
+.auth-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin: 4px 0 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0 20px !important;
+  padding: 0 !important;
   font-size: 14px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .chk {
@@ -263,6 +282,8 @@ input[aria-invalid="true"] {
   margin: 0;
   cursor: pointer;
   color: var(--ink);
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .chk input {
@@ -319,8 +340,10 @@ a:hover {
 
 .two {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .ok {
@@ -369,37 +392,53 @@ a:hover {
    ========================================================================== */
 @media (max-width: 860px) {
   .shell {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
   .shell aside {
     display: none !important; /* Ocultar franja izquierda por completo en móvil */
   }
   .shell main {
-    padding: 36px 20px;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 20px calc(32px + env(safe-area-inset-bottom, 0px));
     min-height: 100vh;
-    align-content: start;
+    min-height: 100dvh;
+    width: 100%;
+    max-width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: calc(20px + env(safe-area-inset-top, 0px));
+    justify-content: flex-start;
     background: #FFFFFF;
+    overflow-x: hidden;
+  }
+  .shell .card {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
   }
   .mobile-brand {
     display: flex;
     justify-content: center;
-    margin-bottom: 28px;
+    margin-bottom: 20px;
+    width: 100%;
   }
   .mobile-brand .mobile-logo {
-    height: 70px;
+    height: 58px;
     width: auto;
-    max-width: 260px;
+    max-width: 220px;
     display: block;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .two {
     grid-template-columns: 1fr;
+    gap: 0;
   }
 }
 
@@ -1162,9 +1201,12 @@ a:hover {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   font-size: 14px;
   color: var(--mute);
+  width: 100%;
+  max-width: 100%;
 }
 
 .auth-switch a {
