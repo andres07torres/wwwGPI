@@ -13,7 +13,7 @@
 		<!-- Cabecera del Sidebar con Logo Centrado -->
 		<div class="sidebar-header justify-content-center position-relative">
 			<a href="{{ path('app_home') }}" class="sidebar-brand mx-auto text-center">
-				<img src="{{ asset('images/logo-white.svg') }}" alt="Logo GPI" class="sidebar-logo mx-auto">
+				<img src="/images/logo-white.svg" alt="Logo GPI" class="sidebar-logo mx-auto">
 			</a>
 			<!-- Botón cerrar solo visible en dispositivos móviles -->
 			<button type="button" class="btn-close btn-close-white d-lg-none position-absolute end-0 me-3" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Cerrar"></button>
@@ -266,12 +266,12 @@
 				<!-- Foto de Usuario con Menú Desplegable -->
 				<div class="dropdown">
 					<button class="topbar-user-trigger" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menú de usuario">
-						<img src="{{ asset('images/avatar-default.svg') }}" alt="Usuario" class="topbar-user-avatar">
+						<img src="/images/avatar-default.svg" alt="Usuario" class="topbar-user-avatar">
 					</button>
 					<div class="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userMenuDropdown">
 						<!-- Cabecera del usuario: Foto, Nombre completo y Correo -->
 						<div class="user-dropdown-header">
-							<img src="{{ asset('images/avatar-default.svg') }}" alt="Usuario" class="user-dropdown-avatar">
+							<img src="/images/avatar-default.svg" alt="Usuario" class="user-dropdown-avatar">
 							<div class="min-w-0">
 								<div class="user-dropdown-name" title="{{ app.user ? (app.user.name|default(app.user.userIdentifier)) : 'Usuario Administrador' }}">
 									{{ app.user ? (app.user.name|default(app.user.userIdentifier)) : 'Usuario Administrador' }}
