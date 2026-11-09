@@ -136,7 +136,7 @@ body {
   box-shadow: none;
   border-radius: 0;
   padding: 0;
-  margin: 0;
+  margin: auto;
 }
 
 .tabs {
@@ -417,7 +417,7 @@ a:hover {
     overflow-x: hidden;
   }
   .shell .card {
-    margin: 0;
+    margin: auto 0;
     width: 100%;
     max-width: 100%;
   }
