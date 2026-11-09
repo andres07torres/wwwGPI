@@ -59,11 +59,25 @@ final class CreateUserCommand extends Command
         $roleName = trim((string) $input->getOption('role'));
         $tenantDomain = mb_strtolower(trim((string) $input->getOption('tenant')));
 
-        // Validar si el usuario ya existe
+        // Si el usuario ya existe, actualizar su contraseña y asegurar estado activo
         $existing = $this->userRepository->findOneBy(['username' => $username]);
         if ($existing) {
-            $io->error(sprintf('Ya existe un usuario con el username "%s".', $username));
-            return Command::FAILURE;
+            $existing->setPassword($this->passwordHasher->hashPassword($existing, $password));
+            $existing->setStatus(true);
+            $existing->setIsVerified(true);
+            $this->entityManager->flush();
+
+            $io->success(sprintf('El usuario "%s" ya existía en la base de datos. ¡Su contraseña y estado han sido actualizados con éxito!', $username));
+            $io->table(
+                ['Campo', 'Valor'],
+                [
+                    ['Usuario (Username)', $existing->getUsername()],
+                    ['Nombre', $existing->getName()],
+                    ['Email', $existing->getEmail()],
+                    ['Estado', 'Activo / Verificado'],
+                ]
+            );
+            return Command::SUCCESS;
         }
 
         // Buscar o crear Tenant por defecto si se especificó
