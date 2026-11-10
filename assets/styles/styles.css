@@ -664,7 +664,8 @@ a:hover {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent) 0%, #3DDC97 100%);
+  background: var(--panel);
+  border: 2px solid #FFFFFF;
   color: #FFFFFF;
   display: flex;
   align-items: center;
@@ -674,6 +675,7 @@ a:hover {
   letter-spacing: 0.5px;
   position: relative;
   flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
 .sidebar-avatar .status-dot {
@@ -991,7 +993,8 @@ a:hover {
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.16);
+  border: 2px solid #FFFFFF;
+  background-color: var(--panel);
   display: block;
 }
 
@@ -1020,8 +1023,11 @@ a:hover {
   width: 48px;
   height: 48px;
   border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  background-color: var(--panel);
   object-fit: cover;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(20, 33, 43, 0.2);
 }
 
 .user-dropdown-name {
@@ -1219,4 +1225,146 @@ a:hover {
 .auth-switch a:hover {
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   7. MÓDULO DE USUARIOS Y TABLAS DE DATOS
+   ========================================================================== */
+.user-module-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 2px solid #FFFFFF;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-circle-lg {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-action {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-icon-action svg {
+  pointer-events: none;
+}
+
+.btn-icon-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-create-user {
+  white-space: nowrap !important;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 18px;
+  transition: all 0.2s ease-in-out;
+  background-color: var(--panel) !important;
+  border: 1px solid var(--panel) !important;
+  color: #FFFFFF !important;
+}
+
+.btn-create-user:hover {
+  background-color: #1E2F3D !important;
+  border-color: #1E2F3D !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(20, 33, 43, 0.3);
+}
+
+.btn-create-user:active {
+  transform: translateY(0);
+}
+
+.btn-panel-action {
+  background-color: var(--panel) !important;
+  border: 1px solid var(--panel) !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.btn-panel-action:hover,
+.btn-panel-action:focus,
+.btn-panel-action:active {
+  background-color: var(--panel) !important;
+  border-color: var(--panel) !important;
+  color: #FFFFFF !important;
+  transform: none !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.btn-modal-cancel {
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-modal-cancel:hover,
+.btn-modal-cancel:focus,
+.btn-modal-cancel:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
+   FORM CONTROLS PERSONALIZADOS (SWITCHES & CHECKBOXES)
+   ========================================================================== */
+.form-check-input:checked {
+  background-color: var(--panel) !important;
+  border-color: var(--panel) !important;
+}
+
+.form-check-input:focus {
+  border-color: var(--panel);
+  box-shadow: 0 0 0 0.2rem rgba(20, 33, 43, 0.2);
+}
+
+.form-switch .form-check-input:checked {
+  background-color: var(--panel) !important;
+  border-color: var(--panel) !important;
+}
+
 
