@@ -555,8 +555,8 @@ a:hover {
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  background: rgba(31, 85, 214, 0.25);
-  color: #6ea8fe;
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: 600;
@@ -633,24 +633,24 @@ a:hover {
 
 .sidebar-link.active {
   color: #FFFFFF;
-  background: rgba(31, 85, 214, 0.22);
+  background: rgba(255, 255, 255, 0.09);
   font-weight: 600;
 }
 
 .sidebar-link.active svg {
-  color: #6ea8fe;
+  color: #FFFFFF;
   opacity: 1;
 }
 
 .sidebar-link.active::before {
   content: "";
- position: absolute;
- left: 0;
- top: 8px;
- bottom: 8px;
- width: 3px;
- background-color: var(--accent);
- border-radius: 0 3px 3px 0;
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background-color: #F59E0B;
+  border-radius: 0 3px 3px 0;
 }
 
 .sidebar-badge {
@@ -1389,6 +1389,46 @@ a:hover {
 .form-switch .form-check-input:checked {
   background-color: var(--panel) !important;
   border-color: var(--panel) !important;
+}
+
+/* ==========================================================================
+   SWEETALERT2 PERSONALIZADO (#14212B CORPORATIVO)
+   ========================================================================== */
+.swal2-popup {
+  font-family: var(--bs-body-font-family) !important;
+  border-radius: 16px !important;
+  padding: 26px !important;
+  box-shadow: 0 20px 48px rgba(20, 33, 43, 0.22) !important;
+}
+
+.swal2-title {
+  color: #14212B !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+}
+
+.swal2-html-container {
+  color: #5B6B78 !important;
+  font-size: 15px !important;
+  margin-top: 8px !important;
+}
+
+.swal2-styled.swal2-confirm {
+  background-color: var(--panel) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 10px 26px !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.swal2-styled.swal2-confirm:hover {
+  background-color: #1E2F3D !important;
+}
+
+.swal2-timer-progress-bar {
+  background: var(--panel) !important;
 }
 
 

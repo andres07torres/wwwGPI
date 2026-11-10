@@ -325,13 +325,14 @@
 
 		<!-- Contenedor del contenido -->
 		<main class="app-content">
-			{# Notificaciones Flash #}
+			{# Notificaciones Flash procesadas interactivamente con SweetAlert2 #}
 			{% for label, messages in app.flashes %}
 				{% for message in messages %}
-					<div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show mb-4" role="alert">
-						{{ message }}
-						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-					</div>
+					<div class="app-flash-payload" 
+						 data-type="{{ label == 'error' ? 'error' : (label == 'warning' ? 'warning' : 'success') }}" 
+						 data-message="{{ message|e('html_attr') }}"
+						 style="display:none;" 
+						 aria-hidden="true"></div>
 				{% endfor %}
 			{% endfor %}
 
@@ -339,6 +340,47 @@
 		</main>
 	</div>
 </div>
+
+<script>
+	(function() {
+		function runSweetAlertFlashes() {
+			if (typeof Swal === 'undefined') {
+				setTimeout(runSweetAlertFlashes, 60);
+				return;
+			}
+			var flashEls = document.querySelectorAll('.app-flash-payload');
+			if (!flashEls.length) return;
+
+			flashEls.forEach(function(el) {
+				var type = el.dataset.type || 'success';
+				var message = el.dataset.message || '';
+				if (message) {
+					var title = '¡Operación Exitosa!';
+					if (type === 'error') title = 'Error';
+					else if (type === 'warning') title = 'Aviso';
+
+					Swal.fire({
+						icon: type,
+						title: title,
+						text: message,
+						confirmButtonText: 'Aceptar',
+						confirmButtonColor: '#14212B',
+						timer: 3500,
+						timerProgressBar: true
+					});
+				}
+				el.remove();
+			});
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', runSweetAlertFlashes);
+		} else {
+			runSweetAlertFlashes();
+		}
+		document.addEventListener('turbo:load', runSweetAlertFlashes);
+	})();
+</script>
 {% endblock %}
 
 {% block javascripts %}
