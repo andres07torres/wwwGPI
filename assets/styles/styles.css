@@ -527,6 +527,7 @@ a:hover {
   justify-content: center;
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
 }
 
 .sidebar-brand {
@@ -681,6 +682,7 @@ a:hover {
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .sidebar-user {
@@ -931,6 +933,10 @@ a:hover {
   background-color: var(--panel);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   height: 60px;
+  min-height: 60px;
+  flex: 0 0 60px;
+  flex-shrink: 0;
+  width: 100%;
   padding: 0 24px;
   display: flex;
   align-items: center;
@@ -1174,20 +1180,23 @@ a:hover {
 
 @media (max-width: 576px) {
   .app-topbar {
-    height: 54px;
-    padding: 0 14px;
-    gap: 10px;
+    height: 60px;
+    min-height: 60px;
+    flex: 0 0 60px;
+    flex-shrink: 0;
+    padding: 0 16px;
+    gap: 12px;
   }
   .topbar-clock-simple {
-    font-size: 12.5px;
+    font-size: 13px;
   }
   .topbar-user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
   }
   .topbar-action-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
   }
   .topbar-bell-badge {
     min-width: 16px;
