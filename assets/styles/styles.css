@@ -33,7 +33,10 @@
 html {
   height: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  /* Se usa `clip` y no `hidden`: `overflow-x: hidden` obliga a que el eje Y
+     pase a `auto` y convierte html/body en un contenedor de scroll, lo que
+     rompe el `position: sticky` del sidebar (se desplazaba con la página). */
+  overflow-x: clip;
   scroll-padding-top: env(safe-area-inset-top, 0px);
 }
 
@@ -42,7 +45,7 @@ body {
   min-height: 100%;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--bs-body-font-family);
@@ -477,13 +480,19 @@ a:hover {
    6. APP LAYOUT & SIDEBAR (NAVBAR A LA IZQUIERDA)
    ========================================================================== */
 .app-layout {
+  /* Shell de altura fija: el scroll vertical vive en `.app-main`, no en <body>.
+     Así el sidebar nunca se desplaza y el bloqueo de scroll que aplica
+     Bootstrap al abrir un modal (`body { overflow: hidden }`) no lo afecta. */
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background-color: #F8FAFC;
 }
 
 .app-sidebar {
   width: 270px;
+  flex: 0 0 270px;
   background-color: var(--panel) !important;
   color: var(--panel-ink);
   display: flex;
@@ -502,12 +511,12 @@ a:hover {
 }
 
 @media (min-width: 992px) {
+  /* En escritorio el sidebar es una columna de altura completa dentro del
+     shell (flex), sin `position: sticky`: no depende del scroll del documento
+     ni del `overflow` de ningún ancestro. */
   .app-sidebar {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    min-height: 100vh;
-    flex-shrink: 0;
+    height: 100%;
+    min-height: 0;
   }
 }
 
@@ -769,11 +778,14 @@ a:hover {
 
 /* Main Content Area */
 .app-main {
- flex: 1;
- display: flex;
- flex-direction: column;
- min-width: 0;
- min-height: 100vh;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  /* Único contenedor con scroll vertical de la aplicación */
+  overflow-y: auto;
 }
 
 .app-content {
