@@ -1019,14 +1019,12 @@ a:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
 }
 
 .topbar-user-trigger:hover,
 .topbar-user-trigger:focus-visible,
 .topbar-user-trigger[aria-expanded="true"] {
-  box-shadow: 0 0 0 3px rgba(31, 85, 214, 0.45);
-  transform: scale(1.02);
   outline: none;
 }
 
@@ -1047,9 +1045,28 @@ a:hover {
   padding: 0;
   border-radius: 12px;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18), 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.04);
   margin-top: 10px !important;
   overflow: hidden;
+  transform-origin: top right;
+}
+
+.user-dropdown-menu.show,
+.notifications-dropdown-menu.show {
+  animation: cardDeploySoft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardDeploySoft {
+  0% {
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 -8px;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
 }
 
 .user-dropdown-header {
@@ -1132,24 +1149,26 @@ a:hover {
   font-weight: 500;
   color: #334155;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .user-dropdown-item svg {
   width: 18px;
   height: 18px;
   color: #64748B;
-  transition: color 0.15s ease;
+  transition: color 0.18s ease, transform 0.18s ease;
 }
 
 .user-dropdown-item:hover {
   background-color: #F1F5F9;
   color: var(--accent);
   text-decoration: none;
+  transform: translateX(3px);
 }
 
 .user-dropdown-item:hover svg {
   color: var(--accent);
+  transform: scale(1.08);
 }
 
 .user-dropdown-item.logout {
