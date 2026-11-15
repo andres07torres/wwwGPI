@@ -1,0 +1,646 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Gestión de Tickets{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo -->
+	<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+		<div class="pe-md-3">
+			<h1 class="h3 fw-bold text-dark mb-1">Gestión de Tickets</h1>
+			<p class="text-muted mb-0">
+				Centraliza la recepción, clasificación, asignación y seguimiento de incidentes y requerimientos de servicio TI.
+			</p>
+		</div>
+		<div class="d-flex align-items-center gap-2 flex-shrink-0">
+			<a href="{{ path('app_ticket_kanban') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2 shadow-sm">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="3" y="3" width="18" height="18" rx="2"/>
+					<path d="M9 3v18"/>
+					<path d="M15 3v18"/>
+				</svg>
+				<span>Tablero Kanban</span>
+			</a>
+			<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateTicket">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="12" y1="5" x2="12" y2="19"/>
+					<line x1="5" y1="12" x2="19" y2="12"/>
+				</svg>
+				<span>Nuevo Ticket</span>
+			</button>
+		</div>
+	</div>
+
+	<!-- Resumen Rápido de Indicadores -->
+	<div class="row g-3 mb-4">
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between">
+					<div>
+						<div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Total Tickets</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ tickets|length }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Total de Tickets Registrados">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+							<line x1="9" x2="9" y1="9" y2="15"/>
+							<line x1="15" x2="15" y1="9" y2="15"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between">
+					<div>
+						<div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Incidentes</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">
+							{{ tickets|filter(t => t.type.value == 'Incidente')|length }}
+						</div>
+					</div>
+					<div class="kpi-icon-panel" title="Incidentes de Servicio">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+							<line x1="12" y1="9" x2="12" y2="13"/>
+							<line x1="12" y1="17" x2="12.01" y2="17"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between">
+					<div>
+						<div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Peticiones</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">
+							{{ tickets|filter(t => t.type.value == 'Peticion')|length }}
+						</div>
+					</div>
+					<div class="kpi-icon-panel" title="Peticiones de Servicio">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+							<polyline points="14 2 14 8 20 8"/>
+							<line x1="16" y1="13" x2="8" y2="13"/>
+							<line x1="16" y1="17" x2="8" y2="17"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between">
+					<div>
+						<div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Resueltos / Cerrados</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">
+							{{ tickets|filter(t => t.status.isClosedState)|length }}
+						</div>
+					</div>
+					<div class="kpi-icon-panel" title="Tickets Resueltos o Cerrados">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+							<polyline points="22 4 12 14.01 9 11.01"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tarjeta Principal con Filtros y Tabla -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+		<!-- Filtros de búsqueda -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="row g-2 align-items-center">
+				<div class="col-12 col-md-6">
+					<div class="position-relative">
+						<input type="text" id="ticketSearchInput" class="form-control form-control-sm ps-4" placeholder="Buscar por código, título, solicitante...">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+				<div class="col-6 col-md-3">
+					<select id="filterType" class="form-select form-select-sm">
+						<option value="">Todos los tipos</option>
+						{% for tType in ticketTypes %}
+							<option value="{{ tType.value }}">{{ tType.label }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-6 col-md-3">
+					<select id="filterStatus" class="form-select form-select-sm">
+						<option value="">Todos los estados</option>
+						{% for st in statuses %}
+							<option value="{{ st.name }}">{{ st.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tabla de Tickets -->
+		<div class="table-responsive">
+			<table class="table align-middle table-hover mb-0" id="ticketsTable">
+				<thead class="table-light">
+					<tr>
+						<th class="ps-3 py-3 text-secondary text-uppercase small fw-bold" style="width: 14%;">Código</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 12%;">Tipo</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 28%;">Título / Requerimiento</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 14%;">Solicitante</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 12%;">Prioridad</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 10%;">Estado</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold text-end pe-3" style="width: 10%;">Acción</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for t in tickets %}
+						<tr class="ticket-row"
+							data-search="{{ t.ticketCode }} {{ t.title }} {{ t.requester ? t.requester.name : '' }} {{ t.assignee ? t.assignee.name : '' }}"
+							data-type="{{ t.type.value }}"
+							data-status="{{ t.status.name }}"
+							data-id="{{ t.id.toRfc4122 }}"
+						>
+							<td class="ps-3">
+								<span class="fw-bold font-monospace text-dark">{{ t.ticketCode }}</span>
+								<div class="text-muted small" style="font-size: 11px;">{{ t.createdAt|date('d/m/Y H:i') }}</div>
+							</td>
+							<td>
+								{% if t.type.value == 'Incidente' %}
+									<span class="text-danger fw-semibold small">Incidente</span>
+								{% else %}
+									<span class="text-primary fw-semibold small">Petición</span>
+								{% endif %}
+							</td>
+							<td>
+								<a href="javascript:void(0)" class="text-decoration-none fw-semibold text-dark btn-view-ticket" data-bs-toggle="modal" data-bs-target="#modalTicketDetails" data-id="{{ t.id.toRfc4122 }}">
+									{{ t.title }}
+								</a>
+								<div class="text-muted small text-truncate" style="max-width: 320px;">
+									{{ t.description }}
+								</div>
+							</td>
+							<td>
+								<div class="fw-medium text-dark small">{{ t.requester ? (t.requester.name ?: t.requester.userIdentifier) : 'Desconocido' }}</div>
+								<div class="text-muted small" style="font-size: 11px;">
+									Asig: {{ t.assignee ? (t.assignee.name ?: t.assignee.userIdentifier) : 'Sin asignar' }}
+								</div>
+							</td>
+							<td>
+								<span class="small fw-semibold" style="color: {{ t.priority.color|default('#6c757d') }};">
+									{{ t.priority.name }}
+								</span>
+							</td>
+							<td>
+								<span class="small fw-semibold {{ t.status.isClosedState ? 'text-secondary' : 'text-success' }}">
+									{{ t.status.name }}
+								</span>
+							</td>
+							<td class="text-end pe-3">
+								<button type="button" class="btn btn-sm btn-outline-panel btn-view-ticket" data-bs-toggle="modal" data-bs-target="#modalTicketDetails" data-id="{{ t.id.toRfc4122 }}" title="Ver detalle y chat">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+									</svg>
+									<span class="d-none d-lg-inline ms-1">Chat / Detalle</span>
+								</button>
+							</td>
+						</tr>
+					{% else %}
+						<tr id="emptyTicketsRow">
+							<td colspan="7" class="text-center py-5 text-muted">
+								<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 text-secondary">
+									<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+									<line x1="9" x2="9" y1="9" y2="15"/>
+									<line x1="15" x2="15" y1="9" y2="15"/>
+								</svg>
+								<div class="fw-semibold">No hay tickets registrados todavía</div>
+								<div class="small">Haz clic en "Nuevo Ticket" para registrar la primera incidencia o solicitud.</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL CREAR TICKET
+     ========================================================================= -->
+<div class="modal fade" id="modalCreateTicket" tabindex="-1" aria-labelledby="modalCreateTicketLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg rounded-3">
+			<form id="formCreateTicket" action="{{ path('app_ticket_create') }}" method="POST">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('ticket_create') }}">
+				<div class="modal-header bg-light border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalCreateTicketLabel">
+						<div class="modal-icon-panel">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+								<line x1="9" x2="9" y1="9" y2="15"/>
+								<line x1="15" x2="15" y1="9" y2="15"/>
+							</svg>
+						</div>
+						<span>Registrar Nuevo Ticket</span>
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body p-4">
+					<div class="row g-3">
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Tipo de Ticket *</label>
+							<select name="type" class="form-select" required>
+								{% for tType in ticketTypes %}
+									<option value="{{ tType.value }}">{{ tType.label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Prioridad *</label>
+							<select name="priority_id" class="form-select" required>
+								{% for p in priorities %}
+									<option value="{{ p.id }}" {{ p.name == 'Media' ? 'selected' : '' }}>
+										{{ p.name }} (Nivel {{ p.level }})
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-12">
+							<label class="form-label fw-semibold text-secondary small">Título / Asunto *</label>
+							<input type="text" name="title" class="form-control" placeholder="Ej: Falla de conectividad VPN en sede Guayaquil" required maxlength="255">
+						</div>
+						<div class="col-12">
+							<label class="form-label fw-semibold text-secondary small">Descripción detallada *</label>
+							<textarea name="description" class="form-control" rows="4" placeholder="Describe los síntomas, pasos para reproducir o detalles del requerimiento..." required></textarea>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Solicitante</label>
+							<select name="requester_id" class="form-select">
+								{% for u in users %}
+									<option value="{{ u.id.toRfc4122 }}" {{ app.user and app.user.id == u.id ? 'selected' : '' }}>
+										{{ u.name ?: u.userIdentifier }} ({{ u.email }})
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Asignar a Técnico</label>
+							<select name="assignee_id" class="form-select">
+								<option value="">-- Sin asignar (Por triaje) --</option>
+								{% for u in users %}
+									<option value="{{ u.id.toRfc4122 }}">
+										{{ u.name ?: u.userIdentifier }}
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-2">
+					<button type="submit" class="btn btn-panel-action px-4" id="btnSubmitCreateTicket">Crear Ticket</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL DETALLE DEL TICKET & CHAT (CLIENTE / TÉCNICO)
+     ========================================================================= -->
+<div class="modal fade" id="modalTicketDetails" tabindex="-1" aria-labelledby="modalTicketDetailsLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg rounded-3">
+			<div class="modal-header bg-light border-bottom px-4 py-3">
+				<div class="d-flex align-items-center gap-2">
+					<div class="modal-icon-panel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+						</svg>
+					</div>
+					<span class="badge bg-dark font-monospace fs-6" id="detailTicketCode">TCK-0000</span>
+					<h5 class="modal-title fw-bold text-dark mb-0" id="detailTicketTitle">Cargando...</h5>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body p-4">
+				<div class="row g-4">
+					<!-- Columna izquierda: Información del Ticket -->
+					<div class="col-lg-5 border-end">
+						<h6 class="text-uppercase fw-bold text-secondary small mb-3">Información del Ticket</h6>
+						
+						<div class="bg-light p-3 rounded-3 mb-3">
+							<div class="row g-2 small">
+								<div class="col-5 text-muted">Tipo:</div>
+								<div class="col-7 fw-semibold" id="detailTicketType">-</div>
+								
+								<div class="col-5 text-muted">Prioridad:</div>
+								<div class="col-7" id="detailTicketPriority">-</div>
+								
+								<div class="col-5 text-muted">Estado Actual:</div>
+								<div class="col-7">
+									<select id="detailSelectStatus" class="form-select form-select-sm">
+										{% for st in statuses %}
+											<option value="{{ st.id }}">{{ st.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+								
+								<div class="col-5 text-muted">Solicitante:</div>
+								<div class="col-7 fw-semibold" id="detailTicketRequester">-</div>
+								
+								<div class="col-5 text-muted">Asignado a:</div>
+								<div class="col-7 fw-semibold" id="detailTicketAssignee">-</div>
+								
+								<div class="col-5 text-muted">Fecha Creación:</div>
+								<div class="col-7" id="detailTicketCreatedAt">-</div>
+							</div>
+						</div>
+
+						<h6 class="text-uppercase fw-bold text-secondary small mb-2">Descripción</h6>
+						<div class="p-3 bg-white border rounded-3 text-secondary small mb-3" id="detailTicketDescription" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">
+						</div>
+					</div>
+
+					<!-- Columna derecha: Chat / Interacción Cliente - Técnico -->
+					<div class="col-lg-7 d-flex flex-column" style="min-height: 480px;">
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<h6 class="text-uppercase fw-bold text-secondary small mb-0 d-flex align-items-center gap-2">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+								Chat & Comentarios (Cliente / Técnico)
+							</h6>
+							<span class="badge bg-light text-muted border" id="commentCountBadge">0 comentarios</span>
+						</div>
+
+						<!-- Caja de scroll con el hilo de conversación -->
+						<div class="flex-grow-1 p-3 bg-light rounded-3 border mb-3 overflow-auto" id="ticketChatBox" style="max-height: 320px; min-height: 240px;">
+							<div class="text-center py-4 text-muted small" id="noCommentsPlaceholder">
+								No hay comentarios aún en este ticket. Sé el primero en responder.
+							</div>
+						</div>
+
+						<!-- Formulario de envío de nuevo mensaje en el chat -->
+						<form id="formAddComment" class="mt-auto">
+							<input type="hidden" name="_csrf_token" value="{{ csrf_token('ticket_comment') }}">
+							<input type="hidden" id="commentTicketId" value="">
+							<div class="mb-2">
+								<textarea id="commentContent" class="form-control" rows="2" placeholder="Escribe una respuesta o nota técnica..." required></textarea>
+							</div>
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="form-check form-switch mb-0">
+									<input class="form-check-input" type="checkbox" id="commentIsPrivate">
+									<label class="form-check-label small text-secondary" for="commentIsPrivate">
+										Nota interna privada (Solo agentes/técnicos)
+									</label>
+								</div>
+								<button type="submit" class="btn btn-panel-action btn-sm px-3 d-flex align-items-center gap-1" id="btnSendComment">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<line x1="22" y1="2" x2="11" y2="13"/>
+										<polygon points="22 2 15 22 11 13 2 9 22 2"/>
+									</svg>
+									<span>Enviar</span>
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	function initTicketModule() {
+		// 1. Filtrado de tabla en vivo
+		const searchInput = document.getElementById('ticketSearchInput');
+		const filterType = document.getElementById('filterType');
+		const filterStatus = document.getElementById('filterStatus');
+		const rows = document.querySelectorAll('.ticket-row');
+		const countBadge = document.getElementById('ticketCountBadge');
+
+		function filterTickets() {
+			const q = (searchInput?.value || '').toLowerCase().trim();
+			const t = filterType?.value || '';
+			const s = filterStatus?.value || '';
+
+			let visibleCount = 0;
+			rows.forEach(r => {
+				const text = (r.dataset.search || '').toLowerCase();
+				const rowType = r.dataset.type || '';
+				const rowStatus = r.dataset.status || '';
+
+				const matchText = !q || text.includes(q);
+				const matchType = !t || rowType === t;
+				const matchStatus = !s || rowStatus === s;
+
+				if (matchText && matchType && matchStatus) {
+					r.style.display = '';
+					visibleCount++;
+				} else {
+					r.style.display = 'none';
+				}
+			});
+
+			if (countBadge) {
+				countBadge.textContent = `${visibleCount} tickets`;
+			}
+		}
+
+		searchInput?.addEventListener('input', filterTickets);
+		filterType?.addEventListener('change', filterTickets);
+		filterStatus?.addEventListener('change', filterTickets);
+
+		// 2. Feedback visual al guardar el formulario de nuevo ticket
+		const formCreate = document.getElementById('formCreateTicket');
+		if (formCreate && !formCreate.dataset.hasSubmitHandler) {
+			formCreate.dataset.hasSubmitHandler = 'true';
+			formCreate.addEventListener('submit', function () {
+				const submitBtn = document.getElementById('btnSubmitCreateTicket');
+				if (submitBtn) {
+					submitBtn.disabled = true;
+					submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
+				}
+			});
+		}
+
+		// 3. Ver Detalle y Chat
+		const modalDetailsEl = document.getElementById('modalTicketDetails');
+		const csrfStatusToken = "{{ csrf_token('ticket_status') }}";
+
+		if (modalDetailsEl && !modalDetailsEl.dataset.initialized) {
+			modalDetailsEl.dataset.initialized = 'true';
+			modalDetailsEl.addEventListener('show.bs.modal', function (event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-view-ticket') || event.relatedTarget) : null;
+				if (btn && btn.dataset.id) {
+					loadTicketDetails(btn.dataset.id);
+				}
+			});
+		}
+
+		document.querySelectorAll('.btn-view-ticket').forEach(btn => {
+			btn.addEventListener('click', function () {
+				const ticketId = this.dataset.id;
+				if (ticketId) {
+					loadTicketDetails(ticketId);
+					if (modalDetailsEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+						bootstrap.Modal.getOrCreateInstance(modalDetailsEl).show();
+					}
+				}
+			});
+		});
+
+		async function loadTicketDetails(ticketId) {
+			if (!ticketId) return;
+			const commentTicketIdInput = document.getElementById('commentTicketId');
+			if (commentTicketIdInput) commentTicketIdInput.value = ticketId;
+
+			const chatBox = document.getElementById('ticketChatBox');
+			if (chatBox) chatBox.innerHTML = '<div class="text-center py-4 text-muted small">Cargando conversación...</div>';
+
+			try {
+				const res = await fetch(`/tickets/${ticketId}/details`);
+				const data = await res.json();
+
+				if (data.success) {
+					const t = data.ticket;
+					const codeEl = document.getElementById('detailTicketCode');
+					const titleEl = document.getElementById('detailTicketTitle');
+					const typeEl = document.getElementById('detailTicketType');
+					const priorityEl = document.getElementById('detailTicketPriority');
+					const requesterEl = document.getElementById('detailTicketRequester');
+					const assigneeEl = document.getElementById('detailTicketAssignee');
+					const createdAtEl = document.getElementById('detailTicketCreatedAt');
+					const descEl = document.getElementById('detailTicketDescription');
+
+					if (codeEl) codeEl.textContent = t.code;
+					if (titleEl) titleEl.textContent = t.title;
+					if (typeEl) typeEl.textContent = t.type;
+					if (priorityEl) priorityEl.innerHTML = `<span class="fw-semibold small" style="color: ${t.priorityColor || '#6c757d'};">${t.priority}</span>`;
+					if (requesterEl) requesterEl.textContent = t.requester;
+					if (assigneeEl) assigneeEl.textContent = t.assignee;
+					if (createdAtEl) createdAtEl.textContent = t.createdAt;
+					if (descEl) descEl.textContent = t.description;
+
+					const selectStatus = document.getElementById('detailSelectStatus');
+					if (selectStatus) {
+						selectStatus.value = t.statusId;
+						selectStatus.onchange = async function () {
+							const formBody = new URLSearchParams();
+							formBody.append('_csrf_token', csrfStatusToken);
+							formBody.append('status_id', selectStatus.value);
+
+							const updateRes = await fetch(`/tickets/${ticketId}/status`, {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+								body: formBody
+							});
+							const updateData = await updateRes.json();
+							if (updateData.success && typeof Swal !== 'undefined') {
+								Swal.fire({
+									toast: true,
+									position: 'top-end',
+									icon: 'success',
+									title: updateData.message,
+									showConfirmButton: false,
+									timer: 2000
+								});
+							}
+						};
+					}
+
+					renderComments(t.comments);
+				}
+			} catch (err) {
+				console.error('Error al cargar detalle del ticket:', err);
+			}
+		}
+
+		function renderComments(comments) {
+			const chatBox = document.getElementById('ticketChatBox');
+			const badge = document.getElementById('commentCountBadge');
+			if (badge) badge.textContent = `${comments.length} comentarios`;
+
+			if (!comments || comments.length === 0) {
+				chatBox.innerHTML = '<div class="text-center py-4 text-muted small">No hay comentarios aún en este ticket. Sé el primero en responder.</div>';
+				return;
+			}
+
+			chatBox.innerHTML = '';
+			comments.forEach(c => {
+				const div = document.createElement('div');
+				div.className = `p-3 mb-2 rounded-3 border ${c.isPrivate ? 'bg-warning-subtle border-warning' : 'bg-white'}`;
+				div.innerHTML = `
+					<div class="d-flex align-items-center justify-content-between mb-1">
+						<span class="fw-bold small text-dark">${c.author}</span>
+						<div class="d-flex align-items-center gap-2">
+							${c.isPrivate ? '<span class="badge bg-warning text-dark border border-warning" style="font-size: 10px;">Nota Interna</span>' : '<span class="badge bg-light text-muted border" style="font-size: 10px;">Público</span>'}
+							<span class="text-muted" style="font-size: 11px;">${c.createdAt}</span>
+						</div>
+					</div>
+					<div class="text-secondary small" style="white-space: pre-wrap;">${c.content}</div>
+				`;
+				chatBox.appendChild(div);
+			});
+			chatBox.scrollTop = chatBox.scrollHeight;
+		}
+
+		// 4. Enviar Comentario / Mensaje de Chat
+		const formComment = document.getElementById('formAddComment');
+		if (formComment && !formComment.dataset.hasSubmitHandler) {
+			formComment.dataset.hasSubmitHandler = 'true';
+			formComment.addEventListener('submit', async function (e) {
+				e.preventDefault();
+				const ticketId = document.getElementById('commentTicketId').value;
+				const content = document.getElementById('commentContent').value.trim();
+				const isPrivate = document.getElementById('commentIsPrivate').checked;
+				const submitBtn = document.getElementById('btnSendComment');
+
+				if (!ticketId || !content) return;
+				submitBtn.disabled = true;
+
+				try {
+					const bodyData = new URLSearchParams();
+					bodyData.append('_csrf_token', "{{ csrf_token('ticket_comment') }}");
+					bodyData.append('content', content);
+					if (isPrivate) bodyData.append('is_private', '1');
+
+					const res = await fetch(`/tickets/${ticketId}/comment`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: bodyData
+					});
+					const data = await res.json();
+
+					if (data.success) {
+						document.getElementById('commentContent').value = '';
+						document.getElementById('commentIsPrivate').checked = false;
+						const detailsRes = await fetch(`/tickets/${ticketId}/details`);
+						const detailsData = await detailsRes.json();
+						if (detailsData.success) {
+							renderComments(detailsData.ticket.comments);
+						}
+					} else {
+						alert(data.message || 'Error al enviar mensaje.');
+					}
+				} catch (err) {
+					alert('Error al enviar el mensaje.');
+				} finally {
+					submitBtn.disabled = false;
+				}
+			});
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initTicketModule);
+	} else {
+		initTicketModule();
+	}
+	document.addEventListener('turbo:load', initTicketModule);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,571 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Tablero Kanban{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Tablero Kanban -->
+	<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+		<div class="pe-md-3">
+			<h1 class="h3 fw-bold text-dark mb-1">Tablero Kanban</h1>
+			<p class="text-muted mb-0">
+				Visualiza y gestiona el ciclo de vida de los requerimientos e incidentes en tiempo real arrastrando las tarjetas entre columnas.
+			</p>
+		</div>
+		<div class="d-flex align-items-center gap-2 flex-shrink-0">
+			<a href="{{ path('app_ticket_index') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2 shadow-sm">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="8" y1="6" x2="21" y2="6"/>
+					<line x1="8" y1="12" x2="21" y2="12"/>
+					<line x1="8" y1="18" x2="21" y2="18"/>
+					<line x1="3" y1="6" x2="3.01" y2="6"/>
+					<line x1="3" y1="12" x2="3.01" y2="12"/>
+					<line x1="3" y1="18" x2="3.01" y2="18"/>
+				</svg>
+				<span>Vista Lista</span>
+			</a>
+			<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateTicket">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="12" y1="5" x2="12" y2="19"/>
+					<line x1="5" y1="12" x2="19" y2="12"/>
+				</svg>
+				<span>Nuevo Ticket</span>
+			</button>
+		</div>
+	</div>
+
+	<!-- Tablero Kanban Horizontal con Scroll Suave -->
+	<div class="kanban-board-container pb-3">
+		<div class="d-flex gap-3 align-items-start" style="min-width: 1100px;">
+			{% for st in statuses %}
+				<div class="kanban-column flex-fill bg-light border rounded-3 p-3 shadow-sm" 
+					 data-status-id="{{ st.id }}"
+				>
+					<!-- Cabecera de la columna (fija al tope) -->
+					<div class="kanban-column-header d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+						<h6 class="fw-bold text-dark mb-0 fs-6">{{ st.name }}</h6>
+						<span class="badge bg-white text-secondary border rounded-pill column-ticket-count" id="count-status-{{ st.id }}">
+							{{ ticketsByStatus[st.id]|default([])|length }}
+						</span>
+					</div>
+
+					<!-- Lista de tarjetas / Zona de soltar con scroll vertical interno -->
+					<div class="kanban-card-list d-flex flex-column gap-2" 
+						 data-status-id="{{ st.id }}"
+					>
+						{% for t in ticketsByStatus[st.id]|default([]) %}
+							<div class="card kanban-card border border-light-subtle shadow-xs rounded-3 p-3 bg-white" 
+								 draggable="true" 
+								 data-ticket-id="{{ t.id.toRfc4122 }}"
+								 style="cursor: grab;"
+							>
+								<div class="d-flex align-items-center justify-content-between mb-2">
+									<span class="font-monospace fw-bold text-primary small">{{ t.ticketCode }}</span>
+									<span class="small fw-semibold" style="font-size: 11px; color: {{ t.priority.color|default('#6c757d') }};">
+										{{ t.priority.name }}
+									</span>
+								</div>
+
+								<div class="fw-semibold text-dark mb-1 btn-view-ticket" data-bs-toggle="modal" data-bs-target="#modalTicketDetails" data-id="{{ t.id.toRfc4122 }}" style="cursor: pointer;">
+									{{ t.title }}
+								</div>
+
+								<p class="text-muted small mb-2 text-truncate-2" style="font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+									{{ t.description }}
+								</p>
+
+								<div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto small">
+									<div class="d-flex align-items-center gap-1" style="font-size: 11px;">
+										{% if t.type.value == 'Incidente' %}
+											<span class="text-danger fw-semibold">Incidente</span>
+										{% else %}
+											<span class="text-primary fw-semibold">Petición</span>
+										{% endif %}
+									</div>
+									<div class="text-secondary small d-flex align-items-center gap-1" title="Asignado a: {{ t.assignee ? (t.assignee.name ?: t.assignee.userIdentifier) : 'Sin asignar' }}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+										<span class="text-truncate" style="max-width: 90px; font-size: 11px;">
+											{{ t.assignee ? (t.assignee.name ?: t.assignee.userIdentifier) : 'Libre' }}
+										</span>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL CREAR TICKET (COMPARTIDO)
+     ========================================================================= -->
+<div class="modal fade" id="modalCreateTicket" tabindex="-1" aria-labelledby="modalCreateTicketLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg rounded-3">
+			<form id="formCreateTicket" action="{{ path('app_ticket_create') }}" method="POST">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('ticket_create') }}">
+				<div class="modal-header bg-light border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalCreateTicketLabel">
+						<div class="modal-icon-panel">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+								<line x1="9" x2="9" y1="9" y2="15"/>
+								<line x1="15" x2="15" y1="9" y2="15"/>
+							</svg>
+						</div>
+						<span>Registrar Nuevo Ticket</span>
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body p-4">
+					<div class="row g-3">
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Tipo de Ticket *</label>
+							<select name="type" class="form-select" required>
+								{% for tType in ticketTypes %}
+									<option value="{{ tType.value }}">{{ tType.label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Prioridad *</label>
+							<select name="priority_id" class="form-select" required>
+								{% for p in priorities %}
+									<option value="{{ p.id }}" {{ p.name == 'Media' ? 'selected' : '' }}>
+										{{ p.name }} (Nivel {{ p.level }})
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-12">
+							<label class="form-label fw-semibold text-secondary small">Título / Asunto *</label>
+							<input type="text" name="title" class="form-control" placeholder="Ej: Falla de conectividad VPN en sede Guayaquil" required maxlength="255">
+						</div>
+						<div class="col-12">
+							<label class="form-label fw-semibold text-secondary small">Descripción detallada *</label>
+							<textarea name="description" class="form-control" rows="4" placeholder="Describe los síntomas, pasos para reproducir o detalles del requerimiento..." required></textarea>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Solicitante</label>
+							<select name="requester_id" class="form-select">
+								{% for u in users %}
+									<option value="{{ u.id.toRfc4122 }}" {{ app.user and app.user.id == u.id ? 'selected' : '' }}>
+										{{ u.name ?: u.userIdentifier }} ({{ u.email }})
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-semibold text-secondary small">Asignar a Técnico</label>
+							<select name="assignee_id" class="form-select">
+								<option value="">-- Sin asignar (Por triaje) --</option>
+								{% for u in users %}
+									<option value="{{ u.id.toRfc4122 }}">
+										{{ u.name ?: u.userIdentifier }}
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-2">
+					<button type="submit" class="btn btn-panel-action px-4" id="btnSubmitCreateTicket">Crear Ticket</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL DETALLE DEL TICKET & CHAT (COMPARTIDO)
+     ========================================================================= -->
+<div class="modal fade" id="modalTicketDetails" tabindex="-1" aria-labelledby="modalTicketDetailsLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg rounded-3">
+			<div class="modal-header bg-light border-bottom px-4 py-3">
+				<div class="d-flex align-items-center gap-2">
+					<div class="modal-icon-panel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+						</svg>
+					</div>
+					<span class="badge bg-dark font-monospace fs-6" id="detailTicketCode">TCK-0000</span>
+					<h5 class="modal-title fw-bold text-dark mb-0" id="detailTicketTitle">Cargando...</h5>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body p-4">
+				<div class="row g-4">
+					<!-- Columna izquierda: Información del Ticket -->
+					<div class="col-lg-5 border-end">
+						<h6 class="text-uppercase fw-bold text-secondary small mb-3">Información del Ticket</h6>
+						
+						<div class="bg-light p-3 rounded-3 mb-3">
+							<div class="row g-2 small">
+								<div class="col-5 text-muted">Tipo:</div>
+								<div class="col-7 fw-semibold" id="detailTicketType">-</div>
+								
+								<div class="col-5 text-muted">Prioridad:</div>
+								<div class="col-7" id="detailTicketPriority">-</div>
+								
+								<div class="col-5 text-muted">Estado Actual:</div>
+								<div class="col-7">
+									<select id="detailSelectStatus" class="form-select form-select-sm">
+										{% for st in statuses %}
+											<option value="{{ st.id }}">{{ st.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+								
+								<div class="col-5 text-muted">Solicitante:</div>
+								<div class="col-7 fw-semibold" id="detailTicketRequester">-</div>
+								
+								<div class="col-5 text-muted">Asignado a:</div>
+								<div class="col-7 fw-semibold" id="detailTicketAssignee">-</div>
+								
+								<div class="col-5 text-muted">Fecha Creación:</div>
+								<div class="col-7" id="detailTicketCreatedAt">-</div>
+							</div>
+						</div>
+
+						<h6 class="text-uppercase fw-bold text-secondary small mb-2">Descripción</h6>
+						<div class="p-3 bg-white border rounded-3 text-secondary small mb-3" id="detailTicketDescription" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">
+						</div>
+					</div>
+
+					<!-- Columna derecha: Chat / Interacción Cliente - Técnico -->
+					<div class="col-lg-7 d-flex flex-column" style="min-height: 480px;">
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<h6 class="text-uppercase fw-bold text-secondary small mb-0 d-flex align-items-center gap-2">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+								Chat & Comentarios (Cliente / Técnico)
+							</h6>
+							<span class="badge bg-light text-muted border" id="commentCountBadge">0 comentarios</span>
+						</div>
+
+						<!-- Caja de scroll con el hilo de conversación -->
+						<div class="flex-grow-1 p-3 bg-light rounded-3 border mb-3 overflow-auto" id="ticketChatBox" style="max-height: 320px; min-height: 240px;">
+							<div class="text-center py-4 text-muted small" id="noCommentsPlaceholder">
+								No hay comentarios aún en este ticket. Sé el primero en responder.
+							</div>
+						</div>
+
+						<!-- Formulario de envío de nuevo mensaje en el chat -->
+						<form id="formAddComment" class="mt-auto">
+							<input type="hidden" name="_csrf_token" value="{{ csrf_token('ticket_comment') }}">
+							<input type="hidden" id="commentTicketId" value="">
+							<div class="mb-2">
+								<textarea id="commentContent" class="form-control" rows="2" placeholder="Escribe una respuesta o nota técnica..." required></textarea>
+							</div>
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="form-check form-switch mb-0">
+									<input class="form-check-input" type="checkbox" id="commentIsPrivate">
+									<label class="form-check-label small text-secondary" for="commentIsPrivate">
+										Nota interna privada (Solo agentes/técnicos)
+									</label>
+								</div>
+								<button type="submit" class="btn btn-panel-action btn-sm px-3 d-flex align-items-center gap-1" id="btnSendComment">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<line x1="22" y1="2" x2="11" y2="13"/>
+										<polygon points="22 2 15 22 11 13 2 9 22 2"/>
+									</svg>
+									<span>Enviar</span>
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	function initKanbanModule() {
+		const csrfStatusToken = "{{ csrf_token('ticket_status') }}";
+
+	// 1. Drag & Drop nativo entre columnas Kanban
+	let draggedCard = null;
+
+	document.querySelectorAll('.kanban-card').forEach(card => {
+		card.addEventListener('dragstart', function (e) {
+			draggedCard = this;
+			this.style.opacity = '0.5';
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', this.dataset.ticketId);
+		});
+
+		card.addEventListener('dragend', function () {
+			this.style.opacity = '1';
+			draggedCard = null;
+		});
+	});
+
+	document.querySelectorAll('.kanban-column').forEach(col => {
+		col.addEventListener('dragover', function (e) {
+			e.preventDefault();
+			e.dataTransfer.dropEffect = 'move';
+			const list = this.querySelector('.kanban-card-list');
+			if (list) list.classList.add('bg-primary-subtle');
+		});
+
+		col.addEventListener('dragleave', function (e) {
+			if (!this.contains(e.relatedTarget)) {
+				const list = this.querySelector('.kanban-card-list');
+				if (list) list.classList.remove('bg-primary-subtle');
+			}
+		});
+
+		col.addEventListener('drop', async function (e) {
+			e.preventDefault();
+			const list = this.querySelector('.kanban-card-list');
+			if (list) list.classList.remove('bg-primary-subtle');
+
+			const ticketId = e.dataTransfer.getData('text/plain') || (draggedCard ? draggedCard.dataset.ticketId : null);
+			const targetStatusId = this.dataset.statusId;
+
+			if (draggedCard && targetStatusId && list) {
+				const currentList = draggedCard.closest('.kanban-card-list');
+				if (currentList === list) return; // Mismo estado
+
+				list.appendChild(draggedCard);
+				updateColumnCounters();
+
+				// Persistir cambio de estado vía AJAX
+				try {
+					const bodyData = new URLSearchParams();
+					bodyData.append('_csrf_token', csrfStatusToken);
+					bodyData.append('status_id', targetStatusId);
+
+					const res = await fetch(`/tickets/${ticketId}/status`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: bodyData
+					});
+					const data = await res.json();
+
+					if (data.success && typeof Swal !== 'undefined') {
+						Swal.fire({
+							toast: true,
+							position: 'top-end',
+							icon: 'success',
+							title: data.message,
+							showConfirmButton: false,
+							timer: 1800
+						});
+					} else if (!data.success) {
+						alert(data.message || 'Error al cambiar estado');
+						currentList.appendChild(draggedCard);
+						updateColumnCounters();
+					}
+				} catch (err) {
+					alert('Error de conexión al actualizar estado.');
+					currentList.appendChild(draggedCard);
+					updateColumnCounters();
+				}
+			}
+		});
+	});
+
+	function updateColumnCounters() {
+		document.querySelectorAll('.kanban-column').forEach(col => {
+			const stId = col.dataset.statusId;
+			const cardCount = col.querySelectorAll('.kanban-card').length;
+			const countBadge = document.getElementById(`count-status-${stId}`);
+			if (countBadge) countBadge.textContent = cardCount;
+		});
+	}
+
+		// 2. Feedback visual al guardar el formulario de nuevo ticket
+		const formCreate = document.getElementById('formCreateTicket');
+		if (formCreate && !formCreate.dataset.hasSubmitHandler) {
+			formCreate.dataset.hasSubmitHandler = 'true';
+			formCreate.addEventListener('submit', function () {
+				const submitBtn = document.getElementById('btnSubmitCreateTicket');
+				if (submitBtn) {
+					submitBtn.disabled = true;
+					submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
+				}
+			});
+		}
+
+		// 3. Ver Detalle y Chat
+		const modalDetailsEl = document.getElementById('modalTicketDetails');
+
+		if (modalDetailsEl && !modalDetailsEl.dataset.initialized) {
+			modalDetailsEl.dataset.initialized = 'true';
+			modalDetailsEl.addEventListener('show.bs.modal', function (event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-view-ticket') || event.relatedTarget) : null;
+				if (btn && btn.dataset.id) {
+					loadTicketDetails(btn.dataset.id);
+				}
+			});
+		}
+
+		document.querySelectorAll('.btn-view-ticket').forEach(btn => {
+			btn.addEventListener('click', function () {
+				const ticketId = this.dataset.id;
+				if (ticketId) {
+					loadTicketDetails(ticketId);
+					if (modalDetailsEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+						bootstrap.Modal.getOrCreateInstance(modalDetailsEl).show();
+					}
+				}
+			});
+		});
+
+		async function loadTicketDetails(ticketId) {
+			if (!ticketId) return;
+			const commentTicketIdInput = document.getElementById('commentTicketId');
+			if (commentTicketIdInput) commentTicketIdInput.value = ticketId;
+
+			const chatBox = document.getElementById('ticketChatBox');
+			if (chatBox) chatBox.innerHTML = '<div class="text-center py-4 text-muted small">Cargando conversación...</div>';
+
+			try {
+				const res = await fetch(`/tickets/${ticketId}/details`);
+				const data = await res.json();
+
+				if (data.success) {
+					const t = data.ticket;
+					const codeEl = document.getElementById('detailTicketCode');
+					const titleEl = document.getElementById('detailTicketTitle');
+					const typeEl = document.getElementById('detailTicketType');
+					const priorityEl = document.getElementById('detailTicketPriority');
+					const requesterEl = document.getElementById('detailTicketRequester');
+					const assigneeEl = document.getElementById('detailTicketAssignee');
+					const createdAtEl = document.getElementById('detailTicketCreatedAt');
+					const descEl = document.getElementById('detailTicketDescription');
+
+					if (codeEl) codeEl.textContent = t.code;
+					if (titleEl) titleEl.textContent = t.title;
+					if (typeEl) typeEl.textContent = t.type;
+					if (priorityEl) priorityEl.innerHTML = `<span class="fw-semibold small" style="color: ${t.priorityColor || '#6c757d'};">${t.priority}</span>`;
+					if (requesterEl) requesterEl.textContent = t.requester;
+					if (assigneeEl) assigneeEl.textContent = t.assignee;
+					if (createdAtEl) createdAtEl.textContent = t.createdAt;
+					if (descEl) descEl.textContent = t.description;
+
+					const selectStatus = document.getElementById('detailSelectStatus');
+					if (selectStatus) {
+						selectStatus.value = t.statusId;
+						selectStatus.onchange = async function () {
+							const formBody = new URLSearchParams();
+							formBody.append('_csrf_token', csrfStatusToken);
+							formBody.append('status_id', selectStatus.value);
+
+							const updateRes = await fetch(`/tickets/${ticketId}/status`, {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+								body: formBody
+							});
+							const updateData = await updateRes.json();
+							if (updateData.success) {
+								if (typeof Swal !== 'undefined') {
+									Swal.fire({
+										toast: true,
+										position: 'top-end',
+										icon: 'success',
+										title: updateData.message,
+										showConfirmButton: false,
+										timer: 2000
+									});
+								}
+								setTimeout(() => window.location.reload(), 900);
+							}
+						};
+					}
+
+					renderComments(t.comments);
+				}
+			} catch (err) {
+				console.error('Error al cargar detalle del ticket:', err);
+			}
+		}
+
+		function renderComments(comments) {
+		const chatBox = document.getElementById('ticketChatBox');
+		const badge = document.getElementById('commentCountBadge');
+		if (badge) badge.textContent = `${comments.length} comentarios`;
+
+		if (!comments || comments.length === 0) {
+			chatBox.innerHTML = '<div class="text-center py-4 text-muted small">No hay comentarios aún en este ticket. Sé el primero en responder.</div>';
+			return;
+		}
+
+		chatBox.innerHTML = '';
+		comments.forEach(c => {
+			const div = document.createElement('div');
+			div.className = `p-3 mb-2 rounded-3 border ${c.isPrivate ? 'bg-warning-subtle border-warning' : 'bg-white'}`;
+			div.innerHTML = `
+				<div class="d-flex align-items-center justify-content-between mb-1">
+					<span class="fw-bold small text-dark">${c.author}</span>
+					<div class="d-flex align-items-center gap-2">
+						${c.isPrivate ? '<span class="badge bg-warning text-dark border border-warning" style="font-size: 10px;">Nota Interna</span>' : '<span class="badge bg-light text-muted border" style="font-size: 10px;">Público</span>'}
+						<span class="text-muted" style="font-size: 11px;">${c.createdAt}</span>
+					</div>
+				</div>
+				<div class="text-secondary small" style="white-space: pre-wrap;">${c.content}</div>
+			`;
+			chatBox.appendChild(div);
+		});
+		chatBox.scrollTop = chatBox.scrollHeight;
+	}
+
+	// 4. Enviar Comentario en el Chat
+	const formComment = document.getElementById('formAddComment');
+	formComment?.addEventListener('submit', async function (e) {
+		e.preventDefault();
+		const ticketId = document.getElementById('commentTicketId').value;
+		const content = document.getElementById('commentContent').value.trim();
+		const isPrivate = document.getElementById('commentIsPrivate').checked;
+		const submitBtn = document.getElementById('btnSendComment');
+
+		if (!ticketId || !content) return;
+		submitBtn.disabled = true;
+
+		try {
+			const bodyData = new URLSearchParams();
+			bodyData.append('_csrf_token', "{{ csrf_token('ticket_comment') }}");
+			bodyData.append('content', content);
+			if (isPrivate) bodyData.append('is_private', '1');
+
+			const res = await fetch(`/tickets/${ticketId}/comment`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: bodyData
+			});
+			const data = await res.json();
+
+			if (data.success) {
+				document.getElementById('commentContent').value = '';
+				document.getElementById('commentIsPrivate').checked = false;
+				const detailsRes = await fetch(`/tickets/${ticketId}/details`);
+				const detailsData = await detailsRes.json();
+				if (detailsData.success) {
+					renderComments(detailsData.ticket.comments);
+				}
+			} else {
+				alert(data.message || 'Error al enviar mensaje.');
+			}
+		} catch (err) {
+			alert('Error al enviar el mensaje.');
+		} finally {
+			submitBtn.disabled = false;
+		}
+	});
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initKanbanModule);
+} else {
+	initKanbanModule();
+}
+document.addEventListener('turbo:load', initKanbanModule);
+})();
+</script>
+{% endblock %}
