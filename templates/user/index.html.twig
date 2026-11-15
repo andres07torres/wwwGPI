@@ -12,7 +12,7 @@
 				Administra las cuentas de usuario de la plataforma, asigna roles de acceso, controla permisos y supervisa el estado de activación en cada organización.
 			</p>
 		</div>
-		<div class="flex-shrink-0">
+		<div class="flex-shrink-0 d-flex justify-content-end">
 			<button type="button" class="btn btn-create-user shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateUser">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 					<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -89,32 +89,15 @@
 							<!-- Columna Rol -->
 							<td class="py-3">
 								{% if u.role %}
-									{% set rName = u.role.name %}
-									{% if 'SUPER' in rName|upper %}
-										<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill">
-											{{ rName }}
-										</span>
-									{% elseif 'ADMIN' in rName|upper %}
-										<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill">
-											{{ rName }}
-										</span>
-									{% elseif 'ESPECIALISTA' in rName|upper or 'TECNICO' in rName|upper %}
-										<span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-pill">
-											{{ rName }}
-										</span>
-									{% else %}
-										<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill">
-											{{ rName }}
-										</span>
-									{% endif %}
+									<span class="small fw-semibold" style="color: var(--panel, #14212B);">{{ u.role.name }}</span>
 								{% else %}
-									<span class="badge bg-light text-muted border px-2 py-1 rounded-pill">Sin Rol</span>
+									<span class="small" style="color: var(--panel, #14212B); opacity: 0.7;">Sin Rol</span>
 								{% endif %}
 							</td>
 
 							<!-- Columna Tenant -->
 							<td class="py-3">
-								<span class="badge bg-light text-dark border px-2 py-1 rounded">
+								<span class="small" style="color: var(--panel, #14212B);">
 									{{ u.tenant ? u.tenant.name : 'Default' }}
 								</span>
 							</td>
@@ -122,15 +105,9 @@
 							<!-- Columna Estado -->
 							<td class="py-3">
 								{% if u.isStatus %}
-									<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1">
-										<span class="d-inline-block rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
-										Activo
-									</span>
+									<span class="small fw-semibold" style="color: var(--panel, #14212B);">Activo</span>
 								{% else %}
-									<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1">
-										<span class="d-inline-block rounded-circle bg-secondary" style="width: 6px; height: 6px;"></span>
-										Inactivo
-									</span>
+									<span class="small fw-semibold" style="color: var(--panel, #14212B); opacity: 0.6;">Inactivo</span>
 								{% endif %}
 							</td>
 
