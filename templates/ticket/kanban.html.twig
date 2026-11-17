@@ -518,46 +518,56 @@
 
 	// 4. Enviar Comentario en el Chat
 	const formComment = document.getElementById('formAddComment');
-	formComment?.addEventListener('submit', async function (e) {
-		e.preventDefault();
-		const ticketId = document.getElementById('commentTicketId').value;
-		const content = document.getElementById('commentContent').value.trim();
-		const isPrivate = document.getElementById('commentIsPrivate').checked;
-		const submitBtn = document.getElementById('btnSendComment');
+	if (formComment && !formComment.dataset.hasSubmitHandler) {
+		formComment.dataset.hasSubmitHandler = 'true';
+		formComment.addEventListener('submit', async function (e) {
+			e.preventDefault();
+			if (this.dataset.submitting === 'true') return;
+			this.dataset.submitting = 'true';
 
-		if (!ticketId || !content) return;
-		submitBtn.disabled = true;
+			const ticketId = document.getElementById('commentTicketId').value;
+			const content = document.getElementById('commentContent').value.trim();
+			const isPrivate = document.getElementById('commentIsPrivate').checked;
+			const submitBtn = document.getElementById('btnSendComment');
 
-		try {
-			const bodyData = new URLSearchParams();
-			bodyData.append('_csrf_token', "{{ csrf_token('ticket_comment') }}");
-			bodyData.append('content', content);
-			if (isPrivate) bodyData.append('is_private', '1');
-
-			const res = await fetch(`/tickets/${ticketId}/comment`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: bodyData
-			});
-			const data = await res.json();
-
-			if (data.success) {
-				document.getElementById('commentContent').value = '';
-				document.getElementById('commentIsPrivate').checked = false;
-				const detailsRes = await fetch(`/tickets/${ticketId}/details`);
-				const detailsData = await detailsRes.json();
-				if (detailsData.success) {
-					renderComments(detailsData.ticket.comments);
-				}
-			} else {
-				alert(data.message || 'Error al enviar mensaje.');
+			if (!ticketId || !content) {
+				this.dataset.submitting = 'false';
+				return;
 			}
-		} catch (err) {
-			alert('Error al enviar el mensaje.');
-		} finally {
-			submitBtn.disabled = false;
-		}
-	});
+			submitBtn.disabled = true;
+
+			try {
+				const bodyData = new URLSearchParams();
+				bodyData.append('_csrf_token', "{{ csrf_token('ticket_comment') }}");
+				bodyData.append('content', content);
+				if (isPrivate) bodyData.append('is_private', '1');
+
+				const res = await fetch(`/tickets/${ticketId}/comment`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: bodyData
+				});
+				const data = await res.json();
+
+				if (data.success) {
+					document.getElementById('commentContent').value = '';
+					document.getElementById('commentIsPrivate').checked = false;
+					const detailsRes = await fetch(`/tickets/${ticketId}/details`);
+					const detailsData = await detailsRes.json();
+					if (detailsData.success) {
+						renderComments(detailsData.ticket.comments);
+					}
+				} else {
+					alert(data.message || 'Error al enviar mensaje.');
+				}
+			} catch (err) {
+				alert('Error al enviar el mensaje.');
+			} finally {
+				submitBtn.disabled = false;
+				this.dataset.submitting = 'false';
+			}
+		});
+	}
 }
 
 if (document.readyState === 'loading') {

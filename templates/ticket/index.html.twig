@@ -594,12 +594,18 @@
 			formComment.dataset.hasSubmitHandler = 'true';
 			formComment.addEventListener('submit', async function (e) {
 				e.preventDefault();
+				if (this.dataset.submitting === 'true') return;
+				this.dataset.submitting = 'true';
+
 				const ticketId = document.getElementById('commentTicketId').value;
 				const content = document.getElementById('commentContent').value.trim();
 				const isPrivate = document.getElementById('commentIsPrivate').checked;
 				const submitBtn = document.getElementById('btnSendComment');
 
-				if (!ticketId || !content) return;
+				if (!ticketId || !content) {
+					this.dataset.submitting = 'false';
+					return;
+				}
 				submitBtn.disabled = true;
 
 				try {
@@ -630,6 +636,7 @@
 					alert('Error al enviar el mensaje.');
 				} finally {
 					submitBtn.disabled = false;
+					this.dataset.submitting = 'false';
 				}
 			});
 		}
