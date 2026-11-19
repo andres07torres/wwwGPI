@@ -41,6 +41,7 @@ class LoginControllerTest extends WebTestCase
             '_username' => 'inexistente@example.com',
             '_password' => 'PasswordErronea#123',
             '_csrf_token' => $csrfToken,
+            '_terms' => 'on',
         ]);
 
         // Redirige al login con error
@@ -85,6 +86,7 @@ class LoginControllerTest extends WebTestCase
             '_username' => 'login_success_user',
             '_password' => 'ClaveCorrecta#2026',
             '_csrf_token' => $csrfToken,
+            '_terms' => 'on',
         ]);
 
         // Redirige al home configurado en default_target_path
@@ -104,5 +106,23 @@ class LoginControllerTest extends WebTestCase
             $em->remove($logToRemove);
         }
         $em->flush();
+    }
+
+    public function testLoginWithoutAcceptingTermsFails(): void
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/');
+        $csrfToken = $crawler->filter('form#f-login input[name="_csrf_token"]')->attr('value');
+
+        $client->request('POST', '/', [
+            '_username' => 'admin',
+            '_password' => 'CualquierPassword123#',
+            '_csrf_token' => $csrfToken,
+            // Sin _terms
+        ]);
+
+        $this->assertResponseRedirects('http://localhost/');
+        $client->followRedirect();
+        $this->assertSelectorTextContains('.server-alert', 'Debes aceptar los términos y condiciones');
     }
 }

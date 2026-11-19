@@ -48,13 +48,14 @@
 
 					<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-					<div class="auth-row">
-						<label class="chk">
-							<input type="checkbox" name="_remember_me">
-							Mantener sesión en este equipo
+					<div class="auth-row" style="margin-bottom: 6px !important;">
+						<label class="chk" for="l-terms">
+							<input type="checkbox" id="l-terms" name="_terms" required>
+							Acepto los términos y condiciones
 						</label>
 						<a href="#login" id="forgot">¿Olvidaste tu contraseña?</a>
 					</div>
+					<div class="err" data-for="l-terms" style="margin-bottom: 16px;"></div>
 
 					<button class="btn" type="submit">Iniciar sesión</button>
 					<div class="ok" id="ok-login" role="status"></div>
@@ -120,16 +121,19 @@
 	  $('#f-login').addEventListener('submit', function(e) {
 	    var user = $('#l-user').value.trim();
 	    var pw = $('#l-pass').value;
+	    var terms = $('#l-terms').checked;
 	    var bad = false;
 
 	    setErr('l-user', !user ? 'Ingresa tu usuario.' : '');
 	    setErr('l-pass', !pw ? 'Ingresa tu contraseña.' : '');
+	    setErr('l-terms', !terms ? 'Debes aceptar los términos y condiciones para iniciar sesión.' : '');
 
-	    bad = !user || !pw;
+	    bad = !user || !pw || !terms;
 	    if (bad) {
 	      e.preventDefault();
 	      var f = $('#f-login [aria-invalid="true"]');
 	      if (f) f.focus();
+	      else if (!terms) $('#l-terms').focus();
 	    }
 	  });
 	})();
