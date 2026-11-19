@@ -59,3 +59,18 @@ Antes de dar por concluida cualquier tarea o modificación:
 
 4. **Compilación de Assets:**
    - Ejecutar `npm run build` si se modificaron archivos CSS o JavaScript.
+
+---
+
+## 4. Control de Versiones: Los Commits los Realiza Exclusivamente el Usuario
+
+1. **Prohibición de `git commit` y `git push` automático:**
+   - **NUNCA** ejecutar `git commit` ni `git push` de manera autónoma.
+   - La acción de crear los commits y enviarlos al repositorio remoto es responsabilidad **exclusiva del usuario**.
+
+2. **Rol del Asistente en Git:**
+   - Aplicar los cambios en el código con precisión quirúrgica.
+   - Ejecutar verificaciones (linters, tests, builds).
+   - Sugerir al usuario el nombre del commit siguiendo la convención estricta:
+     `[ADD ] <mensaje>` (sin la palabra "implementación").
+   - Dejar el espacio de trabajo listo para que el usuario sea quien realice el commit.
