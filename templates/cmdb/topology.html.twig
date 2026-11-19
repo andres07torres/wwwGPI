@@ -1,0 +1,907 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Mapa de Topología{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo con Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Infraestructura & Activos</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Mapa de Topología</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Mapa de Topología</h1>
+				<p class="text-muted mb-0">
+					Visualiza las dependencias, conexiones e interacciones de infraestructura para el análisis de impacto operativo y continuidad de servicio.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateRelationship">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"/>
+						<line x1="5" y1="12" x2="19" y2="12"/>
+					</svg>
+					<span>Nueva Relación</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Resumen Rápido de Indicadores (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Nodos de Infraestructura -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Total Nodos">Nodos CIs</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ totalItems }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Total de Nodos en Topología">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="2" y="2" width="6" height="6" rx="1"/>
+							<rect x="16" y="2" width="6" height="6" rx="1"/>
+							<rect x="9" y="16" width="6" height="6" rx="1"/>
+							<path d="M5 8v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/>
+							<line x1="12" y1="13" x2="12" y2="16"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: Conexiones Activas -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Conexiones Activas">Relaciones</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ totalRelationships }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Relaciones entre Activos">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="18" cy="5" r="3"/>
+							<circle cx="6" cy="12" r="3"/>
+							<circle cx="18" cy="19" r="3"/>
+							<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+							<line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Dependencias Críticas -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Dependencias Críticas">Dependencias</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ criticalDependencies }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Dependencias Directas de Servicio">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<polygon points="12 2 2 7 12 12 22 7 12 2"/>
+							<polyline points="2 17 12 22 22 17"/>
+							<polyline points="2 12 12 17 22 12"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Nodos en Mantenimiento -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Nodos en Mantenimiento">Mantenimiento</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ maintenanceNodes }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Nodos en Mantenimiento">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tarjeta Principal: Visor Interactivo de Topología -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+		<!-- Barra de herramientas del grafo -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="row g-2 align-items-center">
+				<div class="col-12 col-md-4">
+					<div class="position-relative">
+						<input type="text" id="topologySearchInput" class="form-control form-control-sm ps-4" placeholder="Buscar nodo en el grafo...">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+				<div class="col-6 col-md-3">
+					<form method="get" action="{{ path('app_cmdb_topology_index') }}" id="formTenantFilter">
+						<select name="tenant" class="form-select form-select-sm" onchange="this.form.submit()">
+							<option value="">Todas las organizaciones</option>
+							{% for t in tenants %}
+								<option value="{{ t.id.toRfc4122 }}" {{ selectedTenantId == t.id.toRfc4122 ? 'selected' : '' }}>
+									{{ t.name }}
+								</option>
+							{% endfor %}
+						</select>
+					</form>
+				</div>
+				<div class="col-6 col-md-3">
+					<select id="topologyTypeFilter" class="form-select form-select-sm">
+						<option value="">Todas las relaciones</option>
+						<option value="depends_on">Solo dependencias (depends_on)</option>
+						<option value="hosted_on">Solo alojamiento (hosted_on)</option>
+						<option value="connected_to">Solo conexiones (connected_to)</option>
+					</select>
+				</div>
+				<div class="col-12 col-md-2 d-flex justify-content-end gap-1">
+					<button type="button" class="btn btn-sm btn-outline-secondary" id="btnZoomIn" title="Acercar">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary" id="btnZoomOut" title="Alejar">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary" id="btnFitGraph" title="Centrar grafo">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Área Visual del Grafo y Panel de Inspección Lateral -->
+		<div class="position-relative bg-light" style="min-height: 520px; height: 560px; overflow: hidden;" id="topologyCanvasContainer">
+			<!-- Canvas interactivo de dibujo del grafo -->
+			<canvas id="topologyCanvas" class="w-100 h-100" style="cursor: grab; display: block;"></canvas>
+
+			<!-- Leyenda visual flotante en la esquina inferior izquierda -->
+			<div class="position-absolute bottom-0 start-0 m-3 p-2 bg-white rounded-3 shadow-sm border small" style="opacity: 0.95; pointer-events: none; max-width: 280px; z-index: 10;">
+				<div class="fw-bold mb-1 text-dark" style="font-size: 11px;">Referencias de Topología</div>
+				<div class="d-flex align-items-center gap-2 mb-1" style="font-size: 11px;">
+					<span class="rounded-circle" style="width: 10px; height: 10px; background-color: #10b981; display: inline-block;"></span>
+					<span class="text-muted">Activo Operativo</span>
+					<span class="rounded-circle ms-2" style="width: 10px; height: 10px; background-color: #f59e0b; display: inline-block;"></span>
+					<span class="text-muted">Mantenimiento</span>
+				</div>
+				<div class="d-flex align-items-center gap-2" style="font-size: 10px;">
+					<span style="color: #6366f1;">━━</span> <span class="text-muted">Dependencia</span>
+					<span style="color: #0ea5e9;">╍╍</span> <span class="text-muted">Alojado en</span>
+					<span style="color: #64748b;">┈┈</span> <span class="text-muted">Conexión</span>
+				</div>
+			</div>
+
+			<!-- Panel de Inspección lateral derecho (al seleccionar un nodo) -->
+			<div id="nodeDetailsDrawer" class="position-absolute top-0 end-0 h-100 bg-white border-start shadow-sm p-3 d-none flex-column" style="width: 360px; max-width: 92vw; z-index: 20; overflow-y: auto;">
+				<div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+					<h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--panel);"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
+						<span>Detalle del Nodo</span>
+					</h6>
+					<button type="button" class="btn-close btn-sm" id="btnCloseDetails" aria-label="Cerrar"></button>
+				</div>
+				<div id="nodeDetailsContent">
+					<!-- Se rellena dinámicamente con JavaScript -->
+				</div>
+			</div>
+
+			<!-- Mensaje si no hay activos registrados -->
+			{% if items is empty %}
+				<div class="position-absolute top-50 start-50 translate-middle text-center p-4">
+					<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted mb-2">
+						<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+						<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+					</svg>
+					<h6 class="fw-bold text-dark">No hay activos registrados para graficar</h6>
+					<p class="text-muted small mb-3">Registra activos en el inventario para comenzar a trazar el mapa de topología.</p>
+					<a href="{{ path('app_cmdb_asset_index') }}" class="btn btn-sm btn-panel-action">Ir al Inventario</a>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- Tarjeta Inferior: Tabla de Relaciones Registradas -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+		<div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+			<div class="fw-bold text-dark d-flex align-items-center gap-2">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+				<span>Matriz de Relaciones Activas ({{ relationships|length }})</span>
+			</div>
+			<button type="button" class="btn btn-sm btn-outline-panel" data-bs-toggle="modal" data-bs-target="#modalCreateRelationship">
+				+ Conectar Activos
+			</button>
+		</div>
+
+		<div class="table-responsive">
+			<table class="table align-middle table-hover mb-0" id="relationshipsTable">
+				<thead class="table-light">
+					<tr>
+						<th class="ps-3 py-3 text-secondary text-uppercase small fw-bold" style="width: 32%;">Activo Origen (Padre / Recurso)</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold text-center" style="width: 22%;">Tipo de Conexión</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 32%;">Activo Destino (Hijo / Dependiente)</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold text-end pe-3" style="width: 14%;">Acción</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for rel in relationships %}
+						<tr class="rel-row" data-type="{{ rel.relationshipType.value }}">
+							<td class="ps-3 py-3">
+								<div class="fw-bold text-dark">{{ rel.parentCi.name }}</div>
+								<div class="small text-muted">{{ rel.parentCi.category ? rel.parentCi.category.name : 'Sin categoría' }} · {{ rel.parentCi.ipAddress|default('Sin IP') }}</div>
+							</td>
+							<td class="py-3 text-center">
+								{% if rel.relationshipType.value == 'depends_on' %}
+									<span class="badge bg-indigo-subtle text-primary border border-primary-subtle px-2 py-1 small rounded-pill">
+										↳ Depende de
+									</span>
+								{% elseif rel.relationshipType.value == 'hosted_on' %}
+									<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1 small rounded-pill">
+										⌂ Alojado en
+									</span>
+								{% else %}
+									<span class="badge bg-secondary-subtle text-secondary-emphasis border px-2 py-1 small rounded-pill">
+										⇄ Conectado a
+									</span>
+								{% endif %}
+							</td>
+							<td class="py-3">
+								<div class="fw-bold text-dark">{{ rel.childCi.name }}</div>
+								<div class="small text-muted">{{ rel.childCi.category ? rel.childCi.category.name : 'Sin categoría' }} · {{ rel.childCi.ipAddress|default('Sin IP') }}</div>
+							</td>
+							<td class="py-3 text-end pe-3">
+								<button type="button" 
+									class="btn btn-sm btn-outline-danger btn-icon-action btn-delete-rel" 
+									title="Eliminar relación" 
+									aria-label="Eliminar relación"
+									data-bs-toggle="modal" 
+									data-bs-target="#modalDeleteRelationship"
+									data-rel-id="{{ rel.id }}"
+									data-rel-desc="{{ rel.parentCi.name }} ({{ rel.relationshipType.value }}) {{ rel.childCi.name }}">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<polyline points="3 6 5 6 21 6"/>
+										<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+										<line x1="10" y1="11" x2="10" y2="17"/>
+										<line x1="14" y1="11" x2="14" y2="17"/>
+									</svg>
+								</button>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="4" class="text-center py-5 text-muted">
+								<div class="d-flex flex-column align-items-center justify-content-center">
+									<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 opacity-50">
+										<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+										<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+									</svg>
+									<div class="fw-semibold text-dark">No hay relaciones registradas en la topología</div>
+									<div class="small text-muted mt-1">Haz clic en "Nueva Relación" para conectar dos elementos de configuración.</div>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+{# =====================================================================
+   MODAL: CREAR RELACIÓN DE TOPOLOGÍA
+   ===================================================================== #}
+<div class="modal fade" id="modalCreateRelationship" tabindex="-1" aria-labelledby="modalCreateRelationshipLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow">
+			<form action="{{ path('app_cmdb_topology_rel_create') }}" method="post" id="formCreateRelationship">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_ci_relationship') }}">
+				
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalCreateRelationshipLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--panel, #14212B);">
+							<circle cx="18" cy="5" r="3"/>
+							<circle cx="6" cy="12" r="3"/>
+							<circle cx="18" cy="19" r="3"/>
+							<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+							<line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+						</svg>
+						<span>Conectar Activos en Topología</span>
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				
+				<div class="modal-body px-4 py-3">
+					<div class="mb-3">
+						<label for="rel_parent_ci" class="form-label small fw-semibold text-secondary">Activo Origen (Padre / Proveedor del recurso) <span class="text-danger">*</span></label>
+						<select class="form-select" id="rel_parent_ci" name="parent_ci_id" required>
+							<option value="">Selecciona el activo origen...</option>
+							{% for it in items %}
+								<option value="{{ it.id.toRfc4122 }}">{{ it.name }} ({{ it.category ? it.category.name : 'CI' }})</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="mb-3">
+						<label for="rel_type" class="form-label small fw-semibold text-secondary">Tipo de Relación <span class="text-danger">*</span></label>
+						<select class="form-select" id="rel_type" name="relationship_type" required>
+							<option value="depends_on">Depende de (depends_on) — Ej: El servicio web depende de la BD</option>
+							<option value="hosted_on">Alojado en (hosted_on) — Ej: La VM reside en el Servidor Blade</option>
+							<option value="connected_to">Conectado a (connected_to) — Ej: El servidor se conecta al Switch</option>
+						</select>
+					</div>
+
+					<div class="mb-2">
+						<label for="rel_child_ci" class="form-label small fw-semibold text-secondary">Activo Destino (Hijo / Dependiente) <span class="text-danger">*</span></label>
+						<select class="form-select" id="rel_child_ci" name="child_ci_id" required>
+							<option value="">Selecciona el activo destino...</option>
+							{% for it in items %}
+								<option value="{{ it.id.toRfc4122 }}">{{ it.name }} ({{ it.category ? it.category.name : 'CI' }})</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-2">
+					<button type="submit" class="btn btn-panel-action">Conectar</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{# =====================================================================
+   MODAL: ELIMINAR RELACIÓN
+   ===================================================================== #}
+<div class="modal fade" id="modalDeleteRelationship" tabindex="-1" aria-labelledby="modalDeleteRelationshipLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-sm">
+		<div class="modal-content border-0 shadow">
+			<form action="" method="post" id="formDeleteRelationship">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('delete_ci_relationship') }}">
+				
+				<div class="modal-body text-center p-4">
+					<div class="avatar-circle-lg bg-danger-subtle text-danger mx-auto mb-3">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="3 6 5 6 21 6"/>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+							<line x1="10" y1="11" x2="10" y2="17"/>
+							<line x1="14" y1="11" x2="14" y2="17"/>
+						</svg>
+					</div>
+					<h5 class="fw-bold text-dark mb-1">¿Desconectar relación?</h5>
+					<p class="text-muted small mb-0">
+						Estás a punto de desvincular <strong class="text-dark" id="delete_rel_display_name">--</strong>. La topología se actualizará inmediatamente.
+					</p>
+				</div>
+
+				<div class="modal-footer border-0 px-3 pb-3 pt-0 justify-content-center gap-2">
+					<button type="submit" class="btn btn-danger px-3 py-2 fw-semibold rounded-3">Sí, Desconectar</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+(function() {
+	const rawNodes = {{ graphNodesJson|raw }};
+	const rawEdges = {{ graphEdgesJson|raw }};
+
+	function initTopologyApp() {
+		const canvas = document.getElementById('topologyCanvas');
+		if (!canvas) return;
+		const ctx = canvas.getContext('2d');
+		const container = document.getElementById('topologyCanvasContainer');
+		const detailsDrawer = document.getElementById('nodeDetailsDrawer');
+		const detailsContent = document.getElementById('nodeDetailsContent');
+		const btnCloseDetails = document.getElementById('btnCloseDetails');
+		const searchInput = document.getElementById('topologySearchInput');
+		const typeFilter = document.getElementById('topologyTypeFilter');
+		const btnZoomIn = document.getElementById('btnZoomIn');
+		const btnZoomOut = document.getElementById('btnZoomOut');
+		const btnFitGraph = document.getElementById('btnFitGraph');
+
+		let width = container.clientWidth;
+		let height = container.clientHeight;
+		canvas.width = width;
+		canvas.height = height;
+
+		// Estado de cámara (pan & zoom)
+		let zoom = 1;
+		let panX = width / 2;
+		let panY = height / 2;
+		let isDragging = false;
+		let dragStartX = 0;
+		let dragStartY = 0;
+		let draggedNode = null;
+		let selectedNode = null;
+		let hoveredNode = null;
+
+		// Estructura de nodos con posición física
+		const nodeRadius = 24;
+		const nodes = rawNodes.map((n, i) => {
+			const angle = (i / Math.max(rawNodes.length, 1)) * 2 * Math.PI;
+			const radius = Math.min(width, height) * 0.38;
+			return {
+				...n,
+				x: Math.cos(angle) * radius,
+				y: Math.sin(angle) * radius,
+				vx: 0,
+				vy: 0,
+			};
+		});
+
+		const nodeMap = {};
+		nodes.forEach(n => { nodeMap[n.id] = n; });
+
+		// Aristas válidas
+		let edges = rawEdges.filter(e => nodeMap[e.from] && nodeMap[e.to]);
+
+		function applyFilters() {
+			const filterType = typeFilter ? typeFilter.value : '';
+			edges = rawEdges.filter(e => {
+				const matchesType = !filterType || e.type === filterType;
+				return matchesType && nodeMap[e.from] && nodeMap[e.to];
+			});
+			render();
+		}
+
+		if (typeFilter) {
+			typeFilter.addEventListener('change', applyFilters);
+		}
+
+		// Simulación de resortes para ordenamiento orgánico
+		function simulateStep() {
+			const repulsion = 10000;
+			const springLength = 180;
+			const springK = 0.035;
+			const damping = 0.82;
+			const minNodeDistance = 120; // Previene colisión o sobreposición de nodos y etiquetas
+
+			// Repulsión entre nodos
+			for (let i = 0; i < nodes.length; i++) {
+				for (let j = i + 1; j < nodes.length; j++) {
+					const dx = nodes[i].x - nodes[j].x;
+					const dy = nodes[i].y - nodes[j].y;
+					const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+					if (dist < 600) {
+						let force = repulsion / (dist * dist);
+						if (dist < minNodeDistance) {
+							force += (minNodeDistance - dist) * 0.25;
+						}
+						const fx = (dx / dist) * force;
+						const fy = (dy / dist) * force;
+						nodes[i].vx += fx;
+						nodes[i].vy += fy;
+						nodes[j].vx -= fx;
+						nodes[j].vy -= fy;
+					}
+				}
+			}
+
+			// Atracción de aristas
+			edges.forEach(e => {
+				const src = nodeMap[e.from];
+				const dst = nodeMap[e.to];
+				if (!src || !dst) return;
+				const dx = dst.x - src.x;
+				const dy = dst.y - src.y;
+				const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+				const force = (dist - springLength) * springK;
+				const fx = (dx / dist) * force;
+				const fy = (dy / dist) * force;
+				src.vx += fx;
+				src.vy += fy;
+				dst.vx -= fx;
+				dst.vy -= fy;
+			});
+
+			// Actualizar posiciones
+			nodes.forEach(n => {
+				if (n !== draggedNode) {
+					n.x += n.vx;
+					n.y += n.vy;
+					n.vx *= damping;
+					n.vy *= damping;
+				}
+			});
+		}
+
+		let simSteps = 0;
+		function runSimulation() {
+			if (simSteps < 160) {
+				simulateStep();
+				simSteps++;
+				render();
+				requestAnimationFrame(runSimulation);
+			}
+		}
+		runSimulation();
+
+		function render() {
+			ctx.clearRect(0, 0, width, height);
+
+			ctx.save();
+			ctx.translate(panX, panY);
+			ctx.scale(zoom, zoom);
+
+			// 1. Dibujar aristas con flechas
+			edges.forEach(e => {
+				const src = nodeMap[e.from];
+				const dst = nodeMap[e.to];
+				if (!src || !dst) return;
+
+				const isConnected = selectedNode && (selectedNode.id === src.id || selectedNode.id === dst.id);
+
+				ctx.beginPath();
+				ctx.moveTo(src.x, src.y);
+				ctx.lineTo(dst.x, dst.y);
+
+				if (e.type === 'depends_on') {
+					ctx.strokeStyle = isConnected ? '#4f46e5' : '#a5b4fc';
+					ctx.lineWidth = isConnected ? 2.5 : 1.5;
+					ctx.setLineDash([]);
+				} else if (e.type === 'hosted_on') {
+					ctx.strokeStyle = isConnected ? '#0284c7' : '#7dd3fc';
+					ctx.lineWidth = isConnected ? 2.5 : 1.5;
+					ctx.setLineDash([4, 3]);
+				} else {
+					ctx.strokeStyle = isConnected ? '#475569' : '#cbd5e1';
+					ctx.lineWidth = isConnected ? 2 : 1.2;
+					ctx.setLineDash([2, 2]);
+				}
+				ctx.stroke();
+				ctx.setLineDash([]);
+
+				// Flecha direccional
+				const angle = Math.atan2(dst.y - src.y, dst.x - src.x);
+				const arrowDist = 26;
+				const ax = dst.x - Math.cos(angle) * arrowDist;
+				const ay = dst.y - Math.sin(angle) * arrowDist;
+
+				ctx.beginPath();
+				ctx.moveTo(ax, ay);
+				ctx.lineTo(ax - 9 * Math.cos(angle - Math.PI / 6), ay - 9 * Math.sin(angle - Math.PI / 6));
+				ctx.lineTo(ax - 9 * Math.cos(angle + Math.PI / 6), ay - 9 * Math.sin(angle + Math.PI / 6));
+				ctx.closePath();
+				ctx.fillStyle = ctx.strokeStyle;
+				ctx.fill();
+
+				// Etiqueta en el centro de la arista
+				const mx = (src.x + dst.x) / 2;
+				const my = (src.y + dst.y) / 2;
+				ctx.font = '9px "Plus Jakarta Sans", sans-serif';
+				ctx.fillStyle = '#64748b';
+				ctx.textAlign = 'center';
+				ctx.fillText(e.label, mx, my - 4);
+			});
+
+			// 2. Dibujar nodos
+			const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+			nodes.forEach(n => {
+				const isSelected = selectedNode && selectedNode.id === n.id;
+				const isHovered = hoveredNode && hoveredNode.id === n.id;
+				const isMatched = searchTerm && n.label.toLowerCase().includes(searchTerm);
+
+				// Sombra suave o brillo
+				if (isSelected || isMatched) {
+					ctx.beginPath();
+					ctx.arc(n.x, n.y, nodeRadius + 5, 0, 2 * Math.PI);
+					ctx.fillStyle = 'rgba(79, 70, 229, 0.25)';
+					ctx.fill();
+				}
+
+				// Círculo base del nodo
+				ctx.beginPath();
+				ctx.arc(n.x, n.y, nodeRadius, 0, 2 * Math.PI);
+				ctx.fillStyle = '#FFFFFF';
+				ctx.fill();
+
+				// Borde según estado operativo
+				let borderColor = '#10b981'; // Activo
+				if (n.status === 'Mantenimiento') borderColor = '#f59e0b';
+				if (n.status === 'Dado de Baja') borderColor = '#94a3b8';
+
+				ctx.lineWidth = isSelected ? 3.5 : 2;
+				ctx.strokeStyle = isSelected ? '#14212B' : borderColor;
+				ctx.stroke();
+
+				// Icono central (Físico vs Lógico)
+				ctx.font = '11px sans-serif';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.fillStyle = '#14212B';
+				ctx.fillText(n.type === 'Físico' ? '🖥️' : '☁️', n.x, n.y - 1);
+
+				// Nombre del activo
+				ctx.font = `${isSelected ? 'bold 12px' : '600 11px'} "Plus Jakarta Sans", sans-serif`;
+				ctx.fillStyle = isSelected ? '#14212B' : '#334155';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'top';
+				ctx.fillText(n.label, n.x, n.y + nodeRadius + 5);
+
+				// IP o Categoría
+				ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+				ctx.fillStyle = '#94a3b8';
+				ctx.fillText(n.ip || n.category, n.x, n.y + nodeRadius + 20);
+			});
+
+			ctx.restore();
+		}
+
+		// Coordenadas mundiales desde pantalla
+		function screenToWorld(sx, sy) {
+			return {
+				x: (sx - panX) / zoom,
+				y: (sy - panY) / zoom,
+			};
+		}
+
+		function findNodeAt(sx, sy) {
+			const w = screenToWorld(sx, sy);
+			for (let i = nodes.length - 1; i >= 0; i--) {
+				const n = nodes[i];
+				const dx = n.x - w.x;
+				const dy = n.y - w.y;
+				if (Math.sqrt(dx * dx + dy * dy) <= nodeRadius + 4) {
+					return n;
+				}
+			}
+			return null;
+		}
+
+		// Eventos de ratón para interactividad
+		canvas.addEventListener('mousedown', e => {
+			const rect = canvas.getBoundingClientRect();
+			const sx = e.clientX - rect.left;
+			const sy = e.clientY - rect.top;
+			const hit = findNodeAt(sx, sy);
+
+			if (hit) {
+				draggedNode = hit;
+				selectedNode = hit;
+				showNodeDetails(hit);
+			} else {
+				isDragging = true;
+				dragStartX = sx - panX;
+				dragStartY = sy - panY;
+			}
+			render();
+		});
+
+		window.addEventListener('mousemove', e => {
+			const rect = canvas.getBoundingClientRect();
+			const sx = e.clientX - rect.left;
+			const sy = e.clientY - rect.top;
+
+			if (draggedNode) {
+				const w = screenToWorld(sx, sy);
+				draggedNode.x = w.x;
+				draggedNode.y = w.y;
+				render();
+				return;
+			}
+
+			if (isDragging) {
+				panX = sx - dragStartX;
+				panY = sy - dragStartY;
+				render();
+				return;
+			}
+
+			const hit = findNodeAt(sx, sy);
+			if (hit !== hoveredNode) {
+				hoveredNode = hit;
+				canvas.style.cursor = hit ? 'pointer' : 'grab';
+				render();
+			}
+		});
+
+		window.addEventListener('mouseup', () => {
+			draggedNode = null;
+			isDragging = false;
+		});
+
+		// Zoom con rueda de ratón
+		canvas.addEventListener('wheel', e => {
+			e.preventDefault();
+			const rect = canvas.getBoundingClientRect();
+			const sx = e.clientX - rect.left;
+			const sy = e.clientY - rect.top;
+			const wBefore = screenToWorld(sx, sy);
+
+			const factor = e.deltaY < 0 ? 1.12 : 0.88;
+			zoom = Math.min(Math.max(zoom * factor, 0.35), 2.8);
+
+			panX = sx - wBefore.x * zoom;
+			panY = sy - wBefore.y * zoom;
+			render();
+		}, { passive: false });
+
+		// Botones de control de cámara
+		if (btnZoomIn) {
+			btnZoomIn.addEventListener('click', () => {
+				zoom = Math.min(zoom * 1.2, 2.8);
+				render();
+			});
+		}
+		if (btnZoomOut) {
+			btnZoomOut.addEventListener('click', () => {
+				zoom = Math.max(zoom / 1.2, 0.35);
+				render();
+			});
+		}
+		if (btnFitGraph) {
+			btnFitGraph.addEventListener('click', () => {
+				panX = width / 2;
+				panY = height / 2;
+				zoom = 1;
+				render();
+			});
+		}
+
+		// Buscador de nodos
+		if (searchInput) {
+			searchInput.addEventListener('input', () => {
+				const term = searchInput.value.toLowerCase().trim();
+				if (term) {
+					const found = nodes.find(n => n.label.toLowerCase().includes(term));
+					if (found) {
+						selectedNode = found;
+						panX = width / 2 - found.x * zoom;
+						panY = height / 2 - found.y * zoom;
+						showNodeDetails(found);
+					}
+				}
+				render();
+			});
+		}
+
+		// Panel de detalle lateral
+		function showNodeDetails(node) {
+			if (!detailsDrawer || !detailsContent) return;
+
+			// Dependencias entrantes y salientes
+			const incoming = edges.filter(e => e.to === node.id).map(e => ({
+				asset: nodeMap[e.from],
+				label: e.label,
+				type: e.type,
+			}));
+
+			const outgoing = edges.filter(e => e.from === node.id).map(e => ({
+				asset: nodeMap[e.to],
+				label: e.label,
+				type: e.type,
+			}));
+
+			let incomingHtml = '';
+			if (incoming.length > 0) {
+				incomingHtml = incoming.map(r => `
+					<div class="p-2 mb-1 rounded bg-light border small d-flex align-items-center justify-content-between gap-2">
+						<div class="min-w-0 flex-grow-1">
+							<div class="fw-semibold text-dark text-truncate">${r.asset.label}</div>
+							<div class="text-muted" style="font-size: 10px;">${r.label}</div>
+						</div>
+						<span class="badge bg-secondary-subtle text-secondary flex-shrink-0" style="font-size: 10px;">Origen</span>
+					</div>
+				`).join('');
+			} else {
+				incomingHtml = '<div class="small text-muted fst-italic">Sin dependencias entrantes</div>';
+			}
+
+			let outgoingHtml = '';
+			if (outgoing.length > 0) {
+				outgoingHtml = outgoing.map(r => `
+					<div class="p-2 mb-1 rounded bg-light border small d-flex align-items-center justify-content-between gap-2">
+						<div class="min-w-0 flex-grow-1">
+							<div class="fw-semibold text-dark text-truncate">${r.asset.label}</div>
+							<div class="text-muted" style="font-size: 10px;">${r.label}</div>
+						</div>
+						<span class="badge bg-primary-subtle text-primary flex-shrink-0" style="font-size: 10px;">Destino</span>
+					</div>
+				`).join('');
+			} else {
+				outgoingHtml = '<div class="small text-muted fst-italic">Sin dependencias salientes</div>';
+			}
+
+			detailsContent.innerHTML = `
+				<div class="mb-3">
+					<div class="h5 fw-bold text-dark mb-1">${node.label}</div>
+					<div class="badge bg-light text-dark border">${node.type} · ${node.category}</div>
+				</div>
+				<div class="small text-muted mb-3">${node.description || 'Sin descripción técnica registrada.'}</div>
+				
+				<div class="mb-3 small">
+					<div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
+						<span class="text-secondary flex-shrink-0" style="min-width: 95px;">Estado:</span>
+						<span class="fw-semibold text-end ${node.status === 'Activo' ? 'text-success' : 'text-warning'}">${node.status}</span>
+					</div>
+					<div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
+						<span class="text-secondary flex-shrink-0" style="min-width: 95px;">Dirección IP:</span>
+						<span class="font-monospace text-dark text-end">${node.ip || 'No asignada'}</span>
+					</div>
+					<div class="d-flex justify-content-between align-items-start gap-3 py-2 border-bottom">
+						<span class="text-secondary flex-shrink-0" style="min-width: 95px;">Ubicación:</span>
+						<span class="text-dark text-end flex-grow-1">${node.location || 'No especificada'}</span>
+					</div>
+					<div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
+						<span class="text-secondary flex-shrink-0" style="min-width: 95px;">Tenant:</span>
+						<span class="text-dark text-end">${node.tenant}</span>
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<div class="small fw-bold text-uppercase text-secondary mb-2" style="font-size: 11px;">Recursos que lo alimentan (In)</div>
+					${incomingHtml}
+				</div>
+
+				<div class="mb-3">
+					<div class="small fw-bold text-uppercase text-secondary mb-2" style="font-size: 11px;">Servicios dependientes (Out)</div>
+					${outgoingHtml}
+				</div>
+			`;
+
+			detailsDrawer.classList.remove('d-none');
+			detailsDrawer.classList.add('d-flex');
+		}
+
+		if (btnCloseDetails) {
+			btnCloseDetails.addEventListener('click', () => {
+				detailsDrawer.classList.add('d-none');
+				detailsDrawer.classList.remove('d-flex');
+				selectedNode = null;
+				render();
+			});
+		}
+
+		// Responsive resize
+		window.addEventListener('resize', () => {
+			width = container.clientWidth;
+			height = container.clientHeight;
+			canvas.width = width;
+			canvas.height = height;
+			render();
+		});
+
+		// Modal Eliminar Relación
+		const modalDeleteRel = document.getElementById('modalDeleteRelationship');
+		const formDeleteRel = document.getElementById('formDeleteRelationship');
+		const deleteDesc = document.getElementById('delete_rel_display_name');
+
+		if (modalDeleteRel && !modalDeleteRel.dataset.initialized) {
+			modalDeleteRel.dataset.initialized = 'true';
+			modalDeleteRel.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-delete-rel') || event.relatedTarget) : null;
+				if (!btn) return;
+				const id = btn.dataset.relId;
+				const desc = btn.dataset.relDesc || 'esta relación';
+
+				if (formDeleteRel) formDeleteRel.action = `/cmdb/topology/relationship/${id}/delete`;
+				if (deleteDesc) deleteDesc.textContent = desc;
+			});
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initTopologyApp);
+	} else {
+		initTopologyApp();
+	}
+	document.addEventListener('turbo:load', initTopologyApp);
+})();
+</script>
+{% endblock %}

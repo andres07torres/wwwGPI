@@ -6,10 +6,12 @@ namespace App\Tests\Controller;
 
 use App\Entity\CiCategory;
 use App\Entity\CiItem;
+use App\Entity\CiRelationship;
 use App\Entity\Tenant;
 use App\Entity\User;
 use App\Enum\CiCategoryType;
 use App\Enum\CiItemStatus;
+use App\Enum\CiRelationshipType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -152,5 +154,129 @@ final class CmdbControllerTest extends WebTestCase
             $em->remove($userToRemove);
             $em->flush();
         }
+    }
+
+    public function testTopologyPageRedirectsAnonymousUser(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/cmdb/topology');
+
+        $this->assertResponseRedirects('http://localhost/');
+    }
+
+    public function testTopologyPageLoadsForAuthenticatedUser(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+
+        $testEmail = 'topology_test_user@example.com';
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $testEmail]);
+        if (!$user) {
+            $user = new User();
+            $user->setName('Topology Test User');
+            $user->setUsername('topology_test_user');
+            $user->setEmail($testEmail);
+            $user->setPassword($hasher->hashPassword($user, 'Password123#'));
+            $em->persist($user);
+            $em->flush();
+        }
+
+        $client->loginUser($user);
+        $crawler = $client->request('GET', '/cmdb/topology');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Mapa de Topología');
+        $this->assertSelectorExists('#topologyCanvas');
+        $this->assertSelectorExists('#modalCreateRelationship');
+        $this->assertSelectorExists('#modalDeleteRelationship');
+
+        // Cleanup user
+        $em->remove($user);
+        $em->flush();
+    }
+
+    public function testCreateAndDeleteRelationship(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+
+        $testEmail = 'topology_rel_user@example.com';
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $testEmail]);
+        if (!$user) {
+            $user = new User();
+            $user->setName('Topology Rel User');
+            $user->setUsername('topology_rel_user');
+            $user->setEmail($testEmail);
+            $user->setPassword($hasher->hashPassword($user, 'Password123#'));
+            $em->persist($user);
+            $em->flush();
+        }
+
+        $client->loginUser($user);
+        $crawler = $client->request('GET', '/cmdb/topology');
+        $this->assertResponseIsSuccessful();
+
+        // Asegurar la existencia de al menos 2 activos
+        $category = $em->getRepository(CiCategory::class)->findOneBy([]);
+        $tenant = $em->getRepository(Tenant::class)->findOneBy([]);
+
+        $parentCi = new CiItem();
+        $parentCi->setName('SRV-PARENT-01');
+        $parentCi->setCategory($category);
+        $parentCi->setTenant($tenant);
+        $parentCi->setStatus(CiItemStatus::ACTIVO);
+        $em->persist($parentCi);
+
+        $childCi = new CiItem();
+        $childCi->setName('APP-CHILD-01');
+        $childCi->setCategory($category);
+        $childCi->setTenant($tenant);
+        $childCi->setStatus(CiItemStatus::ACTIVO);
+        $em->persist($childCi);
+        $em->flush();
+
+        // 1. Crear relación
+        $crawler = $client->request('GET', '/cmdb/topology');
+        $token = $crawler->filter('#modalCreateRelationship input[name="_csrf_token"]')->attr('value');
+
+        $client->request('POST', '/cmdb/topology/relationship/create', [
+            '_csrf_token' => $token,
+            'parent_ci_id' => $parentCi->getId()->toRfc4122(),
+            'child_ci_id' => $childCi->getId()->toRfc4122(),
+            'relationship_type' => CiRelationshipType::DEPENDS_ON->value,
+        ]);
+
+        $this->assertResponseRedirects('/cmdb/topology');
+
+        $em->clear();
+        $rel = $em->getRepository(CiRelationship::class)->findOneBy([
+            'relationshipType' => CiRelationshipType::DEPENDS_ON,
+        ]);
+        $this->assertNotNull($rel);
+
+        // 2. Eliminar relación
+        $crawler = $client->request('GET', '/cmdb/topology');
+        $deleteToken = $crawler->filter('#modalDeleteRelationship input[name="_csrf_token"]')->attr('value');
+
+        $client->request('POST', sprintf('/cmdb/topology/relationship/%d/delete', $rel->getId()), [
+            '_csrf_token' => $deleteToken,
+        ]);
+
+        $this->assertResponseRedirects('/cmdb/topology');
+
+        $em->clear();
+        $deletedRel = $em->getRepository(CiRelationship::class)->find($rel->getId());
+        $this->assertNull($deletedRel);
+
+        // Cleanup items & user
+        $p = $em->getRepository(CiItem::class)->find($parentCi->getId());
+        if ($p) $em->remove($p);
+        $c = $em->getRepository(CiItem::class)->find($childCi->getId());
+        if ($c) $em->remove($c);
+        $u = $em->getRepository(User::class)->find($user->getId());
+        if ($u) $em->remove($u);
+        $em->flush();
     }
 }

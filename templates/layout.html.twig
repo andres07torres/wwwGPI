@@ -72,7 +72,7 @@
 					<div class="collapse {{ is_cmdb_route ? 'show' : '' }}" id="menuCMDB">
 						<ul class="sidebar-submenu">
 							<li><a href="{{ path('app_cmdb_asset_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_cmdb_asset_' ? 'active' : '' }}">Inventario de Activos</a></li>
-							<li><a href="#" class="sidebar-sublink">Mapa de Topología</a></li>
+							<li><a href="{{ path('app_cmdb_topology_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_cmdb_topology_' ? 'active' : '' }}">Mapa de Topología</a></li>
 						</ul>
 					</div>
 				</li>
