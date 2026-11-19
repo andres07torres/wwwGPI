@@ -242,17 +242,11 @@
 							</td>
 							<td class="py-3 text-center">
 								{% if rel.relationshipType.value == 'depends_on' %}
-									<span class="badge bg-indigo-subtle text-primary border border-primary-subtle px-2 py-1 small rounded-pill">
-										↳ Depende de
-									</span>
+									<span class="small fw-semibold text-primary">Depende de</span>
 								{% elseif rel.relationshipType.value == 'hosted_on' %}
-									<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1 small rounded-pill">
-										⌂ Alojado en
-									</span>
+									<span class="small fw-semibold text-info-emphasis">Alojado en</span>
 								{% else %}
-									<span class="badge bg-secondary-subtle text-secondary-emphasis border px-2 py-1 small rounded-pill">
-										⇄ Conectado a
-									</span>
+									<span class="small fw-semibold text-secondary">Conectado a</span>
 								{% endif %}
 							</td>
 							<td class="py-3">
