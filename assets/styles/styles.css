@@ -1293,7 +1293,8 @@ a:hover {
 /* ==========================================================================
    7. MÓDULO DE USUARIOS Y TABLAS DE DATOS
    ========================================================================== */
-.user-module-wrapper {
+.user-module-wrapper,
+.ci-module-wrapper {
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -1371,7 +1372,8 @@ a:hover {
   transition: background-color 0.15s ease-in-out;
 }
 
-.btn-create-user {
+.btn-create-user,
+.btn-create-ci-item {
   white-space: nowrap !important;
   height: 40px;
   display: inline-flex;
@@ -1388,7 +1390,8 @@ a:hover {
   color: #FFFFFF !important;
 }
 
-.btn-create-user:hover {
+.btn-create-user:hover,
+.btn-create-ci-item:hover {
   background-color: #1E2F3D !important;
   border-color: #1E2F3D !important;
   color: #FFFFFF !important;
@@ -1396,7 +1399,8 @@ a:hover {
   box-shadow: 0 4px 10px rgba(20, 33, 43, 0.3);
 }
 
-.btn-create-user:active {
+.btn-create-user:active,
+.btn-create-ci-item:active {
   transform: translateY(0);
 }
 
@@ -1531,9 +1535,10 @@ a:hover {
    KPI INDICATORS CORPORATIVOS (COLOR DEL NAVBAR #14212B)
    ========================================================================== */
 .kpi-icon-panel {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  flex-shrink: 0;
   border-radius: 12px;
   background-color: var(--panel) !important;
   color: #FFFFFF !important;
@@ -1541,6 +1546,19 @@ a:hover {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(20, 33, 43, 0.22);
+}
+
+@media (max-width: 576px) {
+  .kpi-icon-panel {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 9px;
+  }
+  .kpi-icon-panel svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
 }
 
 .modal-icon-panel {

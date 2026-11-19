@@ -57,21 +57,21 @@
 				</li>
 
 				<!-- 2. CMDB -->
+				{% set is_cmdb_route = app.request.attributes.get('_route') starts with 'app_cmdb_' %}
 				<li>
-					<a class="sidebar-link" data-bs-toggle="collapse" href="#menuCMDB" role="button" aria-expanded="false" aria-controls="menuCMDB">
+					<a class="sidebar-link {{ is_cmdb_route ? 'active' : '' }}" data-bs-toggle="collapse" href="#menuCMDB" role="button" aria-expanded="{{ is_cmdb_route ? 'true' : 'false' }}" aria-controls="menuCMDB">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
 							<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
 							<line x1="6" y1="6" x2="6.01" y2="6"/>
 							<line x1="6" y1="18" x2="6.01" y2="18"/>
 						</svg>
-						<span>CMDB</span>
+						<span>Infraestructura & Activos</span>
 						<svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
 					</a>
-					<div class="collapse" id="menuCMDB">
+					<div class="collapse {{ is_cmdb_route ? 'show' : '' }}" id="menuCMDB">
 						<ul class="sidebar-submenu">
-							<li><a href="#" class="sidebar-sublink">Activos Físicos</a></li>
-							<li><a href="#" class="sidebar-sublink">Activos Lógicos</a></li>
+							<li><a href="{{ path('app_cmdb_asset_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_cmdb_asset_' ? 'active' : '' }}">Inventario de Activos</a></li>
 							<li><a href="#" class="sidebar-sublink">Mapa de Topología</a></li>
 						</ul>
 					</div>

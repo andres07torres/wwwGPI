@@ -1,0 +1,705 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Inventario de Activos{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo con Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Infraestructura & Activos</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Inventario de Activos</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Inventario de Activos</h1>
+				<p class="text-muted mb-0">
+					Centraliza el inventario, clasificación, especificaciones de red y estado operativo de los activos e infraestructura TI.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateCiItem">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"/>
+						<line x1="5" y1="12" x2="19" y2="12"/>
+					</svg>
+					<span>Nuevo Activo</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Resumen Rápido de Indicadores (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Total Activos -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Total Activos">Total Activos</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ totalCount }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Total de Activos Registrados">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+							<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+							<line x1="6" y1="6" x2="6.01" y2="6"/>
+							<line x1="6" y1="18" x2="6.01" y2="18"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: Activos Físicos -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Activos Físicos">Activos Físicos</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ physicalCount }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Activos Físicos">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+							<rect x="9" y="9" width="6" height="6"/>
+							<line x1="9" y1="1" x2="9" y2="4"/>
+							<line x1="15" y1="1" x2="15" y2="4"/>
+							<line x1="9" y1="20" x2="9" y2="23"/>
+							<line x1="15" y1="20" x2="15" y2="23"/>
+							<line x1="20" y1="9" x2="23" y2="9"/>
+							<line x1="20" y1="14" x2="23" y2="14"/>
+							<line x1="1" y1="9" x2="4" y2="9"/>
+							<line x1="1" y1="14" x2="4" y2="14"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Activos Lógicos -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Activos Lógicos">Activos Lógicos</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ logicalCount }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Activos Lógicos">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: En Mantenimiento -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="En Mantenimiento">Mantenimiento</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ maintenanceCount }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Activos en Mantenimiento">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tarjeta Principal con Filtros y Tabla -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+		<!-- Filtros de búsqueda idénticos al módulo de Tickets -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="row g-2 align-items-center">
+				<div class="col-12 col-md-6">
+					<div class="position-relative">
+						<input type="text" id="ciSearchInput" class="form-control form-control-sm ps-4" placeholder="Buscar por código, nombre, IP, serie...">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+				<div class="col-6 col-md-2">
+					<select id="filterType" class="form-select form-select-sm">
+						<option value="">Todos los tipos</option>
+						<option value="Fisico">Físico</option>
+						<option value="Logico">Lógico</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<select id="filterCategory" class="form-select form-select-sm">
+						<option value="">Todas las categorías</option>
+						{% for cat in categories %}
+							<option value="{{ cat.name }}">{{ cat.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<select id="filterStatus" class="form-select form-select-sm">
+						<option value="">Todos los estados</option>
+						{% for st in statuses %}
+							<option value="{{ st.value }}">{{ st.value }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tabla de Activos -->
+		<div class="table-responsive">
+			<table class="table align-middle table-hover mb-0" id="ciItemsTable">
+				<thead class="table-light">
+					<tr>
+						<th class="ps-3 py-3 text-secondary text-uppercase small fw-bold" style="width: 25%;">Activo / CI</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 11%;">Tipo</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 16%;">Categoría</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 17%;">Red & Serie</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 13%;">Ubicación</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 10%;">Estado</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold text-end pe-3" style="width: 8%;">Acción</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in items %}
+						{% set is_fisico = item.category and item.category.type.value == 'Fisico' %}
+						<tr class="ci-row"
+							data-search="{{ item.name }} {{ item.category ? item.category.name : '' }} {{ item.serialNumber }} {{ item.ipAddress }} {{ item.macAddress }} {{ item.location }} {{ item.status.value }}"
+							data-id="{{ item.id.toRfc4122 }}"
+							data-name="{{ item.name }}"
+							data-category-id="{{ item.category ? item.category.id : '' }}"
+							data-category-name="{{ item.category ? item.category.name : '' }}"
+							data-type="{{ item.category ? item.category.type.value : 'Fisico' }}"
+							data-tenant-id="{{ item.tenant ? item.tenant.id.toRfc4122 : '' }}"
+							data-status="{{ item.status.value }}"
+							data-serial="{{ item.serialNumber|default('') }}"
+							data-ip="{{ item.ipAddress|default('') }}"
+							data-mac="{{ item.macAddress|default('') }}"
+							data-location="{{ item.location|default('') }}"
+							data-description="{{ item.description|default('') }}"
+						>
+							<!-- Columna Activo: Icono + Nombre + Descripción -->
+							<td class="ps-3 py-3">
+								<div class="d-flex align-items-center gap-3">
+									<div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background-color: #f1f5f9; color: var(--panel, #14212B);">
+										{% if is_fisico %}
+											<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+												<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+												<line x1="6" y1="6" x2="6.01" y2="6"/>
+												<line x1="6" y1="18" x2="6.01" y2="18"/>
+											</svg>
+										{% else %}
+											<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<polyline points="16 18 22 12 16 6"/>
+												<polyline points="8 6 2 12 8 18"/>
+											</svg>
+										{% endif %}
+									</div>
+									<div class="min-w-0">
+										<div class="fw-bold text-dark text-truncate">{{ item.name }}</div>
+										<div class="small text-muted text-truncate" style="max-width: 240px;">
+											{{ item.description|default('Sin descripción') }}
+										</div>
+									</div>
+								</div>
+							</td>
+
+							<!-- Columna Tipo -->
+							<td class="py-3">
+								{% if is_fisico %}
+									<span class="small fw-semibold text-primary">Físico</span>
+								{% else %}
+									<span class="small fw-semibold text-info">Lógico</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna Categoría -->
+							<td class="py-3">
+								<div class="small fw-medium text-dark">{{ item.category ? item.category.name : 'Sin categoría' }}</div>
+								<div class="small text-muted" style="font-size: 11px;">
+									{{ item.tenant ? item.tenant.name : 'Default' }}
+								</div>
+							</td>
+
+							<!-- Columna Red & Serie -->
+							<td class="py-3">
+								{% if item.ipAddress or item.serialNumber %}
+									{% if item.ipAddress %}
+										<div class="small text-dark font-monospace"><span class="text-muted">IP:</span> {{ item.ipAddress }}</div>
+									{% endif %}
+									{% if item.serialNumber %}
+										<div class="small text-muted font-monospace"><span class="text-muted">S/N:</span> {{ item.serialNumber }}</div>
+									{% endif %}
+								{% else %}
+									<span class="small text-muted">No especificado</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna Ubicación -->
+							<td class="py-3">
+								<span class="small text-dark">{{ item.location|default('Sin ubicación') }}</span>
+							</td>
+
+							<!-- Columna Estado -->
+							<td class="py-3">
+								{% if item.status.value == 'Activo' %}
+									<span class="small fw-semibold text-success d-inline-flex align-items-center gap-1">
+										<span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
+										Activo
+									</span>
+								{% elseif item.status.value == 'Mantenimiento' %}
+									<span class="small fw-semibold text-warning d-inline-flex align-items-center gap-1">
+										<span class="rounded-circle bg-warning" style="width: 6px; height: 6px;"></span>
+										Mantenimiento
+									</span>
+								{% else %}
+									<span class="small fw-semibold text-secondary d-inline-flex align-items-center gap-1">
+										<span class="rounded-circle bg-secondary" style="width: 6px; height: 6px;"></span>
+										Dado de Baja
+									</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna Acción: Editar, Eliminar -->
+							<td class="py-3 text-end pe-3">
+								<div class="d-inline-flex align-items-center gap-1">
+									<!-- Botón Editar -->
+									<button type="button" 
+										class="btn btn-sm btn-outline-panel btn-icon-action btn-edit-ci" 
+										title="Editar activo" 
+										aria-label="Editar activo"
+										data-bs-toggle="modal" 
+										data-bs-target="#modalEditCiItem"
+										data-ci-id="{{ item.id.toRfc4122 }}"
+										data-ci-name="{{ item.name|e('html_attr') }}"
+										data-ci-category-id="{{ item.category ? item.category.id : '' }}"
+										data-ci-tenant-id="{{ item.tenant ? item.tenant.id.toRfc4122 : '' }}"
+										data-ci-status="{{ item.status.value }}"
+										data-ci-serial="{{ item.serialNumber|default('')|e('html_attr') }}"
+										data-ci-ip="{{ item.ipAddress|default('')|e('html_attr') }}"
+										data-ci-mac="{{ item.macAddress|default('')|e('html_attr') }}"
+										data-ci-location="{{ item.location|default('')|e('html_attr') }}"
+										data-ci-description="{{ item.description|default('')|e('html_attr') }}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+										</svg>
+									</button>
+
+									<!-- Botón Eliminar -->
+									<button type="button" 
+										class="btn btn-sm btn-outline-danger btn-icon-action btn-delete-ci" 
+										title="Eliminar activo" 
+										aria-label="Eliminar activo"
+										data-bs-toggle="modal" 
+										data-bs-target="#modalDeleteCiItem"
+										data-ci-id="{{ item.id.toRfc4122 }}"
+										data-ci-name="{{ item.name|e('html_attr') }}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<polyline points="3 6 5 6 21 6"/>
+											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+											<line x1="10" y1="11" x2="10" y2="17"/>
+											<line x1="14" y1="11" x2="14" y2="17"/>
+										</svg>
+									</button>
+								</div>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="7" class="text-center py-5 text-muted">
+								<div class="d-flex flex-column align-items-center justify-content-center">
+									<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 opacity-50">
+										<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+										<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+										<line x1="6" y1="6" x2="6.01" y2="6"/>
+										<line x1="6" y1="18" x2="6.01" y2="18"/>
+									</svg>
+									<div class="fw-semibold text-dark">No hay activos registrados todavía</div>
+									<div class="small text-muted mt-1">Haz clic en "Nuevo Activo" para registrar el primer elemento de configuración.</div>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+{# =====================================================================
+   1. MODAL: REGISTRAR NUEVO ACTIVO (CI)
+   ===================================================================== #}
+<div class="modal fade" id="modalCreateCiItem" tabindex="-1" aria-labelledby="modalCreateCiItemLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content border-0 shadow">
+			<form action="{{ path('app_cmdb_asset_create') }}" method="post" id="formCreateCiItem">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_ci_item') }}">
+				
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalCreateCiItemLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--panel, #14212B);">
+							<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+							<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+							<line x1="6" y1="6" x2="6.01" y2="6"/>
+							<line x1="6" y1="18" x2="6.01" y2="18"/>
+						</svg>
+						<span>Registrar Nuevo Activo de Infraestructura</span>
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3 mb-3">
+						<div class="col-md-7">
+							<label for="create_ci_name" class="form-label small fw-semibold text-secondary">Nombre del Activo <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" id="create_ci_name" name="name" required placeholder="ej. SRV-PROD-APP01 ó SW-CORE-RACKA">
+						</div>
+						<div class="col-md-5">
+							<label for="create_ci_status" class="form-label small fw-semibold text-secondary">Estado Operativo <span class="text-danger">*</span></label>
+							<select class="form-select" id="create_ci_status" name="status" required>
+								{% for st in statuses %}
+									<option value="{{ st.value }}">{{ st.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-md-6">
+							<label for="create_ci_category" class="form-label small fw-semibold text-secondary">Categoría del Activo <span class="text-danger">*</span></label>
+							<select class="form-select" id="create_ci_category" name="category_id" required>
+								<option value="">Selecciona una categoría...</option>
+								<optgroup label="Activos Físicos">
+									{% for cat in categories %}
+										{% if cat.type.value == 'Fisico' %}
+											<option value="{{ cat.id }}">{{ cat.name }}</option>
+										{% endif %}
+									{% endfor %}
+								</optgroup>
+								<optgroup label="Activos Lógicos">
+									{% for cat in categories %}
+										{% if cat.type.value == 'Logico' %}
+											<option value="{{ cat.id }}">{{ cat.name }}</option>
+										{% endif %}
+									{% endfor %}
+								</optgroup>
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label for="create_ci_tenant" class="form-label small fw-semibold text-secondary">Organización / Tenant</label>
+							<select class="form-select" id="create_ci_tenant" name="tenant_id">
+								{% for t in tenants %}
+									<option value="{{ t.id.toRfc4122 }}">{{ t.name }} ({{ t.domain }})</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-md-4">
+							<label for="create_ci_ip" class="form-label small fw-semibold text-secondary">Dirección IP</label>
+							<input type="text" class="form-control" id="create_ci_ip" name="ip_address" placeholder="192.168.1.10">
+						</div>
+						<div class="col-md-4">
+							<label for="create_ci_mac" class="form-label small fw-semibold text-secondary">Dirección MAC</label>
+							<input type="text" class="form-control" id="create_ci_mac" name="mac_address" placeholder="00:1A:2B:3C:4D:5E">
+						</div>
+						<div class="col-md-4">
+							<label for="create_ci_serial" class="form-label small fw-semibold text-secondary">Número de Serie / Licencia</label>
+							<input type="text" class="form-control" id="create_ci_serial" name="serial_number" placeholder="SN-987654321">
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="create_ci_location" class="form-label small fw-semibold text-secondary">Ubicación Física o Lógica</label>
+						<input type="text" class="form-control" id="create_ci_location" name="location" placeholder="ej. Centro de Cómputo Principal - Rack A, U12 / Nube AWS us-east-1">
+					</div>
+
+					<div class="mb-2">
+						<label for="create_ci_description" class="form-label small fw-semibold text-secondary">Descripción y Observaciones</label>
+						<textarea class="form-control" id="create_ci_description" name="description" rows="3" placeholder="Detalles de hardware, sistema operativo, propósito o notas técnicas..."></textarea>
+					</div>
+				</div>
+
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-2">
+					<button type="submit" class="btn btn-panel-action">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{# =====================================================================
+   2. MODAL: EDITAR ACTIVO (CI)
+   ===================================================================== #}
+<div class="modal fade" id="modalEditCiItem" tabindex="-1" aria-labelledby="modalEditCiItemLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content border-0 shadow">
+			<form action="" method="post" id="formEditCiItem">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('edit_ci_item') }}">
+				
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalEditCiItemLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--panel, #14212B);">
+							<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+						</svg>
+						<span>Editar Activo de Infraestructura</span>
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3 mb-3">
+						<div class="col-md-7">
+							<label for="edit_ci_name" class="form-label small fw-semibold text-secondary">Nombre del Activo <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" id="edit_ci_name" name="name" required placeholder="ej. SRV-PROD-APP01">
+						</div>
+						<div class="col-md-5">
+							<label for="edit_ci_status" class="form-label small fw-semibold text-secondary">Estado Operativo <span class="text-danger">*</span></label>
+							<select class="form-select" id="edit_ci_status" name="status" required>
+								{% for st in statuses %}
+									<option value="{{ st.value }}">{{ st.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-md-6">
+							<label for="edit_ci_category" class="form-label small fw-semibold text-secondary">Categoría del Activo <span class="text-danger">*</span></label>
+							<select class="form-select" id="edit_ci_category" name="category_id" required>
+								<option value="">Selecciona una categoría...</option>
+								<optgroup label="Activos Físicos">
+									{% for cat in categories %}
+										{% if cat.type.value == 'Fisico' %}
+											<option value="{{ cat.id }}">{{ cat.name }}</option>
+										{% endif %}
+									{% endfor %}
+								</optgroup>
+								<optgroup label="Activos Lógicos">
+									{% for cat in categories %}
+										{% if cat.type.value == 'Logico' %}
+											<option value="{{ cat.id }}">{{ cat.name }}</option>
+										{% endif %}
+									{% endfor %}
+								</optgroup>
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label for="edit_ci_tenant" class="form-label small fw-semibold text-secondary">Organización / Tenant</label>
+							<select class="form-select" id="edit_ci_tenant" name="tenant_id">
+								{% for t in tenants %}
+									<option value="{{ t.id.toRfc4122 }}">{{ t.name }} ({{ t.domain }})</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-md-4">
+							<label for="edit_ci_ip" class="form-label small fw-semibold text-secondary">Dirección IP</label>
+							<input type="text" class="form-control" id="edit_ci_ip" name="ip_address" placeholder="192.168.1.10">
+						</div>
+						<div class="col-md-4">
+							<label for="edit_ci_mac" class="form-label small fw-semibold text-secondary">Dirección MAC</label>
+							<input type="text" class="form-control" id="edit_ci_mac" name="mac_address" placeholder="00:1A:2B:3C:4D:5E">
+						</div>
+						<div class="col-md-4">
+							<label for="edit_ci_serial" class="form-label small fw-semibold text-secondary">Número de Serie / Licencia</label>
+							<input type="text" class="form-control" id="edit_ci_serial" name="serial_number" placeholder="SN-987654321">
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="edit_ci_location" class="form-label small fw-semibold text-secondary">Ubicación Física o Lógica</label>
+						<input type="text" class="form-control" id="edit_ci_location" name="location" placeholder="ej. Rack A, U12 / Nube AWS">
+					</div>
+
+					<div class="mb-2">
+						<label for="edit_ci_description" class="form-label small fw-semibold text-secondary">Descripción y Observaciones</label>
+						<textarea class="form-control" id="edit_ci_description" name="description" rows="3"></textarea>
+					</div>
+				</div>
+
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-2">
+					<button type="submit" class="btn btn-panel-action">Guardar Cambios</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{# =====================================================================
+   3. MODAL: ELIMINAR ACTIVO (CI)
+   ===================================================================== #}
+<div class="modal fade" id="modalDeleteCiItem" tabindex="-1" aria-labelledby="modalDeleteCiItemLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-sm">
+		<div class="modal-content border-0 shadow">
+			<form action="" method="post" id="formDeleteCiItem">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('delete_ci_item') }}">
+				
+				<div class="modal-body text-center p-4">
+					<div class="avatar-circle-lg bg-danger-subtle text-danger mx-auto mb-3">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="3 6 5 6 21 6"/>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+							<line x1="10" y1="11" x2="10" y2="17"/>
+							<line x1="14" y1="11" x2="14" y2="17"/>
+						</svg>
+					</div>
+					<h5 class="fw-bold text-dark mb-1">¿Eliminar activo?</h5>
+					<p class="text-muted small mb-0">
+						Estás a punto de eliminar <strong class="text-dark" id="delete_ci_display_name">--</strong> del inventario. Esta acción no se puede deshacer.
+					</p>
+				</div>
+
+				<div class="modal-footer border-0 px-3 pb-3 pt-0 justify-content-center gap-2">
+					<button type="submit" class="btn btn-danger px-3 py-2 fw-semibold rounded-3">Sí, Eliminar</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+(function() {
+	function initCiModalsAndFilters() {
+		const searchInput = document.getElementById('ciSearchInput');
+		const typeFilter = document.getElementById('filterType');
+		const categoryFilter = document.getElementById('filterCategory');
+		const statusFilter = document.getElementById('filterStatus');
+
+		function applyFilters() {
+			const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
+			const selectedType = (typeFilter ? typeFilter.value : '').toLowerCase().trim();
+			const selectedCategory = (categoryFilter ? categoryFilter.value : '').toLowerCase().trim();
+			const selectedStatus = (statusFilter ? statusFilter.value : '').toLowerCase().trim();
+
+			document.querySelectorAll('.ci-row').forEach(row => {
+				const searchData = (row.dataset.search || '').toLowerCase();
+				const rowCategory = (row.dataset.categoryName || '').toLowerCase();
+				const rowStatus = (row.dataset.status || '').toLowerCase();
+				const rowType = (row.dataset.type || '').toLowerCase();
+
+				const matchesSearch = !searchTerm || searchData.includes(searchTerm);
+				const matchesType = !selectedType || rowType === selectedType;
+				const matchesCategory = !selectedCategory || rowCategory.includes(selectedCategory);
+				const matchesStatus = !selectedStatus || rowStatus === selectedStatus;
+
+				if (matchesSearch && matchesType && matchesCategory && matchesStatus) {
+					row.style.display = '';
+				} else {
+					row.style.display = 'none';
+				}
+			});
+		}
+
+		if (searchInput && !searchInput.dataset.initialized) {
+			searchInput.dataset.initialized = 'true';
+			searchInput.addEventListener('input', applyFilters);
+		}
+
+		if (typeFilter && !typeFilter.dataset.initialized) {
+			typeFilter.dataset.initialized = 'true';
+			typeFilter.addEventListener('change', applyFilters);
+		}
+
+		if (categoryFilter && !categoryFilter.dataset.initialized) {
+			categoryFilter.dataset.initialized = 'true';
+			categoryFilter.addEventListener('change', applyFilters);
+		}
+
+		if (statusFilter && !statusFilter.dataset.initialized) {
+			statusFilter.dataset.initialized = 'true';
+			statusFilter.addEventListener('change', applyFilters);
+		}
+
+		// Modal Editar Activo (#modalEditCiItem)
+		const modalEditEl = document.getElementById('modalEditCiItem');
+		const formEdit = document.getElementById('formEditCiItem');
+		const editName = document.getElementById('edit_ci_name');
+		const editCategory = document.getElementById('edit_ci_category');
+		const editTenant = document.getElementById('edit_ci_tenant');
+		const editStatus = document.getElementById('edit_ci_status');
+		const editSerial = document.getElementById('edit_ci_serial');
+		const editIp = document.getElementById('edit_ci_ip');
+		const editMac = document.getElementById('edit_ci_mac');
+		const editLocation = document.getElementById('edit_ci_location');
+		const editDesc = document.getElementById('edit_ci_description');
+
+		if (modalEditEl && !modalEditEl.dataset.initialized) {
+			modalEditEl.dataset.initialized = 'true';
+			modalEditEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-edit-ci') || event.relatedTarget) : null;
+				if (!btn) return;
+				const row = btn.closest('.ci-row');
+
+				const id = btn.dataset.ciId || (row ? row.dataset.id : '');
+				const name = btn.dataset.ciName || (row ? row.dataset.name : '');
+				const catId = btn.dataset.ciCategoryId || (row ? row.dataset.categoryId : '');
+				const tenantId = btn.dataset.ciTenantId || (row ? row.dataset.tenantId : '');
+				const status = btn.dataset.ciStatus || (row ? row.dataset.status : '');
+				const serial = btn.dataset.ciSerial || (row ? row.dataset.serial : '');
+				const ip = btn.dataset.ciIp || (row ? row.dataset.ip : '');
+				const mac = btn.dataset.ciMac || (row ? row.dataset.mac : '');
+				const location = btn.dataset.ciLocation || (row ? row.dataset.location : '');
+				const desc = btn.dataset.ciDescription || (row ? row.dataset.description : '');
+
+				if (formEdit) formEdit.action = `/cmdb/assets/${id}/edit`;
+				if (editName) editName.value = name || '';
+				if (editCategory) editCategory.value = catId || '';
+				if (editTenant) editTenant.value = tenantId || '';
+				if (editStatus) editStatus.value = status || 'Activo';
+				if (editSerial) editSerial.value = serial || '';
+				if (editIp) editIp.value = ip || '';
+				if (editMac) editMac.value = mac || '';
+				if (editLocation) editLocation.value = location || '';
+				if (editDesc) editDesc.value = desc || '';
+			});
+		}
+
+		// Modal Eliminar Activo (#modalDeleteCiItem)
+		const modalDeleteEl = document.getElementById('modalDeleteCiItem');
+		const formDelete = document.getElementById('formDeleteCiItem');
+		const deleteDisplayName = document.getElementById('delete_ci_display_name');
+
+		if (modalDeleteEl && !modalDeleteEl.dataset.initialized) {
+			modalDeleteEl.dataset.initialized = 'true';
+			modalDeleteEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-delete-ci') || event.relatedTarget) : null;
+				if (!btn) return;
+				const row = btn.closest('.ci-row');
+
+				const id = btn.dataset.ciId || (row ? row.dataset.id : '');
+				const name = btn.dataset.ciName || (row ? row.dataset.name : 'este activo');
+
+				if (formDelete) formDelete.action = `/cmdb/assets/${id}/delete`;
+				if (deleteDisplayName) deleteDisplayName.textContent = name;
+			});
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initCiModalsAndFilters);
+	} else {
+		initCiModalsAndFilters();
+	}
+	document.addEventListener('turbo:load', initCiModalsAndFilters);
+})();
+</script>
+{% endblock %}
