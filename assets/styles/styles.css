@@ -788,11 +788,15 @@ a:hover {
   height: 100%;
   /* Único contenedor con scroll vertical de la aplicación */
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .app-content {
   flex: 1;
   padding: 28px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
@@ -1342,6 +1346,30 @@ a:hover {
 .btn-icon-action:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.table-responsive {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .btn-outline-panel,
