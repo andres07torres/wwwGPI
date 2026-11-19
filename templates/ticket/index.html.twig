@@ -102,7 +102,7 @@
 			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
 				<div class="d-flex align-items-center justify-content-between gap-2">
 					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Resueltos / Cerrados">Resueltos</div>
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Resueltos / Cerrados">Resueltos / Cerrados</div>
 						<div class="h3 fw-bold text-dark mb-0 mt-1">
 							{{ tickets|filter(t => t.status.isClosedState)|length }}
 						</div>
@@ -116,7 +116,6 @@
 				</div>
 			</div>
 		</div>
-	</div>
 	</div>
 
 	<!-- Tarjeta Principal con Filtros y Tabla -->
