@@ -169,15 +169,13 @@
 			<!-- Leyenda visual flotante en la esquina inferior izquierda -->
 			<div class="position-absolute bottom-0 start-0 m-3 p-2 bg-white rounded-3 shadow-sm border small" style="opacity: 0.95; pointer-events: none; max-width: 280px; z-index: 10;">
 				<div class="fw-bold mb-1 text-dark" style="font-size: 11px;">Referencias de Topología</div>
-				<div class="d-flex align-items-center gap-2 mb-1" style="font-size: 11px;">
-					<span class="rounded-circle" style="width: 10px; height: 10px; background-color: #10b981; display: inline-block;"></span>
-					<span class="text-muted">Activo Operativo</span>
-					<span class="rounded-circle ms-2" style="width: 10px; height: 10px; background-color: #f59e0b; display: inline-block;"></span>
-					<span class="text-muted">Mantenimiento</span>
+				<div class="d-flex align-items-center gap-3 mb-1" style="font-size: 11px;">
+					<span class="fw-semibold" style="color: var(--panel, #14212B);">Físico [F]</span>
+					<span class="fw-semibold" style="color: var(--panel, #14212B);">Lógico [L]</span>
 				</div>
 				<div class="d-flex align-items-center gap-2" style="font-size: 10px;">
-					<span style="color: #6366f1;">━━</span> <span class="text-muted">Dependencia</span>
-					<span style="color: #0ea5e9;">╍╍</span> <span class="text-muted">Alojado en</span>
+					<span style="color: #4f46e5;">━━</span> <span class="text-muted">Dependencia</span>
+					<span style="color: #0284c7;">╍╍</span> <span class="text-muted">Alojado en</span>
 					<span style="color: #64748b;">┈┈</span> <span class="text-muted">Conexión</span>
 				</div>
 			</div>
@@ -614,12 +612,12 @@
 				ctx.strokeStyle = isSelected ? '#14212B' : borderColor;
 				ctx.stroke();
 
-				// Icono central (Físico vs Lógico)
-				ctx.font = '11px sans-serif';
+				// Letra central (Físico vs Lógico) sin emojis
+				ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
 				ctx.textAlign = 'center';
 				ctx.textBaseline = 'middle';
 				ctx.fillStyle = '#14212B';
-				ctx.fillText(n.type === 'Físico' ? '🖥️' : '☁️', n.x, n.y - 1);
+				ctx.fillText(n.type === 'Físico' ? 'F' : 'L', n.x, n.y);
 
 				// Nombre del activo
 				ctx.font = `${isSelected ? 'bold 12px' : '600 11px'} "Plus Jakarta Sans", sans-serif`;
@@ -822,7 +820,7 @@
 				<div class="mb-3 small">
 					<div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
 						<span class="text-secondary flex-shrink-0" style="min-width: 95px;">Estado:</span>
-						<span class="fw-semibold text-end ${node.status === 'Activo' ? 'text-success' : 'text-warning'}">${node.status}</span>
+						<span class="fw-semibold text-end" style="color: var(--panel, #14212B);">${node.status}</span>
 					</div>
 					<div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
 						<span class="text-secondary flex-shrink-0" style="min-width: 95px;">Dirección IP:</span>

@@ -216,11 +216,9 @@
 
 							<!-- Columna Tipo -->
 							<td class="py-3">
-								{% if is_fisico %}
-									<span class="small fw-semibold text-primary">Físico</span>
-								{% else %}
-									<span class="small fw-semibold text-info">Lógico</span>
-								{% endif %}
+								<span class="small fw-semibold" style="color: var(--panel, #14212B);">
+									{{ is_fisico ? 'Físico' : 'Lógico' }}
+								</span>
 							</td>
 
 							<!-- Columna Categoría -->
@@ -253,20 +251,11 @@
 							<!-- Columna Estado -->
 							<td class="py-3">
 								{% if item.status.value == 'Activo' %}
-									<span class="small fw-semibold text-success d-inline-flex align-items-center gap-1">
-										<span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
-										Activo
-									</span>
+									<span class="small fw-semibold" style="color: var(--panel, #14212B);">Activo</span>
 								{% elseif item.status.value == 'Mantenimiento' %}
-									<span class="small fw-semibold text-warning d-inline-flex align-items-center gap-1">
-										<span class="rounded-circle bg-warning" style="width: 6px; height: 6px;"></span>
-										Mantenimiento
-									</span>
+									<span class="small fw-semibold" style="color: var(--panel, #14212B); opacity: 0.85;">Mantenimiento</span>
 								{% else %}
-									<span class="small fw-semibold text-secondary d-inline-flex align-items-center gap-1">
-										<span class="rounded-circle bg-secondary" style="width: 6px; height: 6px;"></span>
-										Dado de Baja
-									</span>
+									<span class="small fw-semibold" style="color: var(--panel, #14212B); opacity: 0.6;">Dado de Baja</span>
 								{% endif %}
 							</td>
 
