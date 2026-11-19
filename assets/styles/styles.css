@@ -1343,6 +1343,34 @@ a:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
+.btn-outline-panel,
+.btn-edit-user,
+.btn-roles-user {
+  color: var(--panel, #14212B) !important;
+  border: 1px solid var(--panel, #14212B) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-panel:hover,
+.btn-outline-panel:focus,
+.btn-outline-panel:active,
+.btn-edit-user:hover,
+.btn-edit-user:focus,
+.btn-edit-user:active,
+.btn-roles-user:hover,
+.btn-roles-user:focus,
+.btn-roles-user:active {
+  background-color: var(--panel, #14212B) !important;
+  border-color: var(--panel, #14212B) !important;
+  color: #FFFFFF !important;
+}
+
+.perm-item.bg-secondary-subtle {
+  background-color: #f1f5f9 !important;
+  color: var(--ink, #14212B);
+  transition: background-color 0.15s ease-in-out;
+}
+
 .btn-create-user {
   white-space: nowrap !important;
   height: 40px;

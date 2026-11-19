@@ -129,7 +129,7 @@
 								<div class="d-inline-flex align-items-center gap-1">
 									<!-- 1. Botón Editar (Abre #modalEditUser) -->
 									<button type="button" 
-										class="btn btn-sm btn-outline-secondary btn-icon-action btn-edit-user" 
+										class="btn btn-sm btn-outline-panel btn-icon-action btn-edit-user" 
 										title="Editar usuario" 
 										aria-label="Editar usuario"
 										data-bs-toggle="modal" 
@@ -146,7 +146,7 @@
 
 									<!-- 2. Botón Roles y Permisos (Abre #modalUserRoles) -->
 									<button type="button" 
-										class="btn btn-sm btn-outline-primary btn-icon-action btn-roles-user" 
+										class="btn btn-sm btn-outline-panel btn-icon-action btn-roles-user" 
 										title="Gestionar roles y permisos" 
 										aria-label="Gestionar roles y permisos"
 										data-bs-toggle="modal" 
@@ -207,7 +207,15 @@
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_user') }}">
 				
 				<div class="modal-header border-bottom px-4 py-3">
-					<h5 class="modal-title fw-bold text-dark" id="modalCreateUserLabel">Registrar Nuevo Usuario</h5>
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalCreateUserLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--panel, #14212B);">
+							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+							<circle cx="9" cy="7" r="4"/>
+							<line x1="19" y1="8" x2="19" y2="14"/>
+							<line x1="22" y1="11" x2="16" y2="11"/>
+						</svg>
+						<span>Registrar Nuevo Usuario</span>
+					</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 				</div>
 				
@@ -278,7 +286,12 @@
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('edit_user') }}">
 				
 				<div class="modal-header border-bottom px-4 py-3">
-					<h5 class="modal-title fw-bold text-dark" id="modalEditUserLabel">Editar Usuario</h5>
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalEditUserLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--panel, #14212B);">
+							<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+						</svg>
+						<span>Editar Usuario</span>
+					</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 				</div>
 				
@@ -330,7 +343,7 @@
 				
 				<div class="modal-header border-bottom px-4 py-3">
 					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalUserRolesLabel">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--panel, #14212B);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
 						<span>Roles y Permisos de Acceso</span>
 					</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -476,10 +489,10 @@
 				const item = cb.closest('.perm-item');
 				if (permsArr.includes(cb.value)) {
 					cb.checked = true;
-					if (item) item.classList.add('bg-primary-subtle', 'rounded', 'px-2');
+					if (item) item.classList.add('bg-secondary-subtle', 'rounded', 'px-2');
 				} else {
 					cb.checked = false;
-					if (item) item.classList.remove('bg-primary-subtle', 'rounded', 'px-2');
+					if (item) item.classList.remove('bg-secondary-subtle', 'rounded', 'px-2');
 				}
 			});
 		}
