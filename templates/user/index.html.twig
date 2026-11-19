@@ -194,6 +194,16 @@
 				</tbody>
 			</table>
 		</div>
+
+		<!-- Paginación de Usuarios -->
+		<div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" id="usersPaginationFooter">
+			<div class="small text-secondary" id="usersPaginationInfo">
+				Mostrando <span class="fw-bold text-dark" id="usersPageStart">0</span> a <span class="fw-bold text-dark" id="usersPageEnd">0</span> de <span class="fw-bold text-dark" id="usersPageTotal">0</span> registros
+			</div>
+			<nav aria-label="Navegación de usuarios">
+				<ul class="pagination pagination-sm mb-0 gap-1" id="usersPaginationNav"></ul>
+			</nav>
+		</div>
 	</div>
 </div>
 
@@ -429,18 +439,107 @@
 <script>
 (function() {
 	function initUserModals() {
-		// 1. Buscador rápido en tiempo real
+		// 1. Buscador rápido en tiempo real y Paginación
 		const searchInput = document.getElementById('tableSearchInput');
+		const userRows = document.querySelectorAll('.user-row');
+		const pageSize = 10;
+		let currentPage = 1;
+
+		function updatePagination(matchingRows) {
+			const total = matchingRows.length;
+			const totalPages = Math.max(1, Math.ceil(total / pageSize));
+			if (currentPage > totalPages) currentPage = totalPages;
+			if (currentPage < 1) currentPage = 1;
+
+			const startIndex = (currentPage - 1) * pageSize;
+			const endIndex = Math.min(startIndex + pageSize, total);
+
+			userRows.forEach(r => r.style.display = 'none');
+			for (let i = startIndex; i < endIndex; i++) {
+				matchingRows[i].style.display = '';
+			}
+
+			const startEl = document.getElementById('usersPageStart');
+			const endEl = document.getElementById('usersPageEnd');
+			const totalEl = document.getElementById('usersPageTotal');
+			const navEl = document.getElementById('usersPaginationNav');
+
+			if (startEl) startEl.textContent = total === 0 ? '0' : (startIndex + 1);
+			if (endEl) endEl.textContent = endIndex;
+			if (totalEl) totalEl.textContent = total;
+
+			if (navEl) {
+				navEl.innerHTML = '';
+				if (total <= pageSize && totalPages <= 1) {
+					const singleLi = document.createElement('li');
+					singleLi.className = 'page-item active';
+					singleLi.innerHTML = `<button type="button" class="page-link">1</button>`;
+					navEl.appendChild(singleLi);
+					return;
+				}
+
+				// Botón Anterior
+				const prevLi = document.createElement('li');
+				prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+				prevLi.innerHTML = `<button type="button" class="page-link" aria-label="Anterior">&laquo; Anterior</button>`;
+				prevLi.addEventListener('click', (e) => {
+					e.preventDefault();
+					if (currentPage > 1) {
+						currentPage--;
+						applySearch(false);
+					}
+				});
+				navEl.appendChild(prevLi);
+
+				// Botones de página
+				for (let p = 1; p <= totalPages; p++) {
+					const pageLi = document.createElement('li');
+					pageLi.className = `page-item ${p === currentPage ? 'active' : ''}`;
+					pageLi.innerHTML = `<button type="button" class="page-link">${p}</button>`;
+					pageLi.addEventListener('click', (e) => {
+						e.preventDefault();
+						currentPage = p;
+						applySearch(false);
+					});
+					navEl.appendChild(pageLi);
+				}
+
+				// Botón Siguiente
+				const nextLi = document.createElement('li');
+				nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+				nextLi.innerHTML = `<button type="button" class="page-link" aria-label="Siguiente">Siguiente &raquo;</button>`;
+				nextLi.addEventListener('click', (e) => {
+					e.preventDefault();
+					if (currentPage < totalPages) {
+						currentPage++;
+						applySearch(false);
+					}
+				});
+				navEl.appendChild(nextLi);
+			}
+		}
+
+		function applySearch(resetPage = true) {
+			if (resetPage) currentPage = 1;
+			const term = (searchInput ? searchInput.value : '').toLowerCase().trim();
+			const matchingRows = [];
+
+			userRows.forEach(row => {
+				const searchData = (row.dataset.search || '').toLowerCase();
+				if (!term || searchData.includes(term)) {
+					matchingRows.push(row);
+				}
+			});
+
+			updatePagination(matchingRows);
+		}
+
 		if (searchInput && !searchInput.dataset.initialized) {
 			searchInput.dataset.initialized = 'true';
-			searchInput.addEventListener('input', function () {
-				const term = this.value.toLowerCase().trim();
-				document.querySelectorAll('.user-row').forEach(row => {
-					const searchData = (row.dataset.search || '').toLowerCase();
-					row.style.display = searchData.includes(term) ? '' : 'none';
-				});
-			});
+			searchInput.addEventListener('input', () => applySearch(true));
 		}
+
+		applySearch(true);
 
 		// 2. Modal Editar Usuario (#modalEditUser)
 		const modalEditEl = document.getElementById('modalEditUser');

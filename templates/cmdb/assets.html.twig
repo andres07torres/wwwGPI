@@ -322,6 +322,16 @@
 				</tbody>
 			</table>
 		</div>
+
+		<!-- Paginación de Activos -->
+		<div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" id="ciPaginationFooter">
+			<div class="small text-secondary" id="ciPaginationInfo">
+				Mostrando <span class="fw-bold text-dark" id="ciPageStart">0</span> a <span class="fw-bold text-dark" id="ciPageEnd">0</span> de <span class="fw-bold text-dark" id="ciPageTotal">0</span> registros
+			</div>
+			<nav aria-label="Navegación de activos">
+				<ul class="pagination pagination-sm mb-0 gap-1" id="ciPaginationNav"></ul>
+			</nav>
+		</div>
 	</div>
 </div>
 
@@ -572,14 +582,93 @@
 		const typeFilter = document.getElementById('filterType');
 		const categoryFilter = document.getElementById('filterCategory');
 		const statusFilter = document.getElementById('filterStatus');
+		const rows = document.querySelectorAll('.ci-row');
+		const pageSize = 10;
+		let currentPage = 1;
 
-		function applyFilters() {
+		function updatePagination(matchingRows) {
+			const total = matchingRows.length;
+			const totalPages = Math.max(1, Math.ceil(total / pageSize));
+			if (currentPage > totalPages) currentPage = totalPages;
+			if (currentPage < 1) currentPage = 1;
+
+			const startIndex = (currentPage - 1) * pageSize;
+			const endIndex = Math.min(startIndex + pageSize, total);
+
+			rows.forEach(r => r.style.display = 'none');
+			for (let i = startIndex; i < endIndex; i++) {
+				matchingRows[i].style.display = '';
+			}
+
+			const startEl = document.getElementById('ciPageStart');
+			const endEl = document.getElementById('ciPageEnd');
+			const totalEl = document.getElementById('ciPageTotal');
+			const navEl = document.getElementById('ciPaginationNav');
+
+			if (startEl) startEl.textContent = total === 0 ? '0' : (startIndex + 1);
+			if (endEl) endEl.textContent = endIndex;
+			if (totalEl) totalEl.textContent = total;
+
+			if (navEl) {
+				navEl.innerHTML = '';
+				if (total <= pageSize && totalPages <= 1) {
+					const singleLi = document.createElement('li');
+					singleLi.className = 'page-item active';
+					singleLi.innerHTML = `<button type="button" class="page-link">1</button>`;
+					navEl.appendChild(singleLi);
+					return;
+				}
+
+				// Botón Anterior
+				const prevLi = document.createElement('li');
+				prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+				prevLi.innerHTML = `<button type="button" class="page-link" aria-label="Anterior">&laquo; Anterior</button>`;
+				prevLi.addEventListener('click', (e) => {
+					e.preventDefault();
+					if (currentPage > 1) {
+						currentPage--;
+						applyFilters(false);
+					}
+				});
+				navEl.appendChild(prevLi);
+
+				// Botones de página
+				for (let p = 1; p <= totalPages; p++) {
+					const pageLi = document.createElement('li');
+					pageLi.className = `page-item ${p === currentPage ? 'active' : ''}`;
+					pageLi.innerHTML = `<button type="button" class="page-link">${p}</button>`;
+					pageLi.addEventListener('click', (e) => {
+						e.preventDefault();
+						currentPage = p;
+						applyFilters(false);
+					});
+					navEl.appendChild(pageLi);
+				}
+
+				// Botón Siguiente
+				const nextLi = document.createElement('li');
+				nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+				nextLi.innerHTML = `<button type="button" class="page-link" aria-label="Siguiente">Siguiente &raquo;</button>`;
+				nextLi.addEventListener('click', (e) => {
+					e.preventDefault();
+					if (currentPage < totalPages) {
+						currentPage++;
+						applyFilters(false);
+					}
+				});
+				navEl.appendChild(nextLi);
+			}
+		}
+
+		function applyFilters(resetPage = true) {
+			if (resetPage) currentPage = 1;
 			const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
 			const selectedType = (typeFilter ? typeFilter.value : '').toLowerCase().trim();
 			const selectedCategory = (categoryFilter ? categoryFilter.value : '').toLowerCase().trim();
 			const selectedStatus = (statusFilter ? statusFilter.value : '').toLowerCase().trim();
 
-			document.querySelectorAll('.ci-row').forEach(row => {
+			const matchingRows = [];
+			rows.forEach(row => {
 				const searchData = (row.dataset.search || '').toLowerCase();
 				const rowCategory = (row.dataset.categoryName || '').toLowerCase();
 				const rowStatus = (row.dataset.status || '').toLowerCase();
@@ -591,32 +680,34 @@
 				const matchesStatus = !selectedStatus || rowStatus === selectedStatus;
 
 				if (matchesSearch && matchesType && matchesCategory && matchesStatus) {
-					row.style.display = '';
-				} else {
-					row.style.display = 'none';
+					matchingRows.push(row);
 				}
 			});
+
+			updatePagination(matchingRows);
 		}
 
 		if (searchInput && !searchInput.dataset.initialized) {
 			searchInput.dataset.initialized = 'true';
-			searchInput.addEventListener('input', applyFilters);
+			searchInput.addEventListener('input', () => applyFilters(true));
 		}
 
 		if (typeFilter && !typeFilter.dataset.initialized) {
 			typeFilter.dataset.initialized = 'true';
-			typeFilter.addEventListener('change', applyFilters);
+			typeFilter.addEventListener('change', () => applyFilters(true));
 		}
 
 		if (categoryFilter && !categoryFilter.dataset.initialized) {
 			categoryFilter.dataset.initialized = 'true';
-			categoryFilter.addEventListener('change', applyFilters);
+			categoryFilter.addEventListener('change', () => applyFilters(true));
 		}
 
 		if (statusFilter && !statusFilter.dataset.initialized) {
 			statusFilter.dataset.initialized = 'true';
-			statusFilter.addEventListener('change', applyFilters);
+			statusFilter.addEventListener('change', () => applyFilters(true));
 		}
+
+		applyFilters(true);
 
 		// Modal Editar Activo (#modalEditCiItem)
 		const modalEditEl = document.getElementById('modalEditCiItem');

@@ -1764,5 +1764,41 @@ a:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* ==========================================================================
+   Paginación Estandarizada GPI
+   ========================================================================== */
+.pagination-sm .page-link {
+  color: var(--panel, #14212B);
+  border: 1px solid #E2E8F0;
+  border-radius: 6px !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 5px 10px;
+  transition: all 0.15s ease-in-out;
+  background-color: #FFFFFF;
+}
+
+.pagination-sm .page-link:hover {
+  background-color: #F8FAFC;
+  color: var(--panel, #14212B);
+  border-color: #CBD5E1;
+}
+
+.pagination-sm .page-item.active .page-link {
+  background-color: var(--panel, #14212B);
+  border-color: var(--panel, #14212B);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.pagination-sm .page-item.disabled .page-link {
+  color: #94A3B8;
+  background-color: #F8FAFC;
+  border-color: #E2E8F0;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+
 
 
