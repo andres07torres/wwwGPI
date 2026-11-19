@@ -155,8 +155,10 @@
 			<div class="sidebar-section-title">Usuarios</div>
 			<ul class="sidebar-nav">
 				{% set is_user_route = app.request.attributes.get('_route') starts with 'app_user_' %}
+				{% set is_profile_route = app.request.attributes.get('_route') starts with 'app_profile_' %}
+				{% set is_user_section = is_user_route or is_profile_route %}
 				<li>
-					<a class="sidebar-link {{ is_user_route ? 'active' : '' }}" data-bs-toggle="collapse" href="#menuUsuarios" role="button" aria-expanded="{{ is_user_route ? 'true' : 'false' }}" aria-controls="menuUsuarios">
+					<a class="sidebar-link {{ is_user_section ? 'active' : '' }}" data-bs-toggle="collapse" href="#menuUsuarios" role="button" aria-expanded="{{ is_user_section ? 'true' : 'false' }}" aria-controls="menuUsuarios">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
 							<circle cx="9" cy="7" r="4"/>
@@ -166,9 +168,10 @@
 						<span>Usuarios</span>
 						<svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
 					</a>
-					<div class="collapse {{ is_user_route ? 'show' : '' }}" id="menuUsuarios">
+					<div class="collapse {{ is_user_section ? 'show' : '' }}" id="menuUsuarios">
 						<ul class="sidebar-submenu">
-							<li><a href="{{ path('app_user_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') == 'app_user_index' ? 'active' : '' }}">Gestión de Usuarios</a></li>
+							<li><a href="{{ path('app_user_index') }}" class="sidebar-sublink {{ is_user_route ? 'active' : '' }}">Gestión de Usuarios</a></li>
+							<li><a href="{{ path('app_profile_index') }}" class="sidebar-sublink {{ is_profile_route ? 'active' : '' }}">Mi Perfil</a></li>
 						</ul>
 					</div>
 				</li>
@@ -179,7 +182,11 @@
 		<div class="sidebar-footer">
 			<div class="sidebar-user">
 				<div class="sidebar-avatar">
-					{{ app.user ? (app.user.name|default(app.user.userIdentifier)|slice(0, 2)|upper) : 'GP' }}
+					{% if app.user and app.user.avatarPath %}
+						<img src="{{ asset(app.user.avatarPath) }}" alt="{{ app.user.name|default(app.user.userIdentifier) }}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
+					{% else %}
+						{{ app.user ? (app.user.name|default(app.user.userIdentifier)|slice(0, 2)|upper) : 'GP' }}
+					{% endif %}
 					<span class="status-dot" title="En línea"></span>
 				</div>
 				<div class="sidebar-user-info">
@@ -260,12 +267,12 @@
 				<!-- Foto de Usuario con Menú Desplegable (se abre al pasar el puntero en escritorio) -->
 				<div class="dropdown">
 					<button class="topbar-user-trigger" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" data-dropdown-hover aria-expanded="false" aria-label="Menú de usuario">
-						<img src="/images/avatar-default.svg" alt="Usuario" class="topbar-user-avatar">
+						<img src="{{ app.user and app.user.avatarPath ? asset(app.user.avatarPath) : '/images/avatar-default.svg' }}" alt="Usuario" class="topbar-user-avatar">
 					</button>
 					<div class="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userMenuDropdown">
 						<!-- Cabecera del usuario: Foto, Nombre completo y Correo -->
 						<div class="user-dropdown-header">
-							<img src="/images/avatar-default.svg" alt="Usuario" class="user-dropdown-avatar">
+							<img src="{{ app.user and app.user.avatarPath ? asset(app.user.avatarPath) : '/images/avatar-default.svg' }}" alt="Usuario" class="user-dropdown-avatar">
 							<div class="min-w-0">
 								<div class="user-dropdown-name" title="{{ app.user ? (app.user.name|default(app.user.userIdentifier)) : 'Usuario Administrador' }}">
 									{{ app.user ? (app.user.name|default(app.user.userIdentifier)) : 'Usuario Administrador' }}
@@ -278,15 +285,15 @@
 
 						<!-- Opciones del menú -->
 						<div class="user-dropdown-body">
-							<a class="user-dropdown-item" href="#">
+							<a class="user-dropdown-item {{ app.request.attributes.get('_route') starts with 'app_profile_' and app.request.query.get('tab', 'info') == 'info' ? 'active' : '' }}" href="{{ path('app_profile_index', {'tab': 'info'}) }}">
 								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 								<span>Gestionar mi perfil</span>
 							</a>
-							<a class="user-dropdown-item" href="#">
+							<a class="user-dropdown-item {{ app.request.attributes.get('_route') starts with 'app_profile_' and app.request.query.get('tab') == 'avatar' ? 'active' : '' }}" href="{{ path('app_profile_index', {'tab': 'avatar'}) }}">
 								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
 								<span>Cambiar foto de perfil</span>
 							</a>
-							<a class="user-dropdown-item" href="#">
+							<a class="user-dropdown-item {{ app.request.attributes.get('_route') starts with 'app_profile_' and app.request.query.get('tab') == 'security' ? 'active' : '' }}" href="{{ path('app_profile_index', {'tab': 'security'}) }}">
 								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 								<span>Cambiar contraseña</span>
 							</a>

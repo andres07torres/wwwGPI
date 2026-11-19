@@ -1607,4 +1607,88 @@ a:hover {
   box-shadow: 0 4px 12px rgba(20, 33, 43, 0.08) !important;
 }
 
+/* ==========================================================================
+   8. SUBMÓDULO DE PERFIL DE USUARIO
+   ========================================================================== */
+.profile-summary-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0 !important;
+}
+
+.profile-avatar-xl {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(20, 33, 43, 0.12);
+  flex-shrink: 0;
+}
+
+.profile-avatar-xl-fallback {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--panel);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(20, 33, 43, 0.12);
+  flex-shrink: 0;
+}
+
+.profile-nav-tabs {
+  border-bottom: 1px solid #e2e8f0;
+  gap: 8px;
+}
+
+.profile-tab-link {
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  background: transparent !important;
+  color: var(--mute) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 12px 18px !important;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+}
+
+.profile-tab-link:hover {
+  color: var(--panel) !important;
+  border-bottom-color: #cbd5e1 !important;
+}
+
+.profile-tab-link.active {
+  color: var(--panel) !important;
+  border-bottom: 3px solid var(--panel) !important;
+  background: transparent !important;
+}
+
+.btn-toggle-password {
+  border-color: #ced4da;
+  background-color: #f8fafc;
+  color: #64748b;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-toggle-password:hover {
+  background-color: #e2e8f0;
+  color: var(--panel);
+}
+
+.avatar-preview-box {
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
 

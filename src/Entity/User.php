@@ -61,6 +61,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isVerified = false;
 
+    #[ORM\Column(name: 'avatar_path', length: 255, nullable: true)]
+    private ?string $avatarPath = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -191,6 +194,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getAvatarPath(): ?string
+    {
+        return $this->avatarPath;
+    }
+
+    public function setAvatarPath(?string $avatarPath): static
+    {
+        $this->avatarPath = $avatarPath;
 
         return $this;
     }
