@@ -36,13 +36,13 @@
 	<div class="row g-3 mb-4">
 		<!-- KPI 1: Total Políticas -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Total Políticas SLA">Políticas SLA</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.total }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Total Políticas SLA">Políticas SLA</span>
+						<div class="kpi-card-value text-truncate">{{ stats.total }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Políticas registradas">
+					<div class="kpi-icon-panel" title="Políticas registradas">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="10"/>
 							<polyline points="12 6 12 12 16 14"/>
@@ -54,13 +54,13 @@
 
 		<!-- KPI 2: Horario Laboral -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Horario Laboral">Horario Laboral</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.business_hours }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Horario Laboral">Horario Laboral</span>
+						<div class="kpi-card-value text-truncate">{{ stats.business_hours }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Solo Horario Laboral">
+					<div class="kpi-icon-panel" title="Solo Horario Laboral">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
 							<path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
@@ -72,13 +72,13 @@
 
 		<!-- KPI 3: Cobertura 24/7 -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Cobertura Ininterrumpida 24/7">Cobertura 24/7</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.full_time }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Cobertura Ininterrumpida 24/7">Cobertura 24/7</span>
+						<div class="kpi-card-value text-truncate">{{ stats.full_time }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Atención Continua 24/7">
+					<div class="kpi-icon-panel" title="Atención Continua 24/7">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M12 2v4"/>
 							<path d="M12 18v4"/>
@@ -96,13 +96,13 @@
 
 		<!-- KPI 4: Prioridades Cubiertas -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Niveles de Prioridad">Prioridades</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.priorities_covered }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Niveles de Prioridad">Prioridades</span>
+						<div class="kpi-card-value text-truncate">{{ stats.priorities_covered }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Prioridades Configuradas">
+					<div class="kpi-icon-panel" title="Prioridades Configuradas">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
 						</svg>
@@ -317,15 +317,15 @@
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('save_sla_policy') }}">
 				<input type="hidden" name="id" id="policyId" value="">
 				
-				<div class="modal-header border-bottom px-4 py-3">
-					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalSaveSlaPolicyLabel">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--panel, #14212B);">
+				<div class="modal-header border-bottom">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalSaveSlaPolicyLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" style="color: var(--panel, #14212B);">
 							<circle cx="12" cy="12" r="10"/>
 							<polyline points="12 6 12 12 16 14"/>
 						</svg>
-						<span id="modalSaveSlaPolicyTitle">Nueva Política SLA</span>
+						<span id="modalSaveSlaPolicyTitle" class="text-break">Nueva Política SLA</span>
 					</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 				</div>
 				
 				<div class="modal-body px-4 py-3">

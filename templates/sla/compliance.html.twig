@@ -36,13 +36,13 @@
 	<div class="row g-3 mb-4">
 		<!-- KPI 1: Cumplimiento Global -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Cumplimiento Global">Cumplimiento Global</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.compliance_rate }}%</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Cumplimiento Global SLA">Cumplimiento</span>
+						<div class="kpi-card-value text-truncate">{{ stats.compliance_rate }}%</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Tasa de cumplimiento de SLA">
+					<div class="kpi-icon-panel" title="Tasa de cumplimiento de SLA">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
 							<polyline points="22 4 12 14.01 9 11.01"/>
@@ -54,13 +54,13 @@
 
 		<!-- KPI 2: En Tiempo -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Tickets En Tiempo">En Tiempo</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.on_time }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Tickets En Tiempo">En Tiempo</span>
+						<div class="kpi-card-value text-truncate">{{ stats.on_time }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Dentro de los plazos">
+					<div class="kpi-icon-panel" title="Dentro de los plazos">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="10"/>
 							<polyline points="12 6 12 12 16 14"/>
@@ -72,13 +72,13 @@
 
 		<!-- KPI 3: En Riesgo -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Tickets En Riesgo">En Riesgo</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.at_risk }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Tickets En Riesgo">En Riesgo</span>
+						<div class="kpi-card-value text-truncate">{{ stats.at_risk }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Próximos a vencer (70%+ transcurrido)">
+					<div class="kpi-icon-panel" title="Próximos a vencer (70%+ transcurrido)">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
 							<line x1="12" y1="9" x2="12" y2="13"/>
@@ -91,13 +91,13 @@
 
 		<!-- KPI 4: Incumplidos -->
 		<div class="col-6 col-md-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
-				<div class="d-flex align-items-center justify-content-between gap-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Tickets Incumplidos">Incumplidos</div>
-						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.breached }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Tickets Incumplidos">Incumplidos</span>
+						<div class="kpi-card-value text-truncate">{{ stats.breached }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Plazo superado">
+					<div class="kpi-icon-panel" title="Plazo superado">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="10"/>
 							<line x1="15" y1="9" x2="9" y2="15"/>
@@ -300,17 +300,19 @@
 <div class="modal fade" id="modalTicketDetails" tabindex="-1" aria-labelledby="modalTicketDetailsLabel" aria-hidden="true">
 	<div class="modal-dialog modal-xl modal-dialog-centered">
 		<div class="modal-content border-0 shadow-lg rounded-3">
-			<div class="modal-header bg-light border-bottom px-4 py-3">
-				<div class="d-flex align-items-center gap-2">
-					<div class="modal-icon-panel">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-						</svg>
+			<div class="modal-header bg-light border-bottom">
+				<div class="modal-ticket-header flex-grow-1 min-w-0 me-2">
+					<div class="d-flex align-items-center gap-2 flex-shrink-0">
+						<div class="modal-icon-panel">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+							</svg>
+						</div>
+						<span class="badge bg-dark font-monospace fs-6" id="detailTicketCode">TCK-0000</span>
 					</div>
-					<span class="badge bg-dark font-monospace fs-6" id="detailTicketCode">TCK-0000</span>
-					<h5 class="modal-title fw-bold text-dark mb-0" id="detailTicketTitle">Cargando...</h5>
+					<h5 class="modal-title fw-bold text-dark mb-0 text-break min-w-0" id="detailTicketTitle">Cargando...</h5>
 				</div>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 			</div>
 			<div class="modal-body p-4">
 				<div class="row g-4">
@@ -319,7 +321,7 @@
 						<h6 class="text-uppercase fw-bold text-secondary small mb-3">Información del Ticket</h6>
 						
 						<div class="bg-light p-3 rounded-3 mb-3">
-							<div class="row g-2 small">
+							<div class="row g-2 small align-items-center">
 								<div class="col-5 text-muted">Tipo:</div>
 								<div class="col-7 fw-semibold" id="detailTicketType">-</div>
 								
@@ -352,11 +354,11 @@
 					</div>
 
 					<!-- Columna derecha: Chat / Interacción Cliente - Técnico -->
-					<div class="col-lg-7 d-flex flex-column" style="min-height: 480px;">
-						<div class="d-flex align-items-center justify-content-between mb-2">
+					<div class="col-lg-7 d-flex flex-column modal-chat-column">
+						<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
 							<h6 class="text-uppercase fw-bold text-secondary small mb-0 d-flex align-items-center gap-2">
 								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-								Chat & Comentarios (Cliente / Técnico)
+								<span>Chat & Comentarios</span>
 							</h6>
 							<span class="badge bg-light text-muted border" id="commentCountBadge">0 comentarios</span>
 						</div>
@@ -375,14 +377,14 @@
 							<div class="mb-2">
 								<textarea id="commentContent" class="form-control" rows="2" placeholder="Escribe una respuesta o nota técnica..." required></textarea>
 							</div>
-							<div class="d-flex align-items-center justify-content-between">
+							<div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
 								<div class="form-check form-switch mb-0">
 									<input class="form-check-input" type="checkbox" id="commentIsPrivate">
 									<label class="form-check-label small text-secondary" for="commentIsPrivate">
 										Nota interna privada (Solo agentes/técnicos)
 									</label>
 								</div>
-								<button type="submit" class="btn btn-panel-action btn-sm px-3 d-flex align-items-center gap-1" id="btnSendComment">
+								<button type="submit" class="btn btn-panel-action btn-sm px-3 d-flex align-items-center gap-1 ms-auto" id="btnSendComment">
 									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 										<line x1="22" y1="2" x2="11" y2="13"/>
 										<polygon points="22 2 15 22 11 13 2 9 22 2"/>

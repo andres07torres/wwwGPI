@@ -56,13 +56,13 @@
 	<div class="row g-3 mb-4">
 		<!-- KPI 1: Total Tickets -->
 		<div class="col-6 col-lg-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100 bg-white">
-				<div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;">Total Tickets</div>
-						<div class="h2 fw-bold text-dark mb-0 mt-1">{{ stats.total_tickets }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Total Tickets">Total Tickets</span>
+						<div class="kpi-card-value text-truncate">{{ stats.total_tickets }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Volumen Total de Tickets">
+					<div class="kpi-icon-panel" title="Volumen Total de Tickets">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
 							<path d="M13 5v2"/>
@@ -71,46 +71,46 @@
 						</svg>
 					</div>
 				</div>
-				<div class="d-flex align-items-center justify-content-between pt-2 border-top small text-muted">
-					<span><strong>{{ stats.open_tickets }}</strong> activos</span>
-					<span><strong>{{ stats.resolved_tickets }}</strong> resueltos</span>
+				<div class="kpi-card-footer text-muted">
+					<span class="text-truncate"><strong>{{ stats.open_tickets }}</strong> activos</span>
+					<span class="text-truncate"><strong>{{ stats.resolved_tickets }}</strong> resueltos</span>
 				</div>
 			</div>
 		</div>
 
 		<!-- KPI 2: Cumplimiento SLA -->
 		<div class="col-6 col-lg-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100 bg-white">
-				<div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;">Cumplimiento SLA</div>
-						<div class="h2 fw-bold mb-0 mt-1" style="color: {% if stats.compliance_rate >= 80 %}#10b981{% elseif stats.compliance_rate >= 50 %}#d97706{% else %}#ef4444{% endif %};">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Cumplimiento SLA">Cumplimiento SLA</span>
+						<div class="kpi-card-value text-truncate" style="color: {% if stats.compliance_rate >= 80 %}#10b981{% elseif stats.compliance_rate >= 50 %}#d97706{% else %}#ef4444{% endif %};">
 							{{ stats.compliance_rate }}%
 						</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Porcentaje Global de Cumplimiento">
+					<div class="kpi-icon-panel" title="Porcentaje Global de Cumplimiento">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="10"/>
 							<polyline points="12 6 12 12 14 14"/>
 						</svg>
 					</div>
 				</div>
-				<div class="d-flex align-items-center justify-content-between pt-2 border-top small">
-					<span class="text-success"><strong>{{ stats.on_time_sla }}</strong> a tiempo</span>
-					<span class="text-danger"><strong>{{ stats.breached_sla }}</strong> vencidos</span>
+				<div class="kpi-card-footer">
+					<span class="text-success text-truncate"><strong>{{ stats.on_time_sla }}</strong> a tiempo</span>
+					<span class="text-danger text-truncate"><strong>{{ stats.breached_sla }}</strong> vencidos</span>
 				</div>
 			</div>
 		</div>
 
 		<!-- KPI 3: Activos e Infraestructura -->
 		<div class="col-6 col-lg-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100 bg-white">
-				<div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;">Activos TI (CMDB)</div>
-						<div class="h2 fw-bold text-dark mb-0 mt-1">{{ stats.total_cis }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Activos TI (CMDB)">Activos TI</span>
+						<div class="kpi-card-value text-truncate">{{ stats.total_cis }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Elementos de Configuración">
+					<div class="kpi-icon-panel" title="Elementos de Configuración">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
 							<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
@@ -119,22 +119,22 @@
 						</svg>
 					</div>
 				</div>
-				<div class="d-flex align-items-center justify-content-between pt-2 border-top small text-muted">
-					<span><strong>{{ stats.physical_cis }}</strong> físicos</span>
-					<span><strong>{{ stats.logical_cis }}</strong> lógicos</span>
+				<div class="kpi-card-footer text-muted">
+					<span class="text-truncate"><strong>{{ stats.physical_cis }}</strong> físicos</span>
+					<span class="text-truncate"><strong>{{ stats.logical_cis }}</strong> lógicos</span>
 				</div>
 			</div>
 		</div>
 
 		<!-- KPI 4: Usuarios & Tenants -->
 		<div class="col-6 col-lg-3">
-			<div class="card border-0 shadow-sm p-3 rounded-3 h-100 bg-white">
-				<div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-					<div class="min-w-0 flex-grow-1">
-						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;">Usuarios del Sistema</div>
-						<div class="h2 fw-bold text-dark mb-0 mt-1">{{ stats.total_users }}</div>
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Usuarios Registrados">Usuarios</span>
+						<div class="kpi-card-value text-truncate">{{ stats.total_users }}</div>
 					</div>
-					<div class="kpi-icon-panel flex-shrink-0" title="Cuentas Registradas">
+					<div class="kpi-icon-panel" title="Cuentas Registradas">
 						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
 							<circle cx="9" cy="7" r="4"/>
@@ -143,9 +143,9 @@
 						</svg>
 					</div>
 				</div>
-				<div class="d-flex align-items-center justify-content-between pt-2 border-top small text-muted">
-					<span><strong>{{ stats.total_tenants }}</strong> tenants</span>
-					<span class="text-success"><span class="d-inline-block rounded-circle bg-success me-1" style="width: 7px; height: 7px;"></span>En línea</span>
+				<div class="kpi-card-footer text-muted">
+					<span class="text-truncate"><strong>{{ stats.total_tenants }}</strong> tenants</span>
+					<span class="text-success text-truncate"><span class="d-inline-block rounded-circle bg-success me-1" style="width: 6px; height: 6px;"></span>En línea</span>
 				</div>
 			</div>
 		</div>
@@ -157,8 +157,8 @@
 	<div class="row g-4 mb-4">
 		<!-- Gráfico de Barras: Tickets por Estado Operativo -->
 		<div class="col-12 col-xl-8">
-			<div class="card border-0 shadow-sm rounded-3 bg-white h-100">
-				<div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+			<div class="card border-0 shadow-sm rounded-3 bg-white h-100 overflow-hidden">
+				<div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2">
 					<div>
 						<h6 class="fw-bold text-dark mb-0">Flujo Operativo de Tickets</h6>
 						<div class="text-muted small" style="font-size: 11px;">Distribución de casos por estado de ciclo de vida</div>
@@ -175,8 +175,8 @@
 
 		<!-- Gráfico de Pastel / Donut: Cumplimiento de Acuerdos SLA -->
 		<div class="col-12 col-xl-4">
-			<div class="card border-0 shadow-sm rounded-3 bg-white h-100">
-				<div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+			<div class="card border-0 shadow-sm rounded-3 bg-white h-100 overflow-hidden">
+				<div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2">
 					<div>
 						<h6 class="fw-bold text-dark mb-0">Cumplimiento de SLA</h6>
 						<div class="text-muted small" style="font-size: 11px;">Estado en tiempo real de compromisos</div>
@@ -202,8 +202,8 @@
 	<div class="row g-4 mb-4">
 		<!-- Gráfico de Barras: Severidad y Prioridad -->
 		<div class="col-12 col-lg-6">
-			<div class="card border-0 shadow-sm rounded-3 bg-white h-100">
-				<div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+			<div class="card border-0 shadow-sm rounded-3 bg-white h-100 overflow-hidden">
+				<div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2">
 					<div>
 						<h6 class="fw-bold text-dark mb-0">Volumen por Severidad y Prioridad</h6>
 						<div class="text-muted small" style="font-size: 11px;">Clasificación de incidentes para atención urgente</div>
@@ -220,8 +220,8 @@
 
 		<!-- Gráfico de Pastel / Donut: Activos TI por Categoría -->
 		<div class="col-12 col-lg-6">
-			<div class="card border-0 shadow-sm rounded-3 bg-white h-100">
-				<div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+			<div class="card border-0 shadow-sm rounded-3 bg-white h-100 overflow-hidden">
+				<div class="card-header bg-white border-bottom p-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2">
 					<div>
 						<h6 class="fw-bold text-dark mb-0">Infraestructura TI por Categoría (CMDB)</h6>
 						<div class="text-muted small" style="font-size: 11px;">Inventario distribuido de servidores, red y servicios</div>

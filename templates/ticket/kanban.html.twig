@@ -111,18 +111,18 @@
 		<div class="modal-content border-0 shadow-lg rounded-3">
 			<form id="formCreateTicket" action="{{ path('app_ticket_create') }}" method="POST">
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('ticket_create') }}">
-				<div class="modal-header bg-light border-bottom px-4 py-3">
-					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalCreateTicketLabel">
-						<div class="modal-icon-panel">
+				<div class="modal-header bg-light border-bottom">
+					<div class="d-flex align-items-center gap-2 min-w-0 me-2">
+						<div class="modal-icon-panel flex-shrink-0">
 							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 								<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
 								<line x1="9" x2="9" y1="9" y2="15"/>
 								<line x1="15" x2="15" y1="9" y2="15"/>
 							</svg>
 						</div>
-						<span>Registrar Nuevo Ticket</span>
-					</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+						<h5 class="modal-title fw-bold text-dark mb-0 text-break" id="modalCreateTicketLabel">Registrar Nuevo Ticket</h5>
+					</div>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 				</div>
 				<div class="modal-body p-4">
 					<div class="row g-3">
@@ -190,17 +190,19 @@
 <div class="modal fade" id="modalTicketDetails" tabindex="-1" aria-labelledby="modalTicketDetailsLabel" aria-hidden="true">
 	<div class="modal-dialog modal-xl modal-dialog-centered">
 		<div class="modal-content border-0 shadow-lg rounded-3">
-			<div class="modal-header bg-light border-bottom px-4 py-3">
-				<div class="d-flex align-items-center gap-2">
-					<div class="modal-icon-panel">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-						</svg>
+			<div class="modal-header bg-light border-bottom">
+				<div class="modal-ticket-header flex-grow-1 min-w-0 me-2">
+					<div class="d-flex align-items-center gap-2 flex-shrink-0">
+						<div class="modal-icon-panel">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+							</svg>
+						</div>
+						<span class="badge bg-dark font-monospace fs-6" id="detailTicketCode">TCK-0000</span>
 					</div>
-					<span class="badge bg-dark font-monospace fs-6" id="detailTicketCode">TCK-0000</span>
-					<h5 class="modal-title fw-bold text-dark mb-0" id="detailTicketTitle">Cargando...</h5>
+					<h5 class="modal-title fw-bold text-dark mb-0 text-break min-w-0" id="detailTicketTitle">Cargando...</h5>
 				</div>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 			</div>
 			<div class="modal-body p-4">
 				<div class="row g-4">
@@ -209,7 +211,7 @@
 						<h6 class="text-uppercase fw-bold text-secondary small mb-3">Información del Ticket</h6>
 						
 						<div class="bg-light p-3 rounded-3 mb-3">
-							<div class="row g-2 small">
+							<div class="row g-2 small align-items-center">
 								<div class="col-5 text-muted">Tipo:</div>
 								<div class="col-7 fw-semibold" id="detailTicketType">-</div>
 								
@@ -242,11 +244,11 @@
 					</div>
 
 					<!-- Columna derecha: Chat / Interacción Cliente - Técnico -->
-					<div class="col-lg-7 d-flex flex-column" style="min-height: 480px;">
-						<div class="d-flex align-items-center justify-content-between mb-2">
+					<div class="col-lg-7 d-flex flex-column modal-chat-column">
+						<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
 							<h6 class="text-uppercase fw-bold text-secondary small mb-0 d-flex align-items-center gap-2">
 								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-								Chat & Comentarios (Cliente / Técnico)
+								<span>Chat & Comentarios</span>
 							</h6>
 							<span class="badge bg-light text-muted border" id="commentCountBadge">0 comentarios</span>
 						</div>
@@ -265,14 +267,14 @@
 							<div class="mb-2">
 								<textarea id="commentContent" class="form-control" rows="2" placeholder="Escribe una respuesta o nota técnica..." required></textarea>
 							</div>
-							<div class="d-flex align-items-center justify-content-between">
+							<div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
 								<div class="form-check form-switch mb-0">
 									<input class="form-check-input" type="checkbox" id="commentIsPrivate">
 									<label class="form-check-label small text-secondary" for="commentIsPrivate">
 										Nota interna privada (Solo agentes/técnicos)
 									</label>
 								</div>
-								<button type="submit" class="btn btn-panel-action btn-sm px-3 d-flex align-items-center gap-1" id="btnSendComment">
+								<button type="submit" class="btn btn-panel-action btn-sm px-3 d-flex align-items-center gap-1 ms-auto" id="btnSendComment">
 									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 										<line x1="22" y1="2" x2="11" y2="13"/>
 										<polygon points="22 2 15 22 11 13 2 9 22 2"/>
