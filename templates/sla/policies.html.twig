@@ -1,0 +1,633 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Políticas y Plazos SLA{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo con Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Tiempos de Atención (SLA)</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Políticas y Plazos</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Políticas y Plazos de SLA</h1>
+				<p class="text-muted mb-0">
+					Configura los compromisos de tiempo de primera respuesta y resolución por prioridad para garantizar una atención oportuna.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSaveSlaPolicy" id="btnNewPolicy">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"/>
+						<line x1="5" y1="12" x2="19" y2="12"/>
+					</svg>
+					<span>Nueva Política</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Resumen Rápido de Indicadores (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Total Políticas -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Total Políticas SLA">Políticas SLA</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.total }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Políticas registradas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 16 14"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: Horario Laboral -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Horario Laboral">Horario Laboral</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.business_hours }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Solo Horario Laboral">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+							<path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Cobertura 24/7 -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Cobertura Ininterrumpida 24/7">Cobertura 24/7</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.full_time }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Atención Continua 24/7">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M12 2v4"/>
+							<path d="M12 18v4"/>
+							<path d="M4.93 4.93l2.83 2.83"/>
+							<path d="M16.24 16.24l2.83 2.83"/>
+							<path d="M2 12h4"/>
+							<path d="M18 12h4"/>
+							<path d="M4.93 19.07l2.83-2.83"/>
+							<path d="M16.24 7.76l2.83-2.83"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Prioridades Cubiertas -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Niveles de Prioridad">Prioridades</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.priorities_covered }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Prioridades Configuradas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tarjeta Principal con Filtros y Tabla -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+		<!-- Filtros de búsqueda y cobertura -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="row g-2 align-items-center">
+				<div class="col-12 col-md-6">
+					<div class="position-relative">
+						<input type="text" id="slaSearchInput" class="form-control form-control-sm ps-4" placeholder="Buscar por nombre de política, prioridad...">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+				<div class="col-6 col-md-3">
+					<select id="filterPriority" class="form-select form-select-sm">
+						<option value="">Todas las prioridades</option>
+						{% for prio in priorities %}
+							<option value="{{ prio.name }}">{{ prio.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-6 col-md-3">
+					<select id="filterCoverage" class="form-select form-select-sm">
+						<option value="">Todos los horarios</option>
+						<option value="Laboral">Horario Laboral</option>
+						<option value="24/7">Cobertura 24/7</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tabla de Políticas SLA -->
+		<div class="table-responsive">
+			<table class="table align-middle table-hover mb-0" id="slaPoliciesTable">
+				<thead class="table-light">
+					<tr>
+						<th class="ps-3 py-3 text-secondary text-uppercase small fw-bold" style="width: 16%;">Prioridad</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 28%;">Nombre de la Política</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 18%;">Primera Respuesta</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 18%;">Resolución</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 12%;">Cobertura</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold text-end pe-3" style="width: 8%;">Acción</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for policy in policies %}
+						<tr class="sla-row"
+							data-search="{{ policy.name }} {{ policy.priority ? policy.priority.name : '' }}"
+							data-id="{{ policy.id.toRfc4122 }}"
+							data-name="{{ policy.name }}"
+							data-priority-id="{{ policy.priority ? policy.priority.id : '' }}"
+							data-priority-name="{{ policy.priority ? policy.priority.name : '' }}"
+							data-response-minutes="{{ policy.responseTimeMinutes }}"
+							data-resolution-minutes="{{ policy.resolutionTimeMinutes }}"
+							data-business-hours="{{ policy.businessHoursOnly ? '1' : '0' }}">
+							
+							<!-- Columna Prioridad -->
+							<td class="ps-3 py-3">
+								{% if policy.priority %}
+									<span class="small fw-semibold" style="color: var(--panel, #14212B);">{{ policy.priority.name }}</span>
+								{% else %}
+									<span class="small text-muted">Sin prioridad</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna Nombre -->
+							<td class="py-3">
+								<div class="fw-bold text-dark text-truncate" style="max-width: 280px;" title="{{ policy.name }}">
+									{{ policy.name }}
+								</div>
+								<div class="small text-muted" style="font-size: 11px;">
+									ID: <span class="font-monospace">{{ policy.id.toRfc4122|slice(0, 8) }}...</span>
+								</div>
+							</td>
+
+							<!-- Columna Primera Respuesta -->
+							<td class="py-3">
+								<div class="d-flex align-items-center gap-1.5 text-dark fw-semibold small">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted">
+										<circle cx="12" cy="12" r="10"/>
+										<polyline points="12 6 12 12 16 14"/>
+									</svg>
+									{% if policy.responseTimeMinutes >= 60 and policy.responseTimeMinutes % 60 == 0 %}
+										{{ (policy.responseTimeMinutes / 60)|round }} h ({{ policy.responseTimeMinutes }} min)
+									{% else %}
+										{{ policy.responseTimeMinutes }} min
+									{% endif %}
+								</div>
+								<div class="small text-muted" style="font-size: 11px;">Tiempo de primera atención</div>
+							</td>
+
+							<!-- Columna Tiempo de Resolución -->
+							<td class="py-3">
+								<div class="d-flex align-items-center gap-1.5 text-dark fw-semibold small">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted">
+										<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+										<polyline points="22 4 12 14.01 9 11.01"/>
+									</svg>
+									{% if policy.resolutionTimeMinutes >= 1440 and policy.resolutionTimeMinutes % 1440 == 0 %}
+										{{ (policy.resolutionTimeMinutes / 1440)|round }} d ({{ (policy.resolutionTimeMinutes / 60)|round }} h)
+									{% elseif policy.resolutionTimeMinutes >= 60 and policy.resolutionTimeMinutes % 60 == 0 %}
+										{{ (policy.resolutionTimeMinutes / 60)|round }} h ({{ policy.resolutionTimeMinutes }} min)
+									{% else %}
+										{{ policy.resolutionTimeMinutes }} min
+									{% endif %}
+								</div>
+								<div class="small text-muted" style="font-size: 11px;">Cierre definitivo del ticket</div>
+							</td>
+
+							<!-- Columna Cobertura Horaria -->
+							<td class="py-3">
+								{% if policy.businessHoursOnly %}
+									<span class="small fw-semibold" style="color: var(--panel, #14212B);">Laboral</span>
+									<div class="small text-muted" style="font-size: 11px;">Lun - Vie</div>
+								{% else %}
+									<span class="small fw-semibold" style="color: var(--panel, #14212B);">24/7</span>
+									<div class="small text-muted" style="font-size: 11px;">Ininterrumpido</div>
+								{% endif %}
+							</td>
+
+							<!-- Columna Acción: Editar, Eliminar -->
+							<td class="py-3 text-end pe-3">
+								<div class="d-inline-flex align-items-center gap-1">
+									<!-- Botón Editar -->
+									<button type="button" 
+										class="btn btn-sm btn-outline-panel btn-icon-action btn-edit-policy" 
+										title="Editar política" 
+										aria-label="Editar política"
+										data-bs-toggle="modal" 
+										data-bs-target="#modalSaveSlaPolicy"
+										data-policy-id="{{ policy.id.toRfc4122 }}"
+										data-policy-name="{{ policy.name|e('html_attr') }}"
+										data-policy-priority-id="{{ policy.priority ? policy.priority.id : '' }}"
+										data-policy-response="{{ policy.responseTimeMinutes }}"
+										data-policy-resolution="{{ policy.resolutionTimeMinutes }}"
+										data-policy-business-hours="{{ policy.businessHoursOnly ? '1' : '0' }}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+											<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+										</svg>
+									</button>
+
+									<!-- Botón Eliminar -->
+									<button type="button" 
+										class="btn btn-sm btn-outline-danger btn-icon-action btn-delete-policy" 
+										title="Eliminar política" 
+										aria-label="Eliminar política"
+										data-bs-toggle="modal" 
+										data-bs-target="#modalDeleteSlaPolicy"
+										data-policy-id="{{ policy.id.toRfc4122 }}"
+										data-policy-name="{{ policy.name|e('html_attr') }}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<polyline points="3 6 5 6 21 6"/>
+											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+											<line x1="10" y1="11" x2="10" y2="17"/>
+											<line x1="14" y1="11" x2="14" y2="17"/>
+										</svg>
+									</button>
+								</div>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="6" class="text-center py-5 text-muted">
+								<div class="d-flex flex-column align-items-center justify-content-center">
+									<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 opacity-50">
+										<circle cx="12" cy="12" r="10"/>
+										<polyline points="12 6 12 12 16 14"/>
+									</svg>
+									<div class="fw-semibold text-dark">No hay políticas de SLA configuradas</div>
+									<div class="small text-muted mt-1">Haz clic en "Nueva Política" para definir los tiempos de respuesta y resolución.</div>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Paginación de Políticas SLA (Estándar 10 en 10) -->
+		<div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" id="slaPaginationFooter">
+			<div class="small text-secondary" id="slaPaginationInfo">
+				Mostrando <span class="fw-bold text-dark" id="slaPageStart">0</span> a <span class="fw-bold text-dark" id="slaPageEnd">0</span> de <span class="fw-bold text-dark" id="slaPageTotal">0</span> registros
+			</div>
+			<nav aria-label="Navegación de políticas">
+				<ul class="pagination pagination-sm mb-0 gap-1" id="slaPaginationNav"></ul>
+			</nav>
+		</div>
+	</div>
+</div>
+
+{# =====================================================================
+   1. MODAL: REGISTRAR / EDITAR POLÍTICA SLA
+   ===================================================================== #}
+<div class="modal fade" id="modalSaveSlaPolicy" tabindex="-1" aria-labelledby="modalSaveSlaPolicyLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content border-0 shadow">
+			<form action="{{ path('app_sla_policy_save') }}" method="post" id="formSaveSlaPolicy">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('save_sla_policy') }}">
+				<input type="hidden" name="id" id="policyId" value="">
+				
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalSaveSlaPolicyLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--panel, #14212B);">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 16 14"/>
+						</svg>
+						<span id="modalSaveSlaPolicyTitle">Nueva Política SLA</span>
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3">
+						<!-- Nombre de la Política -->
+						<div class="col-12 col-md-8">
+							<label for="policyName" class="form-label small fw-bold text-dark">Nombre de la Política <span class="text-danger">*</span></label>
+							<input type="text" class="form-control form-control-sm" id="policyName" name="name" required placeholder="Ej. SLA Crítico - Atención 24/7">
+							<div class="form-text small">Identificador descriptivo para agentes y coordinadores.</div>
+						</div>
+
+						<!-- Prioridad Asociada -->
+						<div class="col-12 col-md-4">
+							<label for="policyPriorityId" class="form-label small fw-bold text-dark">Nivel de Prioridad <span class="text-danger">*</span></label>
+							<select class="form-select form-select-sm" id="policyPriorityId" name="priority_id" required>
+								<option value="">Selecciona...</option>
+								{% for prio in priorities %}
+									<option value="{{ prio.id }}">{{ prio.name }}</option>
+								{% endfor %}
+							</select>
+							<div class="form-text small">Prioridad de ticket a la que aplica.</div>
+						</div>
+
+						<!-- Tiempo de Primera Respuesta -->
+						<div class="col-12 col-md-6">
+							<label for="policyResponseTime" class="form-label small fw-bold text-dark">Primera Respuesta (minutos) <span class="text-danger">*</span></label>
+							<div class="input-group input-group-sm">
+								<input type="number" class="form-control" id="policyResponseTime" name="response_time_minutes" min="1" max="10080" required value="60">
+								<span class="input-group-text">min</span>
+							</div>
+							<div class="form-text small" id="responseTimeHelper">Equivale a: 1 hora</div>
+						</div>
+
+						<!-- Tiempo de Resolución -->
+						<div class="col-12 col-md-6">
+							<label for="policyResolutionTime" class="form-label small fw-bold text-dark">Resolución Definitiva (minutos) <span class="text-danger">*</span></label>
+							<div class="input-group input-group-sm">
+								<input type="number" class="form-control" id="policyResolutionTime" name="resolution_time_minutes" min="1" max="43200" required value="240">
+								<span class="input-group-text">min</span>
+							</div>
+							<div class="form-text small" id="resolutionTimeHelper">Equivale a: 4 horas</div>
+						</div>
+
+						<!-- Horario Laboral vs 24/7 -->
+						<div class="col-12">
+							<div class="card bg-light border p-3 rounded-2">
+								<div class="form-check form-switch mb-0">
+									<input class="form-check-input" type="checkbox" id="policyBusinessHoursOnly" name="business_hours_only" value="1" checked>
+									<label class="form-check-label fw-bold text-dark small ms-1" for="policyBusinessHoursOnly">
+										Contar únicamente en Horario Laboral (Lunes a Viernes)
+									</label>
+								</div>
+								<div class="small text-muted mt-1 ps-4">
+									Si se desmarca, el cronómetro correrá de forma ininterrumpida las 24 horas del día, los 7 días de la semana (ideal para incidentes Críticos o de Alta severidad).
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-2">
+					<button type="submit" class="btn btn-panel-action" id="btnSubmitPolicy">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{# =====================================================================
+   2. MODAL: CONFIRMAR ELIMINACIÓN DE POLÍTICA SLA
+   ===================================================================== #}
+<div class="modal fade" id="modalDeleteSlaPolicy" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-sm">
+		<div class="modal-content border-0 shadow">
+			<form action="" method="post" id="formDeleteSlaPolicy">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('delete_sla_policy') }}">
+				
+				<div class="modal-body p-4 text-center">
+					<div class="delete-icon-wrapper mx-auto mb-3">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-danger">
+							<polyline points="3 6 5 6 21 6"/>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+						</svg>
+					</div>
+					<h5 class="fw-bold text-dark mb-1">¿Eliminar política?</h5>
+					<p class="text-muted small mb-0">
+						Estás a punto de eliminar <strong class="text-dark" id="deletePolicyName">--</strong>. Esta acción no se puede deshacer.
+					</p>
+				</div>
+
+				<div class="modal-footer border-0 px-3 pb-3 pt-0 justify-content-center gap-2">
+					<button type="submit" class="btn btn-danger px-3 py-2 fw-semibold rounded-3">Sí, Eliminar</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	// -------------------------------------------------------------
+	// 1. Helpers de Conversión de Minutos a Horas/Días
+	// -------------------------------------------------------------
+	function formatMinutes(minutes) {
+		const m = parseInt(minutes, 10);
+		if (isNaN(m) || m <= 0) return '0 min';
+		if (m < 60) return `${m} min`;
+		if (m < 1440) {
+			const h = Math.floor(m / 60);
+			const rem = m % 60;
+			return rem > 0 ? `${h} h ${rem} min` : `${h} h`;
+		}
+		const d = Math.floor(m / 1440);
+		const remH = Math.floor((m % 1440) / 60);
+		return remH > 0 ? `${d} d ${remH} h` : `${d} d`;
+	}
+
+	const respInput = document.getElementById('policyResponseTime');
+	const respHelper = document.getElementById('responseTimeHelper');
+	const resolInput = document.getElementById('policyResolutionTime');
+	const resolHelper = document.getElementById('resolutionTimeHelper');
+
+	if (respInput && respHelper) {
+		respInput.addEventListener('input', () => {
+			respHelper.textContent = 'Equivale a: ' + formatMinutes(respInput.value);
+		});
+	}
+	if (resolInput && resolHelper) {
+		resolInput.addEventListener('input', () => {
+			resolHelper.textContent = 'Equivale a: ' + formatMinutes(resolInput.value);
+		});
+	}
+
+	// -------------------------------------------------------------
+	// 2. Pre-llenado Modal Crear / Editar
+	// -------------------------------------------------------------
+	const btnNewPolicy = document.getElementById('btnNewPolicy');
+	const modalTitle = document.getElementById('modalSaveSlaPolicyTitle');
+	const policyIdInput = document.getElementById('policyId');
+	const policyNameInput = document.getElementById('policyName');
+	const policyPrioritySelect = document.getElementById('policyPriorityId');
+	const policyBusinessHoursSwitch = document.getElementById('policyBusinessHoursOnly');
+
+	if (btnNewPolicy) {
+		btnNewPolicy.addEventListener('click', function() {
+			modalTitle.textContent = 'Nueva Política SLA';
+			policyIdInput.value = '';
+			policyNameInput.value = '';
+			policyPrioritySelect.value = '';
+			respInput.value = '60';
+			resolInput.value = '240';
+			policyBusinessHoursSwitch.checked = true;
+			respHelper.textContent = 'Equivale a: 1 h';
+			resolHelper.textContent = 'Equivale a: 4 h';
+		});
+	}
+
+	document.querySelectorAll('.btn-edit-policy').forEach(button => {
+		button.addEventListener('click', function() {
+			modalTitle.textContent = 'Editar Política SLA';
+			policyIdInput.value = this.dataset.policyId || '';
+			policyNameInput.value = this.dataset.policyName || '';
+			policyPrioritySelect.value = this.dataset.policyPriorityId || '';
+			respInput.value = this.dataset.policyResponse || '60';
+			resolInput.value = this.dataset.policyResolution || '240';
+			policyBusinessHoursSwitch.checked = this.dataset.policyBusinessHours === '1';
+
+			respHelper.textContent = 'Equivale a: ' + formatMinutes(respInput.value);
+			resolHelper.textContent = 'Equivale a: ' + formatMinutes(resolInput.value);
+		});
+	});
+
+	// Modal Eliminar
+	const formDelete = document.getElementById('formDeleteSlaPolicy');
+	const deleteName = document.getElementById('deletePolicyName');
+	document.querySelectorAll('.btn-delete-policy').forEach(button => {
+		button.addEventListener('click', function() {
+			const id = this.dataset.policyId;
+			deleteName.textContent = this.dataset.policyName;
+			formDelete.action = `/sla/policies/${id}/delete`;
+		});
+	});
+
+	// -------------------------------------------------------------
+	// 3. Búsqueda, Filtrado y Paginación (10 en 10)
+	// -------------------------------------------------------------
+	const searchInput = document.getElementById('slaSearchInput');
+	const priorityFilter = document.getElementById('filterPriority');
+	const coverageFilter = document.getElementById('filterCoverage');
+	const rows = Array.from(document.querySelectorAll('.sla-row'));
+	const pageSize = 10;
+	let currentPage = 1;
+	let filteredRows = [...rows];
+
+	const pageStartEl = document.getElementById('slaPageStart');
+	const pageEndEl = document.getElementById('slaPageEnd');
+	const pageTotalEl = document.getElementById('slaPageTotal');
+	const paginationNav = document.getElementById('slaPaginationNav');
+	const paginationFooter = document.getElementById('slaPaginationFooter');
+
+	function applyFilters() {
+		const term = (searchInput?.value || '').toLowerCase().trim();
+		const prio = priorityFilter?.value || '';
+		const cov = coverageFilter?.value || '';
+
+		filteredRows = rows.filter(row => {
+			const sText = (row.dataset.search || '').toLowerCase();
+			const rowPrio = row.dataset.priorityName || '';
+			const isBusiness = row.dataset.businessHours === '1';
+
+			const matchText = term === '' || sText.includes(term);
+			const matchPrio = prio === '' || rowPrio === prio;
+			let matchCov = true;
+			if (cov === 'Laboral') matchCov = isBusiness;
+			else if (cov === '24/7') matchCov = !isBusiness;
+
+			return matchText && matchPrio && matchCov;
+		});
+
+		currentPage = 1;
+		renderTable();
+	}
+
+	function renderTable() {
+		const total = filteredRows.length;
+		const totalPages = Math.ceil(total / pageSize) || 1;
+		if (currentPage > totalPages) currentPage = totalPages;
+
+		const startIdx = (currentPage - 1) * pageSize;
+		const endIdx = startIdx + pageSize;
+
+		rows.forEach(r => r.style.display = 'none');
+		filteredRows.slice(startIdx, endIdx).forEach(r => r.style.display = '');
+
+		if (total === 0) {
+			if (pageStartEl) pageStartEl.textContent = '0';
+			if (pageEndEl) pageEndEl.textContent = '0';
+			if (pageTotalEl) pageTotalEl.textContent = '0';
+		} else {
+			if (pageStartEl) pageStartEl.textContent = String(startIdx + 1);
+			if (pageEndEl) pageEndEl.textContent = String(Math.min(endIdx, total));
+			if (pageTotalEl) pageTotalEl.textContent = String(total);
+		}
+
+		renderPagination(totalPages);
+	}
+
+	function renderPagination(totalPages) {
+		if (!paginationNav) return;
+		paginationNav.innerHTML = '';
+
+		if (totalPages <= 1) {
+			paginationFooter.style.display = total === 0 ? 'none' : 'flex';
+			return;
+		}
+		paginationFooter.style.display = 'flex';
+
+		// Anterior
+		const prevLi = document.createElement('li');
+		prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+		prevLi.innerHTML = `<button class="page-link" aria-label="Anterior">&laquo;</button>`;
+		prevLi.addEventListener('click', (e) => {
+			e.preventDefault();
+			if (currentPage > 1) {
+				currentPage--;
+				renderTable();
+			}
+		});
+		paginationNav.appendChild(prevLi);
+
+		// Números de Página
+		for (let i = 1; i <= totalPages; i++) {
+			const li = document.createElement('li');
+			li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+			li.innerHTML = `<button class="page-link">${i}</button>`;
+			li.addEventListener('click', (e) => {
+				e.preventDefault();
+				currentPage = i;
+				renderTable();
+			});
+			paginationNav.appendChild(li);
+		}
+
+		// Siguiente
+		const nextLi = document.createElement('li');
+		nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+		nextLi.innerHTML = `<button class="page-link" aria-label="Siguiente">&raquo;</button>`;
+		nextLi.addEventListener('click', (e) => {
+			e.preventDefault();
+			if (currentPage < totalPages) {
+				currentPage++;
+				renderTable();
+			}
+		});
+		paginationNav.appendChild(nextLi);
+	}
+
+	if (searchInput) searchInput.addEventListener('input', applyFilters);
+	if (priorityFilter) priorityFilter.addEventListener('change', applyFilters);
+	if (coverageFilter) coverageFilter.addEventListener('change', applyFilters);
+
+	// Inicializar vista
+	applyFilters();
+});
+</script>
+{% endblock %}

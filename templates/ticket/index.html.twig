@@ -178,11 +178,7 @@
 								<div class="text-muted small" style="font-size: 11px;">{{ t.createdAt|date('d/m/Y H:i') }}</div>
 							</td>
 							<td>
-								{% if t.type.value == 'Incidente' %}
-									<span class="text-danger fw-semibold small">Incidente</span>
-								{% else %}
-									<span class="text-primary fw-semibold small">Petición</span>
-								{% endif %}
+								<span class="small fw-semibold" style="color: var(--panel, #14212B);">{{ t.type.value }}</span>
 							</td>
 							<td>
 								<a href="javascript:void(0)" class="text-decoration-none fw-semibold text-dark btn-view-ticket" data-bs-toggle="modal" data-bs-target="#modalTicketDetails" data-id="{{ t.id.toRfc4122 }}">
@@ -204,7 +200,7 @@
 								</span>
 							</td>
 							<td>
-								<span class="small fw-semibold {{ t.status.isClosedState ? 'text-secondary' : 'text-success' }}">
+								<span class="small fw-semibold" style="color: var(--panel, #14212B);">
 									{{ t.status.name }}
 								</span>
 							</td>

@@ -77,21 +77,22 @@
 					</div>
 				</li>
 
-				<!-- 3. Motor SLA -->
+				<!-- 3. Tiempos de Atención (SLA) -->
+				{% set is_sla_route = app.request.attributes.get('_route') starts with 'app_sla_' %}
 				<li>
-					<a class="sidebar-link" data-bs-toggle="collapse" href="#menuSLA" role="button" aria-expanded="false" aria-controls="menuSLA">
+					<a class="sidebar-link {{ is_sla_route ? 'active' : '' }}" data-bs-toggle="collapse" href="#menuSLA" role="button" aria-expanded="{{ is_sla_route ? 'true' : 'false' }}" aria-controls="menuSLA">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="10"/>
 							<polyline points="12 6 12 12 16 14"/>
 						</svg>
-						<span>Motor SLA</span>
+						<span>Tiempos de Atención (SLA)</span>
 						<svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
 					</a>
-					<div class="collapse" id="menuSLA">
+					<div class="collapse {{ is_sla_route ? 'show' : '' }}" id="menuSLA">
 						<ul class="sidebar-submenu">
-							<li><a href="#" class="sidebar-sublink">Políticas & Matrices</a></li>
-							<li><a href="#" class="sidebar-sublink">Cronómetros (Workers)</a></li>
-							<li><a href="#" class="sidebar-sublink">Automatización & Alertas</a></li>
+							<li><a href="{{ path('app_sla_policy_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_sla_policy_' ? 'active' : '' }}">Políticas y Plazos</a></li>
+							<li><a href="#" class="sidebar-sublink">Monitor de Cumplimiento</a></li>
+							<li><a href="#" class="sidebar-sublink">Alertas y Escalamiento</a></li>
 						</ul>
 					</div>
 				</li>
