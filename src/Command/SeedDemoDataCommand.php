@@ -12,6 +12,7 @@ use App\Entity\Ticket;
 use App\Entity\TicketPriority;
 use App\Entity\TicketStatus;
 use App\Entity\User;
+use App\Enum\CiCategoryType;
 use App\Enum\CiItemStatus;
 use App\Enum\CiRelationshipType;
 use App\Enum\TicketType;
@@ -52,16 +53,41 @@ final class SeedDemoDataCommand extends Command
             return Command::FAILURE;
         }
 
-        // Obtener Categorías de CI existentes
+        // Asegurar Categorías de CI por defecto
         $categoryRepo = $this->em->getRepository(CiCategory::class);
-        $catServidores = $categoryRepo->findOneBy(['name' => 'Servidores en Rack']) ?? $categoryRepo->findOneBy([]);
-        $catRed = $categoryRepo->findOneBy(['name' => 'Equipos de Red (Switches / Routers)']) ?? $categoryRepo->findOneBy([]);
-        $catStorage = $categoryRepo->findOneBy(['name' => 'Almacenamiento (SAN / NAS)']) ?? $categoryRepo->findOneBy([]);
-        $catWorkstations = $categoryRepo->findOneBy(['name' => 'Laptops y Estaciones de Trabajo']) ?? $categoryRepo->findOneBy([]);
-        $catApps = $categoryRepo->findOneBy(['name' => 'Aplicaciones y Servicios Web']) ?? $categoryRepo->findOneBy([]);
-        $catDB = $categoryRepo->findOneBy(['name' => 'Bases de Datos']) ?? $categoryRepo->findOneBy([]);
-        $catCloud = $categoryRepo->findOneBy(['name' => 'Servicios Cloud e Infraestructura']) ?? $categoryRepo->findOneBy([]);
-        $catLic = $categoryRepo->findOneBy(['name' => 'Licencias y Certificados SSL']) ?? $categoryRepo->findOneBy([]);
+        $defaultCategories = [
+            ['name' => 'Servidores en Rack', 'type' => CiCategoryType::FISICO],
+            ['name' => 'Laptops y Estaciones de Trabajo', 'type' => CiCategoryType::FISICO],
+            ['name' => 'Equipos de Red (Switches / Routers)', 'type' => CiCategoryType::FISICO],
+            ['name' => 'Almacenamiento (SAN / NAS)', 'type' => CiCategoryType::FISICO],
+            ['name' => 'Periféricos e Impresoras', 'type' => CiCategoryType::FISICO],
+            ['name' => 'Sistemas Operativos', 'type' => CiCategoryType::LOGICO],
+            ['name' => 'Bases de Datos', 'type' => CiCategoryType::LOGICO],
+            ['name' => 'Aplicaciones y Servicios Web', 'type' => CiCategoryType::LOGICO],
+            ['name' => 'Servicios Cloud e Infraestructura', 'type' => CiCategoryType::LOGICO],
+            ['name' => 'Licencias y Certificados SSL', 'type' => CiCategoryType::LOGICO],
+        ];
+
+        foreach ($defaultCategories as $cData) {
+            $cat = $categoryRepo->findOneBy(['name' => $cData['name']]);
+            if (!$cat) {
+                $cat = new CiCategory();
+                $cat->setName($cData['name']);
+                $cat->setType($cData['type']);
+                $cat->setTenant($tenant);
+                $this->em->persist($cat);
+            }
+        }
+        $this->em->flush();
+
+        $catServidores = $categoryRepo->findOneBy(['name' => 'Servidores en Rack']);
+        $catRed = $categoryRepo->findOneBy(['name' => 'Equipos de Red (Switches / Routers)']);
+        $catStorage = $categoryRepo->findOneBy(['name' => 'Almacenamiento (SAN / NAS)']);
+        $catWorkstations = $categoryRepo->findOneBy(['name' => 'Laptops y Estaciones de Trabajo']);
+        $catApps = $categoryRepo->findOneBy(['name' => 'Aplicaciones y Servicios Web']);
+        $catDB = $categoryRepo->findOneBy(['name' => 'Bases de Datos']);
+        $catCloud = $categoryRepo->findOneBy(['name' => 'Servicios Cloud e Infraestructura']);
+        $catLic = $categoryRepo->findOneBy(['name' => 'Licencias y Certificados SSL']);
 
         // 2. Crear 10 Activos de Infraestructura
         $ciDefinitions = [
@@ -233,13 +259,53 @@ final class SeedDemoDataCommand extends Command
         $statusRepo = $this->em->getRepository(TicketStatus::class);
         $prioRepo = $this->em->getRepository(TicketPriority::class);
 
-        $stNuevo = $statusRepo->findOneBy(['name' => 'Nuevo']) ?? $statusRepo->findOneBy([]);
+        $statusesConfig = [
+            ['name' => 'Nuevo', 'order' => 1, 'closed' => false],
+            ['name' => 'En Proceso', 'order' => 2, 'closed' => false],
+            ['name' => 'En Espera', 'order' => 3, 'closed' => false],
+            ['name' => 'Resuelto', 'order' => 4, 'closed' => true],
+            ['name' => 'Cerrado', 'order' => 5, 'closed' => true],
+        ];
+
+        foreach ($statusesConfig as $config) {
+            $st = $statusRepo->findOneBy(['name' => $config['name']]);
+            if (!$st) {
+                $st = new TicketStatus();
+                $st->setTenant($tenant);
+                $st->setName($config['name']);
+                $st->setOrderIndex($config['order']);
+                $st->setIsClosedState($config['closed']);
+                $this->em->persist($st);
+            }
+        }
+
+        $prioritiesConfig = [
+            ['name' => 'Baja', 'level' => 1, 'color' => '#10b981'],
+            ['name' => 'Media', 'level' => 2, 'color' => '#3b82f6'],
+            ['name' => 'Alta', 'level' => 3, 'color' => '#f59e0b'],
+            ['name' => 'Crítica', 'level' => 4, 'color' => '#ef4444'],
+        ];
+
+        foreach ($prioritiesConfig as $pConfig) {
+            $pr = $prioRepo->findOneBy(['name' => $pConfig['name']]);
+            if (!$pr) {
+                $pr = new TicketPriority();
+                $pr->setTenant($tenant);
+                $pr->setName($pConfig['name']);
+                $pr->setLevel($pConfig['level']);
+                $pr->setColor($pConfig['color']);
+                $this->em->persist($pr);
+            }
+        }
+        $this->em->flush();
+
+        $stNuevo = $statusRepo->findOneBy(['name' => 'Nuevo']);
         $stEnProceso = $statusRepo->findOneBy(['name' => 'En Proceso']) ?? $stNuevo;
         $stEnEspera = $statusRepo->findOneBy(['name' => 'En Espera']) ?? $stNuevo;
         $stResuelto = $statusRepo->findOneBy(['name' => 'Resuelto']) ?? $stNuevo;
         $stCerrado = $statusRepo->findOneBy(['name' => 'Cerrado']) ?? $stNuevo;
 
-        $prBaja = $prioRepo->findOneBy(['name' => 'Baja']) ?? $prioRepo->findOneBy([]);
+        $prBaja = $prioRepo->findOneBy(['name' => 'Baja']);
         $prMedia = $prioRepo->findOneBy(['name' => 'Media']) ?? $prBaja;
         $prAlta = $prioRepo->findOneBy(['name' => 'Alta']) ?? $prBaja;
         $prCritica = $prioRepo->findOneBy(['name' => 'Crítica']) ?? $prAlta;
