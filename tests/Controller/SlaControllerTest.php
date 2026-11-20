@@ -88,4 +88,34 @@ final class SlaControllerTest extends WebTestCase
         $em->remove($user);
         $em->flush();
     }
+
+    public function testCompliancePageLoadsForAuthenticatedUser(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+
+        $testEmail = 'sla_comp_user@example.com';
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $testEmail]);
+        if (!$user) {
+            $user = new User();
+            $user->setName('SLA Comp User');
+            $user->setUsername('sla_comp_user');
+            $user->setEmail($testEmail);
+            $user->setPassword($hasher->hashPassword($user, 'Password123#'));
+            $em->persist($user);
+            $em->flush();
+        }
+
+        $client->loginUser($user);
+        $client->request('GET', '/sla/compliance');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Monitor de Cumplimiento SLA');
+        $this->assertSelectorExists('#complianceTable');
+        $this->assertSelectorExists('#compliancePaginationFooter');
+
+        $em->remove($user);
+        $em->flush();
+    }
 }

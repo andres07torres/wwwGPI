@@ -163,6 +163,16 @@
 
 		<!-- Área Visual del Grafo y Panel de Inspección Lateral -->
 		<div class="position-relative bg-light" style="min-height: 520px; height: 560px; overflow: hidden;" id="topologyCanvasContainer">
+			<!-- Skeleton Loader para el lienzo de topología -->
+			<div id="topologyCanvasSkeleton" class="position-absolute top-0 start-0 w-100 h-100 bg-light d-flex flex-column align-items-center justify-content-center placeholder-glow" style="z-index: 12; transition: opacity 0.3s ease;">
+				<div class="d-flex align-items-center justify-content-center gap-5 w-75 h-50">
+					<div class="placeholder rounded-circle" style="width: 54px; height: 54px;"></div>
+					<div class="placeholder rounded-circle" style="width: 72px; height: 72px;"></div>
+					<div class="placeholder rounded-circle" style="width: 54px; height: 54px;"></div>
+				</div>
+				<div class="small text-muted mt-2 fw-semibold">Cargando topología de infraestructura...</div>
+			</div>
+
 			<!-- Canvas interactivo de dibujo del grafo -->
 			<canvas id="topologyCanvas" class="w-100 h-100" style="cursor: grab; display: block;"></canvas>
 
@@ -528,6 +538,13 @@
 				simulateStep();
 				simSteps++;
 				render();
+				if (simSteps === 2) {
+					const canvasSkeleton = document.getElementById('topologyCanvasSkeleton');
+					if (canvasSkeleton) {
+						canvasSkeleton.style.opacity = '0';
+						setTimeout(() => { if (canvasSkeleton && canvasSkeleton.parentNode) canvasSkeleton.remove(); }, 300);
+					}
+				}
 				requestAnimationFrame(runSimulation);
 			}
 		}

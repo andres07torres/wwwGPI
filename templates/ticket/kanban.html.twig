@@ -428,8 +428,44 @@
 			const commentTicketIdInput = document.getElementById('commentTicketId');
 			if (commentTicketIdInput) commentTicketIdInput.value = ticketId;
 
+			const codeEl = document.getElementById('detailTicketCode');
+			const titleEl = document.getElementById('detailTicketTitle');
+			const typeEl = document.getElementById('detailTicketType');
+			const priorityEl = document.getElementById('detailTicketPriority');
+			const requesterEl = document.getElementById('detailTicketRequester');
+			const assigneeEl = document.getElementById('detailTicketAssignee');
+			const createdAtEl = document.getElementById('detailTicketCreatedAt');
+			const descEl = document.getElementById('detailTicketDescription');
 			const chatBox = document.getElementById('ticketChatBox');
-			if (chatBox) chatBox.innerHTML = '<div class="text-center py-4 text-muted small">Cargando conversación...</div>';
+
+			// Estado Skeleton animado mientras carga
+			if (codeEl) codeEl.innerHTML = '<span class="placeholder col-12" style="width: 70px; display: inline-block;"></span>';
+			if (titleEl) titleEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-8"></span></span>';
+			if (typeEl) typeEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-6"></span></span>';
+			if (priorityEl) priorityEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-6"></span></span>';
+			if (requesterEl) requesterEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-8"></span></span>';
+			if (assigneeEl) assigneeEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-7"></span></span>';
+			if (createdAtEl) createdAtEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-6"></span></span>';
+			if (descEl) descEl.innerHTML = `
+				<div class="placeholder-glow py-1">
+					<span class="placeholder col-12 mb-2"></span>
+					<span class="placeholder col-10 mb-2"></span>
+					<span class="placeholder col-7"></span>
+				</div>`;
+
+			if (chatBox) chatBox.innerHTML = `
+				<div class="placeholder-glow d-flex flex-column gap-3 py-2">
+					<div class="p-3 rounded-3 bg-white border" style="max-width: 80%;">
+						<div class="placeholder col-5 mb-2"></div>
+						<div class="placeholder col-12 mb-1"></div>
+						<div class="placeholder col-8"></div>
+					</div>
+					<div class="p-3 rounded-3 bg-white border align-self-end" style="width: 75%;">
+						<div class="placeholder col-4 mb-2"></div>
+						<div class="placeholder col-11 mb-1"></div>
+						<div class="placeholder col-6"></div>
+					</div>
+				</div>`;
 
 			try {
 				const res = await fetch(`/tickets/${ticketId}/details`);

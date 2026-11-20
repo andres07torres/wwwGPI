@@ -15,6 +15,7 @@ services:
       SERVER_NAME: ":80"
       APP_ENV: ${APP_ENV:-dev}
       APP_DEBUG: ${APP_DEBUG:-1}
+      TZ: America/Guayaquil
       DATABASE_URL: "mysql://${MYSQL_USER:-user_gpi}:${MYSQL_PASSWORD:-user_password}@database:3306/${MYSQL_DATABASE:-db_GPI}?serverVersion=8.0.32&charset=utf8mb4"
     volumes:
       - ./:/app:rw
@@ -32,6 +33,7 @@ services:
     container_name: symfony_mysql
     restart: unless-stopped
     environment:
+      TZ: America/Guayaquil
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-db_GPI}
       MYSQL_USER: ${MYSQL_USER:-user_gpi}

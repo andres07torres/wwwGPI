@@ -293,9 +293,12 @@
 		</div>
 
 		<!-- Paginación de Políticas SLA (Estándar 10 en 10) -->
+		{% set totalPoliciesCount = policies|length %}
+		{% set initialPoliciesStart = totalPoliciesCount > 0 ? 1 : 0 %}
+		{% set initialPoliciesEnd = totalPoliciesCount > 10 ? 10 : totalPoliciesCount %}
 		<div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" id="slaPaginationFooter">
 			<div class="small text-secondary" id="slaPaginationInfo">
-				Mostrando <span class="fw-bold text-dark" id="slaPageStart">0</span> a <span class="fw-bold text-dark" id="slaPageEnd">0</span> de <span class="fw-bold text-dark" id="slaPageTotal">0</span> registros
+				Mostrando <span class="fw-bold text-dark" id="slaPageStart">{{ initialPoliciesStart }}</span> a <span class="fw-bold text-dark" id="slaPageEnd">{{ initialPoliciesEnd }}</span> de <span class="fw-bold text-dark" id="slaPageTotal">{{ totalPoliciesCount }}</span> registros
 			</div>
 			<nav aria-label="Navegación de políticas">
 				<ul class="pagination pagination-sm mb-0 gap-1" id="slaPaginationNav"></ul>
@@ -424,10 +427,11 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-	// -------------------------------------------------------------
-	// 1. Helpers de Conversión de Minutos a Horas/Días
-	// -------------------------------------------------------------
+(function() {
+	function initPoliciesModule() {
+		// -------------------------------------------------------------
+		// 1. Helpers de Conversión de Minutos a Horas/Días
+		// -------------------------------------------------------------
 	function formatMinutes(minutes) {
 		const m = parseInt(minutes, 10);
 		if (isNaN(m) || m <= 0) return '0 min';
@@ -569,23 +573,29 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (pageTotalEl) pageTotalEl.textContent = String(total);
 		}
 
-		renderPagination(totalPages);
+		renderPagination(totalPages, total);
 	}
 
-	function renderPagination(totalPages) {
+	function renderPagination(totalPages, total) {
 		if (!paginationNav) return;
 		paginationNav.innerHTML = '';
 
 		if (totalPages <= 1) {
-			paginationFooter.style.display = total === 0 ? 'none' : 'flex';
+			if (paginationFooter) paginationFooter.style.display = total === 0 ? 'none' : 'flex';
+			if (total > 0) {
+				const singleLi = document.createElement('li');
+				singleLi.className = 'page-item active';
+				singleLi.innerHTML = `<button type="button" class="page-link">1</button>`;
+				paginationNav.appendChild(singleLi);
+			}
 			return;
 		}
-		paginationFooter.style.display = 'flex';
+		if (paginationFooter) paginationFooter.style.display = 'flex';
 
 		// Anterior
 		const prevLi = document.createElement('li');
 		prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-		prevLi.innerHTML = `<button class="page-link" aria-label="Anterior">&laquo;</button>`;
+		prevLi.innerHTML = `<button class="page-link" aria-label="Anterior">&laquo; Anterior</button>`;
 		prevLi.addEventListener('click', (e) => {
 			e.preventDefault();
 			if (currentPage > 1) {
@@ -611,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Siguiente
 		const nextLi = document.createElement('li');
 		nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-		nextLi.innerHTML = `<button class="page-link" aria-label="Siguiente">&raquo;</button>`;
+		nextLi.innerHTML = `<button class="page-link" aria-label="Siguiente">Siguiente &raquo;</button>`;
 		nextLi.addEventListener('click', (e) => {
 			e.preventDefault();
 			if (currentPage < totalPages) {
@@ -628,6 +638,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Inicializar vista
 	applyFilters();
-});
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initPoliciesModule);
+} else {
+	initPoliciesModule();
+}
+document.addEventListener('turbo:load', initPoliciesModule);
+})();
 </script>
 {% endblock %}

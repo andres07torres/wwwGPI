@@ -1,0 +1,758 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Monitor de Cumplimiento SLA{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo con Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Tiempos de Atención (SLA)</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Monitor de Cumplimiento</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Monitor de Cumplimiento SLA</h1>
+				<p class="text-muted mb-0">
+					Supervisa en tiempo real los cronómetros de primera respuesta y resolución para prevenir incumplimientos en los acuerdos de servicio.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<a href="{{ path('app_sla_policy_index') }}" class="btn btn-panel-action shadow-sm">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="12" cy="12" r="10"/>
+						<polyline points="12 6 12 12 16 14"/>
+					</svg>
+					<span>Políticas y Plazos</span>
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<!-- Resumen Rápido de Indicadores (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Cumplimiento Global -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Cumplimiento Global">Cumplimiento Global</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.compliance_rate }}%</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Tasa de cumplimiento de SLA">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+							<polyline points="22 4 12 14.01 9 11.01"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: En Tiempo -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Tickets En Tiempo">En Tiempo</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.on_time }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Dentro de los plazos">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 16 14"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: En Riesgo -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Tickets En Riesgo">En Riesgo</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.at_risk }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Próximos a vencer (70%+ transcurrido)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+							<line x1="12" y1="9" x2="12" y2="13"/>
+							<line x1="12" y1="17" x2="12.01" y2="17"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Incumplidos -->
+		<div class="col-6 col-md-3">
+			<div class="card border-0 shadow-sm p-3 rounded-3 h-100">
+				<div class="d-flex align-items-center justify-content-between gap-2">
+					<div class="min-w-0 flex-grow-1">
+						<div class="text-muted small fw-semibold text-uppercase text-truncate" style="letter-spacing: 0.3px; font-size: 11px;" title="Tickets Incumplidos">Incumplidos</div>
+						<div class="h3 fw-bold text-dark mb-0 mt-1">{{ stats.breached }}</div>
+					</div>
+					<div class="kpi-icon-panel flex-shrink-0" title="Plazo superado">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"/>
+							<line x1="15" y1="9" x2="9" y2="15"/>
+							<line x1="9" y1="9" x2="15" y2="15"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tarjeta Principal con Filtros y Tabla -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+		<!-- Filtros de búsqueda -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="row g-2 align-items-center">
+				<div class="col-12 col-md-5">
+					<div class="position-relative">
+						<input type="text" id="complianceSearchInput" class="form-control form-control-sm ps-4" placeholder="Buscar por código, título, solicitante...">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+				<div class="col-6 col-md-3">
+					<select id="filterSlaStatus" class="form-select form-select-sm">
+						<option value="">Todos los estados SLA</option>
+						<option value="En Tiempo">En Tiempo</option>
+						<option value="En Riesgo">En Riesgo</option>
+						<option value="Incumplido">Incumplido</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<select id="filterPriority" class="form-select form-select-sm">
+						<option value="">Todas las prioridades</option>
+						{% for prio in priorities %}
+							<option value="{{ prio.name }}">{{ prio.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-12 col-md-2">
+					<select id="filterType" class="form-select form-select-sm">
+						<option value="">Todos los tipos</option>
+						<option value="Incidente">Incidente</option>
+						<option value="Petición">Petición</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tabla de Monitor de Cumplimiento -->
+		<div class="table-responsive">
+			<table class="table align-middle table-hover mb-0" id="complianceTable">
+				<thead class="table-light">
+					<tr>
+						<th class="ps-3 py-3 text-secondary text-uppercase small fw-bold" style="width: 14%;">Código</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 9%;">Tipo</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 25%;">Título / Requerimiento</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 11%;">Prioridad</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 15%;">Primera Respuesta</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 15%;">Resolución</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 11%;">Estado SLA</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold text-end pe-3" style="width: 10%;">Acción</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in items %}
+						{% set t = item.ticket %}
+						<tr class="compliance-row"
+							data-search="{{ t.ticketCode }} {{ t.title }} {{ t.requester ? t.requester.name : '' }} {{ t.assignee ? t.assignee.name : '' }}"
+							data-type="{{ t.type.value }}"
+							data-priority="{{ t.priority ? t.priority.name : '' }}"
+							data-sla-status="{{ item.overall_text }}">
+							
+							<!-- Columna Código -->
+							<td class="ps-3 py-3">
+								<a href="javascript:void(0)" class="fw-bold font-monospace text-decoration-none btn-view-ticket" data-bs-toggle="modal" data-bs-target="#modalTicketDetails" data-id="{{ t.id.toRfc4122 }}" style="color: var(--panel, #14212B);">
+									{{ t.ticketCode }}
+								</a>
+								<div class="text-muted small" style="font-size: 11px;">{{ t.createdAt|date('d/m/Y H:i') }}</div>
+							</td>
+
+							<!-- Columna Tipo (Color Navbar #14212B sin colores) -->
+							<td class="py-3">
+								<span class="small fw-semibold" style="color: var(--panel, #14212B);">{{ t.type.value }}</span>
+							</td>
+
+							<!-- Columna Título -->
+							<td class="py-3">
+								<a href="javascript:void(0)" class="text-decoration-none fw-semibold text-dark btn-view-ticket" data-bs-toggle="modal" data-bs-target="#modalTicketDetails" data-id="{{ t.id.toRfc4122 }}">
+									{{ t.title }}
+								</a>
+								<div class="text-muted small text-truncate" style="max-width: 300px;">
+									{{ t.description }}
+								</div>
+							</td>
+
+							<!-- Columna Prioridad (Conserva sus colores) -->
+							<td class="py-3">
+								{% if t.priority %}
+									<span class="small fw-semibold" style="color: {{ t.priority.color|default('#14212B') }};">
+										{{ t.priority.name }}
+									</span>
+								{% else %}
+									<span class="small text-muted">Sin prioridad</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna Primera Respuesta -->
+							<td class="py-3">
+								<div class="d-flex align-items-center gap-1.5 small fw-semibold">
+									{% if item.response.state == 'breached' %}
+										<span class="text-danger">{{ item.response.label }}</span>
+									{% else %}
+										<span style="color: var(--panel, #14212B);">{{ item.response.label }}</span>
+									{% endif %}
+								</div>
+								<div class="small text-muted" style="font-size: 11px;">
+									{{ item.response.detail }}
+								</div>
+							</td>
+
+							<!-- Columna Resolución -->
+							<td class="py-3">
+								<div class="d-flex align-items-center justify-content-between mb-1" style="max-width: 150px;">
+									<span class="small fw-semibold" style="font-size: 11px; color: {% if item.resolution.state == 'breached' %}#ef4444{% elseif item.resolution.state == 'at_risk' %}#f59e0b{% else %}var(--panel, #14212B){% endif %};">
+										{{ item.resolution.label }}
+									</span>
+									<span class="small text-muted" style="font-size: 10px;">{{ item.resolution.progress }}%</span>
+								</div>
+								<!-- Barra de progreso SLA -->
+								<div class="progress" style="height: 4px; max-width: 150px; background-color: #e2e8f0;">
+									<div class="progress-bar" role="progressbar" 
+										style="width: {{ item.resolution.progress }}%; background-color: {% if item.resolution.state == 'breached' %}#ef4444{% elseif item.resolution.state == 'at_risk' %}#f59e0b{% else %}var(--panel, #14212B){% endif %};" 
+										aria-valuenow="{{ item.resolution.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+								</div>
+								<div class="small text-muted mt-1" style="font-size: 11px;">
+									{{ item.resolution.detail }}
+								</div>
+							</td>
+
+							<!-- Columna Estado SLA (Tipografía limpia sin botón) -->
+							<td class="py-3">
+								{% if item.overall_status == 'breached' %}
+									<span class="small fw-bold text-danger">Incumplido</span>
+								{% elseif item.overall_status == 'at_risk' %}
+									<span class="small fw-bold" style="color: #d97706;">En Riesgo</span>
+								{% else %}
+									<span class="small fw-bold" style="color: var(--panel, #14212B);">En Tiempo</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna Acción -->
+							<td class="py-3 text-end pe-3">
+								<button type="button" class="btn btn-sm btn-outline-panel btn-view-ticket" data-bs-toggle="modal" data-bs-target="#modalTicketDetails" data-id="{{ t.id.toRfc4122 }}" title="Ver detalle y seguimiento">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+									</svg>
+									<span class="d-none d-lg-inline ms-1">Detalle</span>
+								</button>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="8" class="text-center py-5 text-muted">
+								<div class="d-flex flex-column align-items-center justify-content-center">
+									<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 opacity-50">
+										<circle cx="12" cy="12" r="10"/>
+										<polyline points="12 6 12 12 16 14"/>
+									</svg>
+									<div class="fw-semibold text-dark">No hay tickets monitoreados actualmente</div>
+									<div class="small text-muted mt-1">Los tickets registrados en Mesa de Ayuda se monitorearán automáticamente aquí.</div>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Paginación de Cumplimiento (10 en 10) -->
+		{% set totalComplianceCount = items|length %}
+		{% set initialComplianceStart = totalComplianceCount > 0 ? 1 : 0 %}
+		{% set initialComplianceEnd = totalComplianceCount > 10 ? 10 : totalComplianceCount %}
+		<div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" id="compliancePaginationFooter">
+			<div class="small text-secondary" id="compliancePaginationInfo">
+				Mostrando <span class="fw-bold text-dark" id="compliancePageStart">{{ initialComplianceStart }}</span> a <span class="fw-bold text-dark" id="compliancePageEnd">{{ initialComplianceEnd }}</span> de <span class="fw-bold text-dark" id="compliancePageTotal">{{ totalComplianceCount }}</span> registros
+			</div>
+			<nav aria-label="Navegación de cumplimiento">
+				<ul class="pagination pagination-sm mb-0 gap-1" id="compliancePaginationNav"></ul>
+			</nav>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL DETALLE DEL TICKET & CHAT (CLIENTE / TÉCNICO)
+     ========================================================================= -->
+<div class="modal fade" id="modalTicketDetails" tabindex="-1" aria-labelledby="modalTicketDetailsLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg rounded-3">
+			<div class="modal-header bg-light border-bottom px-4 py-3">
+				<div class="d-flex align-items-center gap-2">
+					<div class="modal-icon-panel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+						</svg>
+					</div>
+					<span class="badge bg-dark font-monospace fs-6" id="detailTicketCode">TCK-0000</span>
+					<h5 class="modal-title fw-bold text-dark mb-0" id="detailTicketTitle">Cargando...</h5>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body p-4">
+				<div class="row g-4">
+					<!-- Columna izquierda: Información del Ticket -->
+					<div class="col-lg-5 border-end">
+						<h6 class="text-uppercase fw-bold text-secondary small mb-3">Información del Ticket</h6>
+						
+						<div class="bg-light p-3 rounded-3 mb-3">
+							<div class="row g-2 small">
+								<div class="col-5 text-muted">Tipo:</div>
+								<div class="col-7 fw-semibold" id="detailTicketType">-</div>
+								
+								<div class="col-5 text-muted">Prioridad:</div>
+								<div class="col-7" id="detailTicketPriority">-</div>
+								
+								<div class="col-5 text-muted">Estado Actual:</div>
+								<div class="col-7">
+									<select id="detailSelectStatus" class="form-select form-select-sm">
+										{% for st in statuses %}
+											<option value="{{ st.id }}">{{ st.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+								
+								<div class="col-5 text-muted">Solicitante:</div>
+								<div class="col-7 fw-semibold" id="detailTicketRequester">-</div>
+								
+								<div class="col-5 text-muted">Asignado a:</div>
+								<div class="col-7 fw-semibold" id="detailTicketAssignee">-</div>
+								
+								<div class="col-5 text-muted">Fecha Creación:</div>
+								<div class="col-7" id="detailTicketCreatedAt">-</div>
+							</div>
+						</div>
+
+						<h6 class="text-uppercase fw-bold text-secondary small mb-2">Descripción</h6>
+						<div class="p-3 bg-white border rounded-3 text-secondary small mb-3" id="detailTicketDescription" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">
+						</div>
+					</div>
+
+					<!-- Columna derecha: Chat / Interacción Cliente - Técnico -->
+					<div class="col-lg-7 d-flex flex-column" style="min-height: 480px;">
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<h6 class="text-uppercase fw-bold text-secondary small mb-0 d-flex align-items-center gap-2">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+								Chat & Comentarios (Cliente / Técnico)
+							</h6>
+							<span class="badge bg-light text-muted border" id="commentCountBadge">0 comentarios</span>
+						</div>
+
+						<!-- Caja de scroll con el hilo de conversación -->
+						<div class="flex-grow-1 p-3 bg-light rounded-3 border mb-3 overflow-auto" id="ticketChatBox" style="max-height: 320px; min-height: 240px;">
+							<div class="text-center py-4 text-muted small" id="noCommentsPlaceholder">
+								No hay comentarios aún en este ticket. Sé el primero en responder.
+							</div>
+						</div>
+
+						<!-- Formulario de envío de nuevo mensaje en el chat -->
+						<form id="formAddComment" class="mt-auto">
+							<input type="hidden" name="_csrf_token" value="{{ csrf_token('ticket_comment') }}">
+							<input type="hidden" id="commentTicketId" value="">
+							<div class="mb-2">
+								<textarea id="commentContent" class="form-control" rows="2" placeholder="Escribe una respuesta o nota técnica..." required></textarea>
+							</div>
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="form-check form-switch mb-0">
+									<input class="form-check-input" type="checkbox" id="commentIsPrivate">
+									<label class="form-check-label small text-secondary" for="commentIsPrivate">
+										Nota interna privada (Solo agentes/técnicos)
+									</label>
+								</div>
+								<button type="submit" class="btn btn-panel-action btn-sm px-3 d-flex align-items-center gap-1" id="btnSendComment">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<line x1="22" y1="2" x2="11" y2="13"/>
+										<polygon points="22 2 15 22 11 13 2 9 22 2"/>
+									</svg>
+									<span>Enviar</span>
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	function initComplianceModule() {
+		// -------------------------------------------------------------
+		// 1. Modal Detalle de Ticket & Chat
+		// -------------------------------------------------------------
+		const modalDetailsEl = document.getElementById('modalTicketDetails');
+		const csrfStatusToken = "{{ csrf_token('ticket_status') }}";
+
+		if (modalDetailsEl && !modalDetailsEl.dataset.initialized) {
+			modalDetailsEl.dataset.initialized = 'true';
+			modalDetailsEl.addEventListener('show.bs.modal', function (event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-view-ticket') || event.relatedTarget) : null;
+				if (btn && btn.dataset.id) {
+					loadTicketDetails(btn.dataset.id);
+				}
+			});
+		}
+
+		document.querySelectorAll('.btn-view-ticket').forEach(btn => {
+			if (btn.dataset.hasClickListener) return;
+			btn.dataset.hasClickListener = 'true';
+			btn.addEventListener('click', function () {
+				const ticketId = this.dataset.id;
+				if (ticketId) {
+					loadTicketDetails(ticketId);
+					if (modalDetailsEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+						bootstrap.Modal.getOrCreateInstance(modalDetailsEl).show();
+					}
+				}
+			});
+		});
+
+	async function loadTicketDetails(ticketId) {
+		if (!ticketId) return;
+		const commentTicketIdInput = document.getElementById('commentTicketId');
+		if (commentTicketIdInput) commentTicketIdInput.value = ticketId;
+
+		const codeEl = document.getElementById('detailTicketCode');
+		const titleEl = document.getElementById('detailTicketTitle');
+		const typeEl = document.getElementById('detailTicketType');
+		const priorityEl = document.getElementById('detailTicketPriority');
+		const requesterEl = document.getElementById('detailTicketRequester');
+		const assigneeEl = document.getElementById('detailTicketAssignee');
+		const createdAtEl = document.getElementById('detailTicketCreatedAt');
+		const descEl = document.getElementById('detailTicketDescription');
+		const chatBox = document.getElementById('ticketChatBox');
+
+		// Estado Skeleton animado mientras carga
+		if (codeEl) codeEl.innerHTML = '<span class="placeholder col-12" style="width: 70px; display: inline-block;"></span>';
+		if (titleEl) titleEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-8"></span></span>';
+		if (typeEl) typeEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-6"></span></span>';
+		if (priorityEl) priorityEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-6"></span></span>';
+		if (requesterEl) requesterEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-8"></span></span>';
+		if (assigneeEl) assigneeEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-7"></span></span>';
+		if (createdAtEl) createdAtEl.innerHTML = '<span class="placeholder-glow"><span class="placeholder col-6"></span></span>';
+		if (descEl) descEl.innerHTML = `
+			<div class="placeholder-glow py-1">
+				<span class="placeholder col-12 mb-2"></span>
+				<span class="placeholder col-10 mb-2"></span>
+				<span class="placeholder col-7"></span>
+			</div>`;
+
+		if (chatBox) chatBox.innerHTML = `
+			<div class="placeholder-glow d-flex flex-column gap-3 py-2">
+				<div class="p-3 rounded-3 bg-white border" style="max-width: 80%;">
+					<div class="placeholder col-5 mb-2"></div>
+					<div class="placeholder col-12 mb-1"></div>
+					<div class="placeholder col-8"></div>
+				</div>
+				<div class="p-3 rounded-3 bg-white border align-self-end" style="width: 75%;">
+					<div class="placeholder col-4 mb-2"></div>
+					<div class="placeholder col-11 mb-1"></div>
+					<div class="placeholder col-6"></div>
+				</div>
+			</div>`;
+
+		try {
+			const res = await fetch(`/tickets/${ticketId}/details`);
+			const data = await res.json();
+
+			if (data.success) {
+				const t = data.ticket;
+				const codeEl = document.getElementById('detailTicketCode');
+				const titleEl = document.getElementById('detailTicketTitle');
+				const typeEl = document.getElementById('detailTicketType');
+				const priorityEl = document.getElementById('detailTicketPriority');
+				const requesterEl = document.getElementById('detailTicketRequester');
+				const assigneeEl = document.getElementById('detailTicketAssignee');
+				const createdAtEl = document.getElementById('detailTicketCreatedAt');
+				const descEl = document.getElementById('detailTicketDescription');
+
+				if (codeEl) codeEl.textContent = t.code;
+				if (titleEl) titleEl.textContent = t.title;
+				if (typeEl) typeEl.textContent = t.type;
+				if (priorityEl) priorityEl.innerHTML = `<span class="fw-semibold small" style="color: ${t.priorityColor || '#6c757d'};">${t.priority}</span>`;
+				if (requesterEl) requesterEl.textContent = t.requester;
+				if (assigneeEl) assigneeEl.textContent = t.assignee;
+				if (createdAtEl) createdAtEl.textContent = t.createdAt;
+				if (descEl) descEl.textContent = t.description;
+
+				const selectStatus = document.getElementById('detailSelectStatus');
+				if (selectStatus) {
+					selectStatus.value = t.statusId;
+					selectStatus.onchange = async function () {
+						const formBody = new URLSearchParams();
+						formBody.append('_csrf_token', csrfStatusToken);
+						formBody.append('status_id', selectStatus.value);
+
+						const updateRes = await fetch(`/tickets/${ticketId}/status`, {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+							body: formBody
+						});
+						const updateData = await updateRes.json();
+						if (updateData.success && typeof Swal !== 'undefined') {
+							Swal.fire({
+								toast: true,
+								position: 'top-end',
+								icon: 'success',
+								title: updateData.message,
+								showConfirmButton: false,
+								timer: 2000
+							});
+						}
+					};
+				}
+
+				renderComments(t.comments);
+			}
+		} catch (err) {
+			console.error('Error al cargar detalle del ticket:', err);
+		}
+	}
+
+	function renderComments(comments) {
+		const chatBox = document.getElementById('ticketChatBox');
+		const badge = document.getElementById('commentCountBadge');
+		if (badge) badge.textContent = `${comments.length} comentarios`;
+
+		if (!comments || comments.length === 0) {
+			chatBox.innerHTML = '<div class="text-center py-4 text-muted small">No hay comentarios aún en este ticket. Sé el primero en responder.</div>';
+			return;
+		}
+
+		chatBox.innerHTML = '';
+		comments.forEach(c => {
+			const div = document.createElement('div');
+			div.className = `p-3 mb-2 rounded-3 border ${c.isPrivate ? 'bg-warning-subtle border-warning' : 'bg-white'}`;
+			div.innerHTML = `
+				<div class="d-flex align-items-center justify-content-between mb-1">
+					<span class="fw-bold small text-dark">${c.author}</span>
+					<div class="d-flex align-items-center gap-2">
+						${c.isPrivate ? '<span class="badge bg-warning text-dark border border-warning" style="font-size: 10px;">Nota Interna</span>' : '<span class="badge bg-light text-muted border" style="font-size: 10px;">Público</span>'}
+						<span class="text-muted" style="font-size: 11px;">${c.createdAt}</span>
+					</div>
+				</div>
+				<div class="text-secondary small" style="white-space: pre-wrap;">${c.content}</div>
+			`;
+			chatBox.appendChild(div);
+		});
+		chatBox.scrollTop = chatBox.scrollHeight;
+	}
+
+	// Enviar Comentario / Mensaje de Chat
+	const formComment = document.getElementById('formAddComment');
+	if (formComment && !formComment.dataset.hasSubmitHandler) {
+		formComment.dataset.hasSubmitHandler = 'true';
+		formComment.addEventListener('submit', async function (e) {
+			e.preventDefault();
+			if (this.dataset.submitting === 'true') return;
+			this.dataset.submitting = 'true';
+
+			const ticketId = document.getElementById('commentTicketId').value;
+			const content = document.getElementById('commentContent').value.trim();
+			const isPrivate = document.getElementById('commentIsPrivate').checked;
+			const submitBtn = document.getElementById('btnSendComment');
+
+			if (!ticketId || !content) {
+				this.dataset.submitting = 'false';
+				return;
+			}
+			submitBtn.disabled = true;
+
+			try {
+				const bodyData = new URLSearchParams();
+				bodyData.append('_csrf_token', "{{ csrf_token('ticket_comment') }}");
+				bodyData.append('content', content);
+				if (isPrivate) bodyData.append('is_private', '1');
+
+				const res = await fetch(`/tickets/${ticketId}/comment`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: bodyData
+				});
+				const data = await res.json();
+
+				if (data.success) {
+					document.getElementById('commentContent').value = '';
+					document.getElementById('commentIsPrivate').checked = false;
+					const detailsRes = await fetch(`/tickets/${ticketId}/details`);
+					const detailsData = await detailsRes.json();
+					if (detailsData.success) {
+						renderComments(detailsData.ticket.comments);
+					}
+				} else {
+					alert(data.message || 'Error al enviar mensaje.');
+				}
+			} catch (err) {
+				alert('Error al enviar el mensaje.');
+			} finally {
+				submitBtn.disabled = false;
+				this.dataset.submitting = 'false';
+			}
+		});
+	}
+
+	// -------------------------------------------------------------
+	// 2. Búsqueda, Filtrado y Paginación (10 en 10)
+	// -------------------------------------------------------------
+	const searchInput = document.getElementById('complianceSearchInput');
+	const slaStatusFilter = document.getElementById('filterSlaStatus');
+	const priorityFilter = document.getElementById('filterPriority');
+	const typeFilter = document.getElementById('filterType');
+
+	const rows = Array.from(document.querySelectorAll('.compliance-row'));
+	const pageSize = 10;
+	let currentPage = 1;
+	let filteredRows = [...rows];
+
+	const pageStartEl = document.getElementById('compliancePageStart');
+	const pageEndEl = document.getElementById('compliancePageEnd');
+	const pageTotalEl = document.getElementById('compliancePageTotal');
+	const paginationNav = document.getElementById('compliancePaginationNav');
+	const paginationFooter = document.getElementById('compliancePaginationFooter');
+
+	function applyFilters() {
+		const term = (searchInput?.value || '').toLowerCase().trim();
+		const slaStatus = slaStatusFilter?.value || '';
+		const prio = priorityFilter?.value || '';
+		const type = typeFilter?.value || '';
+
+		filteredRows = rows.filter(row => {
+			const sText = (row.dataset.search || '').toLowerCase();
+			const rowType = row.dataset.type || '';
+			const rowPrio = row.dataset.priority || '';
+			const rowSlaStatus = row.dataset.slaStatus || '';
+
+			const matchText = term === '' || sText.includes(term);
+			const matchType = type === '' || rowType === type;
+			const matchPrio = prio === '' || rowPrio === prio;
+			const matchSlaStatus = slaStatus === '' || rowSlaStatus === slaStatus;
+
+			return matchText && matchType && matchPrio && matchSlaStatus;
+		});
+
+		currentPage = 1;
+		renderTable();
+	}
+
+	function renderTable() {
+		const total = filteredRows.length;
+		const totalPages = Math.ceil(total / pageSize) || 1;
+		if (currentPage > totalPages) currentPage = totalPages;
+
+		const startIdx = (currentPage - 1) * pageSize;
+		const endIdx = startIdx + pageSize;
+
+		rows.forEach(r => r.style.display = 'none');
+		filteredRows.slice(startIdx, endIdx).forEach(r => r.style.display = '');
+
+		if (total === 0) {
+			if (pageStartEl) pageStartEl.textContent = '0';
+			if (pageEndEl) pageEndEl.textContent = '0';
+			if (pageTotalEl) pageTotalEl.textContent = '0';
+		} else {
+			if (pageStartEl) pageStartEl.textContent = String(startIdx + 1);
+			if (pageEndEl) pageEndEl.textContent = String(Math.min(endIdx, total));
+			if (pageTotalEl) pageTotalEl.textContent = String(total);
+		}
+
+		renderPagination(totalPages, total);
+	}
+
+	function renderPagination(totalPages, total) {
+		if (!paginationNav) return;
+		paginationNav.innerHTML = '';
+
+		if (totalPages <= 1) {
+			if (paginationFooter) paginationFooter.style.display = total === 0 ? 'none' : 'flex';
+			if (total > 0) {
+				const singleLi = document.createElement('li');
+				singleLi.className = 'page-item active';
+				singleLi.innerHTML = `<button type="button" class="page-link">1</button>`;
+				paginationNav.appendChild(singleLi);
+			}
+			return;
+		}
+		if (paginationFooter) paginationFooter.style.display = 'flex';
+
+		// Anterior
+		const prevLi = document.createElement('li');
+		prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+		prevLi.innerHTML = `<button type="button" class="page-link" aria-label="Anterior">&laquo; Anterior</button>`;
+		prevLi.addEventListener('click', (e) => {
+			e.preventDefault();
+			if (currentPage > 1) {
+				currentPage--;
+				renderTable();
+			}
+		});
+		paginationNav.appendChild(prevLi);
+
+		// Números de Página
+		for (let i = 1; i <= totalPages; i++) {
+			const li = document.createElement('li');
+			li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+			li.innerHTML = `<button type="button" class="page-link">${i}</button>`;
+			li.addEventListener('click', (e) => {
+				e.preventDefault();
+				currentPage = i;
+				renderTable();
+			});
+			paginationNav.appendChild(li);
+		}
+
+		// Siguiente
+		const nextLi = document.createElement('li');
+		nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+		nextLi.innerHTML = `<button type="button" class="page-link" aria-label="Siguiente">Siguiente &raquo;</button>`;
+		nextLi.addEventListener('click', (e) => {
+			e.preventDefault();
+			if (currentPage < totalPages) {
+				currentPage++;
+				renderTable();
+			}
+		});
+		paginationNav.appendChild(nextLi);
+	}
+
+	if (searchInput) searchInput.addEventListener('input', applyFilters);
+	if (slaStatusFilter) slaStatusFilter.addEventListener('change', applyFilters);
+	if (priorityFilter) priorityFilter.addEventListener('change', applyFilters);
+	if (typeFilter) typeFilter.addEventListener('change', applyFilters);
+
+	// Inicializar vista
+	applyFilters();
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initComplianceModule);
+} else {
+	initComplianceModule();
+}
+document.addEventListener('turbo:load', initComplianceModule);
+})();
+</script>
+{% endblock %}
