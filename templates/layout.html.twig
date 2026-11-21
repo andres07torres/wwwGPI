@@ -110,7 +110,7 @@
 					<div class="collapse {{ is_operations_route ? 'show' : '' }}" id="menuOperaciones">
 						<ul class="sidebar-submenu">
 							<li><a href="{{ path('app_operations_problem_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_problem_' ? 'active' : '' }}">Problemas</a></li>
-							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_change_' ? 'active' : '' }}">Cambios (CAB)</a></li>
+							<li><a href="{{ path('app_operations_change_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_change_' ? 'active' : '' }}">Cambios (CAB)</a></li>
 							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_maintenance_' ? 'active' : '' }}">Mantenimientos</a></li>
 						</ul>
 					</div>

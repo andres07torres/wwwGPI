@@ -1,0 +1,1013 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Cambios (CAB){% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo y Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Operaciones</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Cambios (CAB)</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Cambios (CAB)</h1>
+				<p class="text-muted mb-0">
+					Comité Asesor de Cambios (CAB), evaluación de riesgo, ventanas programadas y control de aprobaciones en infraestructura.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateChange">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"/>
+						<line x1="5" y1="12" x2="19" y2="12"/>
+					</svg>
+					<span>Solicitar Cambio</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Cartas de Indicadores Clave (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Total Cambios -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Total Cambios">Total Cambios</span>
+						<div class="kpi-card-value text-truncate">{{ stats.total }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Total solicitudes de cambio">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M16 3h5v5"/>
+							<path d="M4 20L21 3"/>
+							<path d="M21 16v5h-5"/>
+							<path d="M15 15l6 6"/>
+							<path d="M4 4l5 5"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: En Revisión / Solicitados -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Pendientes CAB">Pendientes CAB</span>
+						<div class="kpi-card-value text-truncate text-warning">{{ stats.pending }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="En evaluación por el comité">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 16 14"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Aprobados / Programados -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Aprobados / Programados">Aprobados</span>
+						<div class="kpi-card-value text-truncate text-primary">{{ stats.approved }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Cambios listos o en ventana">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+							<polyline points="22 4 12 14.01 9 11.01"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Implementados -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Implementados">Implementados</span>
+						<div class="kpi-card-value text-truncate text-success">{{ stats.implemented }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Cambios ejecutados exitosamente">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="20 6 9 17 4 12"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tabla Principal de Cambios -->
+	<div class="card border-0 shadow-sm rounded-3">
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+				<div>
+					<h5 class="fw-bold text-dark mb-0">Registro de Cambios y Solicitudes CAB</h5>
+					<p class="text-muted small mb-0">Control de impacto, autorización y ventanas de ejecución</p>
+				</div>
+				<!-- Toolbar de Búsqueda y Filtros en Tiempo Real -->
+				<div class="d-flex flex-wrap align-items-center gap-2">
+					<div class="position-relative search-box-wrapper" style="min-width: 250px;">
+						<input type="text" id="changeSearchInput" class="form-control form-control-sm pe-4" placeholder="Buscar por título, solicitante, activos..." value="{{ searchQuery }}">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute end-0 top-50 translate-middle-y me-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+					<select id="changeStatusFilter" class="form-select form-select-sm" style="width: auto; min-width: 145px;">
+						<option value="">Todos los Estados</option>
+						{% for st in statuses %}
+							<option value="{{ st.value }}" {{ filterStatus == st.value ? 'selected' : '' }}>{{ st.value }}</option>
+						{% endfor %}
+					</select>
+					<select id="changeRiskFilter" class="form-select form-select-sm" style="width: auto; min-width: 135px;">
+						<option value="">Todos los Riesgos</option>
+						{% for rk in riskLevels %}
+							<option value="{{ rk.value }}" {{ filterRisk == rk.value ? 'selected' : '' }}>Riesgo: {{ rk.value }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<div class="table-responsive">
+			<table class="table table-hover align-middle mb-0" id="changesTable">
+				<thead class="table-light text-secondary small fw-semibold">
+					<tr>
+						<th class="ps-3 py-3" style="min-width: 240px;">CAMBIO / TÍTULO</th>
+						<th class="py-3" style="min-width: 100px;">RIESGO</th>
+						<th class="py-3" style="min-width: 120px;">ESTADO CAB</th>
+						<th class="py-3" style="min-width: 180px;">SOLICITANTE / APROBADOR</th>
+						<th class="py-3" style="min-width: 180px;">VENTANA PROGRAMADA</th>
+						<th class="py-3" style="min-width: 130px;">ACTIVOS (CIS)</th>
+						<th class="text-end pe-3 py-3" style="min-width: 120px;">ACCIONES</th>
+					</tr>
+				</thead>
+				<tbody class="small">
+					{% for c in changes %}
+						{% set riskClass = 'bg-light text-secondary border' %}
+						{% if c.riskLevel.value == 'Bajo' %}
+							{% set riskClass = 'bg-success-subtle text-success border border-success-subtle' %}
+						{% elseif c.riskLevel.value == 'Medio' %}
+							{% set riskClass = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' %}
+						{% elseif c.riskLevel.value == 'Alto' %}
+							{% set riskClass = 'bg-orange-subtle text-orange border' %}
+						{% elseif c.riskLevel.value == 'Crítico' %}
+							{% set riskClass = 'bg-danger-subtle text-danger border border-danger-subtle' %}
+						{% endif %}
+
+						{% set statusBadge = 'badge bg-secondary' %}
+						{% if c.status.value == 'Solicitado' %}
+							{% set statusBadge = 'badge bg-info-subtle text-info-emphasis border border-info-subtle' %}
+						{% elseif c.status.value == 'En Revisión' %}
+							{% set statusBadge = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle' %}
+						{% elseif c.status.value == 'Aprobado' %}
+							{% set statusBadge = 'badge bg-primary-subtle text-primary border border-primary-subtle' %}
+						{% elseif c.status.value == 'Implementado' %}
+							{% set statusBadge = 'badge bg-success-subtle text-success border border-success-subtle' %}
+						{% elseif c.status.value == 'Rechazado' %}
+							{% set statusBadge = 'badge bg-danger-subtle text-danger border border-danger-subtle' %}
+						{% endif %}
+
+						<tr class="change-row"
+							data-id="{{ c.id }}"
+							data-title="{{ c.title|lower }}"
+							data-desc="{{ c.description|lower }}"
+							data-risk="{{ c.riskLevel.value }}"
+							data-status="{{ c.status.value }}"
+							data-requester="{{ c.requester ? c.requester.name|lower : '' }}"
+							data-approver="{{ c.approver ? c.approver.name|lower : '' }}"
+							data-cis="{% for ci in c.ciItems %}{{ ci.name|lower }} {% endfor %}">
+							<td class="ps-3 py-3">
+								<div class="fw-bold text-dark text-break">{{ c.title }}</div>
+								{% if c.description %}
+									<div class="text-muted small text-truncate" style="max-width: 320px;" title="{{ c.description }}">
+										{{ c.description }}
+									</div>
+								{% endif %}
+							</td>
+							<td class="py-3">
+								<span class="badge {{ riskClass }} px-2 py-1 fw-semibold">
+									{{ c.riskLevel.value }}
+								</span>
+							</td>
+							<td class="py-3">
+								<span class="{{ statusBadge }} px-2 py-1 fw-semibold">
+									{{ c.status.value }}
+								</span>
+							</td>
+							<td class="py-3">
+								<div class="d-flex flex-column gap-1">
+									<div class="d-flex align-items-center gap-1.5" title="Solicitante">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted flex-shrink-0">
+											<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+											<circle cx="12" cy="7" r="4"/>
+										</svg>
+										<span class="text-dark fw-medium text-truncate" style="max-width: 140px;">{{ c.requester ? c.requester.name : 'N/A' }}</span>
+									</div>
+									{% if c.approver %}
+										<div class="d-flex align-items-center gap-1.5 text-success small" title="Aprobador CAB">
+											<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="flex-shrink-0">
+												<polyline points="20 6 9 17 4 12"/>
+											</svg>
+											<span class="text-truncate" style="max-width: 140px;">CAB: {{ c.approver.name }}</span>
+										</div>
+									{% else %}
+										<div class="text-muted small italic">Pendiente CAB</div>
+									{% endif %}
+								</div>
+							</td>
+							<td class="py-3">
+								{% if c.scheduledStart %}
+									<div class="text-dark fw-medium">{{ c.scheduledStart|date('d/m/Y H:i') }}</div>
+									{% if c.scheduledEnd %}
+										<div class="text-muted small">a {{ c.scheduledEnd|date('d/m/Y H:i') }}</div>
+									{% endif %}
+								{% else %}
+									<span class="badge bg-light text-muted border">Sin programar</span>
+								{% endif %}
+							</td>
+							<td class="py-3">
+								{% if c.ciItems|length > 0 %}
+									<span class="badge bg-light text-dark border px-2 py-1 fw-semibold d-inline-flex align-items-center gap-1" title="{% for ci in c.ciItems %}{{ ci.name }}{% if not loop.last %}, {% endif %}{% endfor %}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+											<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+											<line x1="6" y1="6" x2="6.01" y2="6"/>
+											<line x1="6" y1="18" x2="6.01" y2="18"/>
+										</svg>
+										<span>{{ c.ciItems|length }} CI{{ c.ciItems|length > 1 ? 's' : '' }}</span>
+									</span>
+								{% else %}
+									<span class="text-muted small">0 CIs</span>
+								{% endif %}
+							</td>
+							<td class="py-3 text-end pe-3">
+								<div class="btn-group btn-group-sm">
+									<button type="button" class="btn btn-outline-secondary btn-detail-change" data-id="{{ c.id }}" title="Ver detalles y evaluación CAB">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+											<circle cx="12" cy="12" r="3"/>
+										</svg>
+									</button>
+									<button type="button" class="btn btn-outline-success btn-evaluate-change" data-id="{{ c.id }}" data-title="{{ c.title }}" data-risk="{{ c.riskLevel.value }}" title="Evaluar en CAB">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+											<polyline points="14 2 14 8 20 8"/>
+											<polyline points="9 15 12 18 16 13"/>
+										</svg>
+									</button>
+									<button type="button" class="btn btn-outline-panel btn-edit-change" data-id="{{ c.id }}" title="Editar cambio">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M12 20h9"/>
+											<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+										</svg>
+									</button>
+									<button type="button" class="btn btn-outline-danger btn-delete-change" data-id="{{ c.id }}" data-title="{{ c.title }}" title="Eliminar cambio">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<polyline points="3 6 5 6 21 6"/>
+											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+										</svg>
+									</button>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+					<tr id="emptyChangesRow" style="{{ changes|length == 0 ? '' : 'display: none;' }}">
+						<td colspan="7" class="text-center py-5 text-muted">
+							<div class="mb-2">
+								<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted opacity-50">
+									<path d="M16 3h5v5"/>
+									<path d="M4 20L21 3"/>
+									<path d="M21 16v5h-5"/>
+								</svg>
+							</div>
+							<h6 class="fw-bold mb-1">No se encontraron solicitudes de cambio</h6>
+							<p class="small mb-0">No hay registros que coincidan con los filtros aplicados.</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Paginación de Cambios -->
+		<div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" id="changePaginationFooter">
+			<div class="small text-secondary" id="changePaginationInfo">
+				Mostrando <span class="fw-bold text-dark" id="changePageStart">0</span> a <span class="fw-bold text-dark" id="changePageEnd">0</span> de <span class="fw-bold text-dark" id="changePageTotal">0</span> registros
+			</div>
+			<nav aria-label="Navegación de cambios">
+				<ul class="pagination pagination-sm mb-0 gap-1" id="changePaginationNav"></ul>
+			</nav>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 1: SOLICITAR NUEVO CAMBIO (CAB)
+     ========================================================================= -->
+<div class="modal fade" id="modalCreateChange" tabindex="-1" aria-labelledby="modalCreateChangeLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" action="{{ path('app_operations_change_create') }}">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_change') }}">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalCreateChangeLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="M16 3h5v5"/>
+							<path d="M4 20L21 3"/>
+							<path d="M21 16v5h-5"/>
+						</svg>
+						<span class="text-break">Solicitar Nuevo Cambio (CAB)</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-8">
+							<label for="create_change_title" class="form-label small fw-semibold text-secondary">Título del Cambio <span class="text-danger">*</span></label>
+							<input type="text" id="create_change_title" name="title" class="form-control" required placeholder="Ej. Actualización de Kernel en Servidores de Base de Datos" maxlength="200">
+						</div>
+						<div class="col-12 col-md-4">
+							<label for="create_change_risk" class="form-label small fw-semibold text-secondary">Nivel de Riesgo <span class="text-danger">*</span></label>
+							<select id="create_change_risk" name="risk_level" class="form-select">
+								{% for rk in riskLevels %}
+									<option value="{{ rk.value }}" {{ rk.value == 'Medio' ? 'selected' : '' }}>{{ rk.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-6">
+							<label for="create_change_start" class="form-label small fw-semibold text-secondary">Inicio de Ventana Programada</label>
+							<input type="datetime-local" id="create_change_start" name="scheduled_start" class="form-control">
+						</div>
+						<div class="col-12 col-md-6">
+							<label for="create_change_end" class="form-label small fw-semibold text-secondary">Fin de Ventana Programada</label>
+							<input type="datetime-local" id="create_change_end" name="scheduled_end" class="form-control">
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="create_change_description" class="form-label small fw-semibold text-secondary">Descripción Técnica & Plan de Despliegue</label>
+						<textarea id="create_change_description" name="description" class="form-control" rows="3" placeholder="Detalle los objetivos del cambio, pasos técnicos previstos, plan de pruebas y plan de marcha atrás (Rollback)..."></textarea>
+					</div>
+
+					<!-- Selección de Activos Afectados (CIs) -->
+					<div class="mb-2">
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<label class="form-label small fw-semibold text-secondary mb-0">Activos de Infraestructura Afectados (CMDB)</label>
+							<span class="badge bg-light text-muted border fw-normal">Opcional</span>
+						</div>
+						<div class="mb-2 position-relative">
+							<input type="text" id="createCiSearch" class="form-control form-control-sm" placeholder="Filtrar activos por nombre o IP...">
+						</div>
+						<div class="border rounded-3 p-2 bg-light" style="max-height: 180px; overflow-y: auto;">
+							{% if availableCis|length > 0 %}
+								{% for ci in availableCis %}
+									<div class="form-check py-1 ci-checkbox-item" data-search="{{ ci.name|lower }} {{ ci.ipAddress|lower }}">
+										<input class="form-check-input" type="checkbox" name="ci_ids[]" value="{{ ci.id }}" id="ci_create_{{ ci.id }}">
+										<label class="form-check-label d-flex align-items-center justify-content-between w-100 cursor-pointer small" for="ci_create_{{ ci.id }}">
+											<span class="fw-semibold text-dark">{{ ci.name }}</span>
+											<span class="text-muted small">
+												{{ ci.category ? ci.category.name : 'CI' }}
+												{% if ci.ipAddress %} · {{ ci.ipAddress }}{% endif %}
+											</span>
+										</label>
+									</div>
+								{% endfor %}
+							{% else %}
+								<div class="text-muted small text-center py-2">No hay activos registrados en CMDB.</div>
+							{% endif %}
+						</div>
+						<div class="form-text small text-muted">Seleccione los servidores, enlaces o bases de datos que experimentarán indisponibilidad o riesgo.</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end gap-2">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="submit" class="btn btn-panel-action">Registrar Solicitud</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: EDITAR CAMBIO
+     ========================================================================= -->
+<div class="modal fade" id="modalEditChange" tabindex="-1" aria-labelledby="modalEditChangeLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formEditChange" action="#">
+				<input type="hidden" name="_csrf_token" id="edit_change_csrf" value="">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalEditChangeLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="M12 20h9"/>
+							<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+						</svg>
+						<span class="text-break">Editar Solicitud de Cambio</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-6">
+							<label for="edit_change_title" class="form-label small fw-semibold text-secondary">Título del Cambio <span class="text-danger">*</span></label>
+							<input type="text" id="edit_change_title" name="title" class="form-control" required maxlength="200">
+						</div>
+						<div class="col-12 col-md-3">
+							<label for="edit_change_risk" class="form-label small fw-semibold text-secondary">Nivel de Riesgo <span class="text-danger">*</span></label>
+							<select id="edit_change_risk" name="risk_level" class="form-select">
+								{% for rk in riskLevels %}
+									<option value="{{ rk.value }}">{{ rk.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-12 col-md-3">
+							<label for="edit_change_status" class="form-label small fw-semibold text-secondary">Estado CAB <span class="text-danger">*</span></label>
+							<select id="edit_change_status" name="status" class="form-select">
+								{% for st in statuses %}
+									<option value="{{ st.value }}">{{ st.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-6">
+							<label for="edit_change_start" class="form-label small fw-semibold text-secondary">Inicio de Ventana Programada</label>
+							<input type="datetime-local" id="edit_change_start" name="scheduled_start" class="form-control">
+						</div>
+						<div class="col-12 col-md-6">
+							<label for="edit_change_end" class="form-label small fw-semibold text-secondary">Fin de Ventana Programada</label>
+							<input type="datetime-local" id="edit_change_end" name="scheduled_end" class="form-control">
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="edit_change_description" class="form-label small fw-semibold text-secondary">Descripción Técnica & Plan de Despliegue</label>
+						<textarea id="edit_change_description" name="description" class="form-control" rows="3"></textarea>
+					</div>
+
+					<!-- Selección de Activos Afectados (CIs) -->
+					<div class="mb-2">
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<label class="form-label small fw-semibold text-secondary mb-0">Activos de Infraestructura Afectados (CMDB)</label>
+						</div>
+						<div class="mb-2">
+							<input type="text" id="editCiSearch" class="form-control form-control-sm" placeholder="Filtrar activos por nombre o IP...">
+						</div>
+						<div class="border rounded-3 p-2 bg-light" style="max-height: 180px; overflow-y: auto;">
+							{% if availableCis|length > 0 %}
+								{% for ci in availableCis %}
+									<div class="form-check py-1 edit-ci-checkbox-item" data-search="{{ ci.name|lower }} {{ ci.ipAddress|lower }}">
+										<input class="form-check-input edit-ci-check" type="checkbox" name="ci_ids[]" value="{{ ci.id }}" id="ci_edit_{{ ci.id }}">
+										<label class="form-check-label d-flex align-items-center justify-content-between w-100 cursor-pointer small" for="ci_edit_{{ ci.id }}">
+											<span class="fw-semibold text-dark">{{ ci.name }}</span>
+											<span class="text-muted small">
+												{{ ci.category ? ci.category.name : 'CI' }}
+												{% if ci.ipAddress %} · {{ ci.ipAddress }}{% endif %}
+											</span>
+										</label>
+									</div>
+								{% endfor %}
+							{% endif %}
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end gap-2">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="submit" class="btn btn-panel-action">Actualizar Cambio</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 3: DETALLE COMPLETO DEL CAMBIO (CAB)
+     ========================================================================= -->
+<div class="modal fade" id="modalDetailChange" tabindex="-1" aria-labelledby="modalDetailChangeLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<div class="modal-header border-bottom px-4 py-3">
+				<div class="min-w-0 me-2">
+					<div class="d-flex align-items-center gap-2 mb-1">
+						<span id="detailChangeRiskBadge" class="badge bg-secondary px-2 py-1">Riesgo</span>
+						<span id="detailChangeStatusBadge" class="badge bg-primary px-2 py-1">Estado</span>
+					</div>
+					<h5 class="modal-title fw-bold text-dark text-break mb-0" id="detailChangeTitle">Detalle del Cambio</h5>
+				</div>
+				<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body px-4 py-3">
+				<!-- Metadatos de Autoría y Ventana -->
+				<div class="row g-3 mb-4 bg-light p-3 rounded-3 border">
+					<div class="col-12 col-md-6">
+						<div class="text-muted small mb-1">Solicitante del Cambio:</div>
+						<div class="fw-bold text-dark" id="detailChangeRequester">-</div>
+					</div>
+					<div class="col-12 col-md-6">
+						<div class="text-muted small mb-1">Aprobador / Comité CAB:</div>
+						<div class="fw-bold text-dark" id="detailChangeApprover">Pendiente de evaluación</div>
+					</div>
+					<div class="col-12">
+						<div class="text-muted small mb-1">Ventana Programada de Mantenimiento:</div>
+						<div class="fw-semibold text-dark d-flex align-items-center gap-2" id="detailChangeWindow">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary flex-shrink-0">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+								<line x1="16" y1="2" x2="16" y2="6"/>
+								<line x1="8" y1="2" x2="8" y2="6"/>
+								<line x1="3" y1="10" x2="21" y2="10"/>
+							</svg>
+							<span id="detailChangeWindowText">Sin ventana programada</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Descripción y Justificación -->
+				<div class="mb-4">
+					<h6 class="fw-bold text-secondary text-uppercase small mb-2">Descripción Técnica & Plan</h6>
+					<div class="p-3 bg-white border rounded-3 text-dark small" id="detailChangeDescription" style="white-space: pre-wrap;">-</div>
+				</div>
+
+				<!-- Activos Afectados -->
+				<div class="mb-3">
+					<h6 class="fw-bold text-secondary text-uppercase small mb-2 d-flex align-items-center justify-content-between">
+						<span>Activos de Infraestructura Vinculados (CMDB)</span>
+						<span class="badge bg-secondary fw-normal" id="detailChangeCiCount">0</span>
+					</h6>
+					<div id="detailChangeCiList" class="d-flex flex-wrap gap-2">
+						<span class="text-muted small">Ningún activo asociado.</span>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-between align-items-center">
+				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+				<button type="button" class="btn btn-outline-success" id="btnDetailOpenEvaluate">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+						<polyline points="9 15 12 18 16 13"/>
+					</svg>
+					Evaluar en CAB
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 4: EVALUACIÓN CAB (APROBAR / RECHAZAR / IMPLEMENTAR)
+     ========================================================================= -->
+<div class="modal fade" id="modalEvaluateChange" tabindex="-1" aria-labelledby="modalEvaluateChangeLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formEvaluateChange" action="#">
+				<input type="hidden" name="_csrf_token" id="evaluate_change_csrf" value="">
+				<input type="hidden" name="decision" id="evaluate_decision_input" value="">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0" id="modalEvaluateChangeLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-success flex-shrink-0">
+							<polyline points="9 15 12 18 16 13"/>
+						</svg>
+						<span class="text-break">Dictamen del Comité CAB</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<p class="text-muted small mb-3">
+						Como miembro del Comité Asesor de Cambios (CAB), seleccione el dictamen técnico para la solicitud:
+					</p>
+					<div class="p-3 bg-light border rounded-3 mb-3">
+						<div class="fw-bold text-dark" id="evaluateChangeTitle">-</div>
+						<div class="small text-muted mt-1">Riesgo evaluado: <span class="fw-semibold text-dark" id="evaluateChangeRisk">-</span></div>
+					</div>
+					<div class="d-grid gap-2">
+						<button type="button" class="btn btn-success d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision" data-decision="aprobar">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+								<polyline points="20 6 9 17 4 12"/>
+							</svg>
+							<span>Aprobar Cambio (Autorizar Ventana)</span>
+						</button>
+						<button type="button" class="btn btn-primary d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision" data-decision="implementar">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+								<polyline points="22 4 12 14.01 9 11.01"/>
+							</svg>
+							<span>Marcar como Implementado con Éxito</span>
+						</button>
+						<button type="button" class="btn btn-warning d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision text-dark" data-decision="revision">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<circle cx="12" cy="12" r="10"/>
+								<polyline points="12 6 12 12 16 14"/>
+							</svg>
+							<span>Retornar a En Revisión</span>
+						</button>
+						<button type="button" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision" data-decision="rechazar">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<line x1="18" y1="6" x2="6" y2="18"/>
+								<line x1="6" y1="6" x2="18" y2="18"/>
+							</svg>
+							<span>Rechazar Solicitud de Cambio</span>
+						</button>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-2 bg-light">
+					<button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 5: ELIMINAR CAMBIO
+     ========================================================================= -->
+<div class="modal fade" id="modalDeleteChange" tabindex="-1" aria-labelledby="modalDeleteChangeLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formDeleteChange" action="#">
+				<input type="hidden" name="_csrf_token" id="delete_change_csrf" value="">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2 min-w-0" id="modalDeleteChangeLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+							<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+							<line x1="12" y1="9" x2="12" y2="13"/>
+							<line x1="12" y1="17" x2="12.01" y2="17"/>
+						</svg>
+						<span class="text-break">Confirmar Eliminación</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<p class="text-secondary mb-2">¿Está seguro de que desea eliminar la solicitud de cambio:</p>
+					<div class="p-3 bg-light border rounded-3 mb-3 fw-bold text-dark text-break" id="deleteChangeTitle">-</div>
+					<div class="alert alert-warning small mb-0 py-2">
+						Esta acción desvinculará los activos y removerá el registro de los reportes del CAB.
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end gap-2">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="submit" class="btn btn-danger">Eliminar Cambio</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Mapas CSRF para Edición, Evaluación y Eliminación dinámica -->
+<script type="application/json" id="csrfTokensChangeData">
+{
+	{% for c in changes %}
+		"{{ c.id }}": {
+			"edit": "{{ csrf_token('edit_change_' ~ c.id) }}",
+			"evaluate": "{{ csrf_token('evaluate_change_' ~ c.id) }}",
+			"delete": "{{ csrf_token('delete_change_' ~ c.id) }}"
+		}{% if not loop.last %},{% endif %}
+	{% endfor %}
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	const csrfMapEl = document.getElementById('csrfTokensChangeData');
+	let csrfMap = {};
+	if (csrfMapEl) {
+		try { csrfMap = JSON.parse(csrfMapEl.textContent); } catch (e) {}
+	}
+	// -------------------------------------------------------------------------
+	// 1. Filtrado en tiempo real y paginación cliente
+	// -------------------------------------------------------------------------
+	const searchInput = document.getElementById('changeSearchInput');
+	const statusFilter = document.getElementById('changeStatusFilter');
+	const riskFilter = document.getElementById('changeRiskFilter');
+	const rows = Array.from(document.querySelectorAll('.change-row'));
+	const emptyRow = document.getElementById('emptyChangesRow');
+	const paginationNav = document.getElementById('changePaginationNav');
+	const pageStart = document.getElementById('changePageStart');
+	const pageEnd = document.getElementById('changePageEnd');
+	const pageTotal = document.getElementById('changePageTotal');
+
+	const itemsPerPage = 10;
+	let currentPage = 1;
+	let visibleRows = [...rows];
+
+	function applyFilters() {
+		const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+		const st = (statusFilter ? statusFilter.value : '').trim();
+		const rk = (riskFilter ? riskFilter.value : '').trim();
+
+		visibleRows = rows.filter(row => {
+			const rowTitle = row.dataset.title || '';
+			const rowDesc = row.dataset.desc || '';
+			const rowReq = row.dataset.requester || '';
+			const rowApp = row.dataset.approver || '';
+			const rowCis = row.dataset.cis || '';
+			const rowRisk = row.dataset.risk || '';
+			const rowStatus = row.dataset.status || '';
+
+			const matchesQ = !q || rowTitle.includes(q) || rowDesc.includes(q) || rowReq.includes(q) || rowApp.includes(q) || rowCis.includes(q);
+			const matchesSt = !st || rowStatus === st;
+			const matchesRk = !rk || rowRisk === rk;
+
+			return matchesQ && matchesSt && matchesRk;
+		});
+
+		currentPage = 1;
+		renderTable();
+	}
+
+	function renderTable() {
+		rows.forEach(r => r.style.display = 'none');
+
+		const total = visibleRows.length;
+		if (pageTotal) pageTotal.textContent = total;
+
+		if (total === 0) {
+			if (emptyRow) emptyRow.style.display = '';
+			if (pageStart) pageStart.textContent = '0';
+			if (pageEnd) pageEnd.textContent = '0';
+			if (paginationNav) paginationNav.innerHTML = '';
+			return;
+		}
+
+		if (emptyRow) emptyRow.style.display = 'none';
+
+		const totalPages = Math.ceil(total / itemsPerPage);
+		if (currentPage > totalPages) currentPage = totalPages;
+
+		const startIdx = (currentPage - 1) * itemsPerPage;
+		const endIdx = Math.min(startIdx + itemsPerPage, total);
+
+		for (let i = startIdx; i < endIdx; i++) {
+			visibleRows[i].style.display = '';
+		}
+
+		if (pageStart) pageStart.textContent = (startIdx + 1).toString();
+		if (pageEnd) pageEnd.textContent = endIdx.toString();
+
+		renderPagination(totalPages);
+	}
+
+	function renderPagination(totalPages) {
+		if (!paginationNav) return;
+		paginationNav.innerHTML = '';
+		if (totalPages <= 1) return;
+
+		const prevLi = document.createElement('li');
+		prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+		prevLi.innerHTML = `<button type="button" class="page-link" aria-label="Anterior">&laquo;</button>`;
+		prevLi.addEventListener('click', () => {
+			if (currentPage > 1) {
+				currentPage--;
+				renderTable();
+			}
+		});
+		paginationNav.appendChild(prevLi);
+
+		for (let p = 1; p <= totalPages; p++) {
+			const li = document.createElement('li');
+			li.className = `page-item ${p === currentPage ? 'active' : ''}`;
+			li.innerHTML = `<button type="button" class="page-link">${p}</button>`;
+			li.addEventListener('click', () => {
+				currentPage = p;
+				renderTable();
+			});
+			paginationNav.appendChild(li);
+		}
+
+		const nextLi = document.createElement('li');
+		nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+		nextLi.innerHTML = `<button type="button" class="page-link" aria-label="Siguiente">&raquo;</button>`;
+		nextLi.addEventListener('click', () => {
+			if (currentPage < totalPages) {
+				currentPage++;
+				renderTable();
+			}
+		});
+		paginationNav.appendChild(nextLi);
+	}
+
+	if (searchInput) searchInput.addEventListener('input', applyFilters);
+	if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+	if (riskFilter) riskFilter.addEventListener('change', applyFilters);
+
+	applyFilters();
+
+	// -------------------------------------------------------------------------
+	// 2. Buscadores de CIs en modales Create y Edit
+	// -------------------------------------------------------------------------
+	const createCiSearch = document.getElementById('createCiSearch');
+	if (createCiSearch) {
+		createCiSearch.addEventListener('input', function () {
+			const term = this.value.trim().toLowerCase();
+			document.querySelectorAll('.ci-checkbox-item').forEach(item => {
+				const s = item.dataset.search || '';
+				item.style.display = (!term || s.includes(term)) ? '' : 'none';
+			});
+		});
+	}
+
+	const editCiSearch = document.getElementById('editCiSearch');
+	if (editCiSearch) {
+		editCiSearch.addEventListener('input', function () {
+			const term = this.value.trim().toLowerCase();
+			document.querySelectorAll('.edit-ci-checkbox-item').forEach(item => {
+				const s = item.dataset.search || '';
+				item.style.display = (!term || s.includes(term)) ? '' : 'none';
+			});
+		});
+	}
+
+	// -------------------------------------------------------------------------
+	// 3. Modal Detalle de Cambio (AJAX)
+	// -------------------------------------------------------------------------
+	const modalDetailEl = document.getElementById('modalDetailChange');
+	const bsDetailModal = modalDetailEl ? new bootstrap.Modal(modalDetailEl) : null;
+	let currentDetailChangeId = null;
+
+	document.querySelectorAll('.btn-detail-change').forEach(btn => {
+		btn.addEventListener('click', function () {
+			const changeId = this.dataset.id;
+			currentDetailChangeId = changeId;
+			openDetailModal(changeId);
+		});
+	});
+
+	function openDetailModal(changeId) {
+		fetch(`/operations/changes/${changeId}/detail`)
+			.then(res => res.json())
+			.then(data => {
+				if (!data.success) return;
+				const c = data.change;
+
+				document.getElementById('detailChangeTitle').textContent = c.title;
+				document.getElementById('detailChangeRequester').textContent = c.requester ? c.requester.name : 'N/A';
+				document.getElementById('detailChangeApprover').textContent = c.approver ? c.approver.name : 'Pendiente de evaluación CAB';
+				document.getElementById('detailChangeDescription').textContent = c.description || 'Sin descripción técnica detallada.';
+
+				const riskBadge = document.getElementById('detailChangeRiskBadge');
+				riskBadge.textContent = 'Riesgo: ' + c.riskLevel;
+				riskBadge.className = 'badge px-2 py-1 fw-semibold ' + (
+					c.riskLevel === 'Crítico' ? 'bg-danger' :
+					c.riskLevel === 'Alto' ? 'bg-warning text-dark' :
+					c.riskLevel === 'Medio' ? 'bg-info text-dark' : 'bg-success'
+				);
+
+				const statusBadge = document.getElementById('detailChangeStatusBadge');
+				statusBadge.textContent = c.status;
+				statusBadge.className = 'badge px-2 py-1 fw-semibold ' + (
+					c.status === 'Aprobado' ? 'bg-primary' :
+					c.status === 'Implementado' ? 'bg-success' :
+					c.status === 'Rechazado' ? 'bg-danger' :
+					c.status === 'En Revisión' ? 'bg-warning text-dark' : 'bg-secondary'
+				);
+
+				const winText = document.getElementById('detailChangeWindowText');
+				if (c.scheduledStart) {
+					winText.textContent = c.scheduledStart + (c.scheduledEnd ? '  —  ' + c.scheduledEnd : '');
+				} else {
+					winText.textContent = 'Sin ventana programada';
+				}
+
+				const ciCount = document.getElementById('detailChangeCiCount');
+				const ciList = document.getElementById('detailChangeCiList');
+				ciCount.textContent = c.ciCount;
+				ciList.innerHTML = '';
+
+				if (c.ciItems && c.ciItems.length > 0) {
+					c.ciItems.forEach(ci => {
+						const chip = document.createElement('span');
+						chip.className = 'badge bg-white text-dark border p-2 d-inline-flex align-items-center gap-1.5 shadow-sm';
+						chip.innerHTML = `
+							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+								<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+							</svg>
+							<strong>${ci.name}</strong>
+							<span class="text-muted small">(${ci.category}${ci.ip ? ' · ' + ci.ip : ''})</span>
+						`;
+						ciList.appendChild(chip);
+					});
+				} else {
+					ciList.innerHTML = '<span class="text-muted small">Ningún activo vinculado.</span>';
+				}
+
+				if (bsDetailModal) bsDetailModal.show();
+			});
+	}
+
+	// -------------------------------------------------------------------------
+	// 4. Modal Evaluar en CAB
+	// -------------------------------------------------------------------------
+	const modalEvaluateEl = document.getElementById('modalEvaluateChange');
+	const bsEvaluateModal = modalEvaluateEl ? new bootstrap.Modal(modalEvaluateEl) : null;
+	const formEvaluate = document.getElementById('formEvaluateChange');
+	const evaluateDecisionInput = document.getElementById('evaluate_decision_input');
+
+	document.querySelectorAll('.btn-evaluate-change').forEach(btn => {
+		btn.addEventListener('click', function () {
+			openEvaluateModal(this.dataset.id, this.dataset.title, this.dataset.risk);
+		});
+	});
+
+	const btnDetailOpenEvaluate = document.getElementById('btnDetailOpenEvaluate');
+	if (btnDetailOpenEvaluate) {
+		btnDetailOpenEvaluate.addEventListener('click', function () {
+			if (currentDetailChangeId) {
+				if (bsDetailModal) bsDetailModal.hide();
+				fetch(`/operations/changes/${currentDetailChangeId}/detail`)
+					.then(r => r.json())
+					.then(d => {
+						if (d.success) {
+							openEvaluateModal(d.change.id, d.change.title, d.change.riskLevel);
+						}
+					});
+			}
+		});
+	}
+
+	function openEvaluateModal(id, title, risk) {
+		document.getElementById('evaluateChangeTitle').textContent = title;
+		document.getElementById('evaluateChangeRisk').textContent = risk;
+		document.getElementById('evaluate_change_csrf').value = csrfMap[id]?.evaluate || '';
+		formEvaluate.action = `/operations/changes/${id}/evaluate`;
+		if (bsEvaluateModal) bsEvaluateModal.show();
+	}
+
+	document.querySelectorAll('.btn-submit-decision').forEach(btn => {
+		btn.addEventListener('click', function () {
+			evaluateDecisionInput.value = this.dataset.decision;
+			formEvaluate.submit();
+		});
+	});
+
+	// -------------------------------------------------------------------------
+	// 5. Modal Editar Cambio (AJAX)
+	// -------------------------------------------------------------------------
+	const modalEditEl = document.getElementById('modalEditChange');
+	const bsEditModal = modalEditEl ? new bootstrap.Modal(modalEditEl) : null;
+	const formEdit = document.getElementById('formEditChange');
+
+	document.querySelectorAll('.btn-edit-change').forEach(btn => {
+		btn.addEventListener('click', function () {
+			const id = this.dataset.id;
+			fetch(`/operations/changes/${id}/detail`)
+				.then(r => r.json())
+				.then(data => {
+					if (!data.success) return;
+					const c = data.change;
+
+					formEdit.action = `/operations/changes/${id}/edit`;
+					document.getElementById('edit_change_csrf').value = csrfMap[id]?.edit || '';
+					document.getElementById('edit_change_title').value = c.title;
+					document.getElementById('edit_change_risk').value = c.riskLevel;
+					document.getElementById('edit_change_status').value = c.status;
+					document.getElementById('edit_change_description').value = c.description || '';
+					document.getElementById('edit_change_start').value = c.scheduledStartIso || '';
+					document.getElementById('edit_change_end').value = c.scheduledEndIso || '';
+
+					const linkedIds = (c.ciItems || []).map(ci => ci.id);
+					document.querySelectorAll('.edit-ci-check').forEach(chk => {
+						chk.checked = linkedIds.includes(chk.value);
+					});
+
+					if (bsEditModal) bsEditModal.show();
+				});
+		});
+	});
+
+	// -------------------------------------------------------------------------
+	// 6. Modal Eliminar Cambio
+	// -------------------------------------------------------------------------
+	const modalDeleteEl = document.getElementById('modalDeleteChange');
+	const bsDeleteModal = modalDeleteEl ? new bootstrap.Modal(modalDeleteEl) : null;
+	const formDelete = document.getElementById('formDeleteChange');
+
+	document.querySelectorAll('.btn-delete-change').forEach(btn => {
+		btn.addEventListener('click', function () {
+			const id = this.dataset.id;
+			const title = this.dataset.title;
+
+			formDelete.action = `/operations/changes/${id}/delete`;
+			document.getElementById('delete_change_csrf').value = csrfMap[id]?.delete || '';
+			document.getElementById('deleteChangeTitle').textContent = title;
+
+			if (bsDeleteModal) bsDeleteModal.show();
+		});
+	});
+});
+</script>
+{% endblock %}

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
+use App\Entity\Change;
 use App\Entity\Problem;
 use App\Entity\Tenant;
 use App\Entity\User;
+use App\Enum\ChangeRiskLevel;
+use App\Enum\ChangeStatus;
 use App\Enum\ProblemStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -144,5 +147,130 @@ final class OperationsControllerTest extends WebTestCase
 
         $deletedProblem = $em->getRepository(Problem::class)->find($problem->getId());
         $this->assertNull($deletedProblem);
+    }
+
+    public function testChangeIndexRedirectsAnonymous(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/operations/changes');
+
+        $this->assertResponseRedirects('http://localhost/');
+    }
+
+    public function testChangeIndexLoadsForAuthenticatedUser(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAuthenticatedUser();
+
+        $client->loginUser($user);
+        $crawler = $client->request('GET', '/operations/changes');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Cambios (CAB)');
+        $this->assertSelectorExists('#modalCreateChange');
+        $this->assertSelectorExists('#modalEditChange');
+        $this->assertSelectorExists('#modalDetailChange');
+        $this->assertSelectorExists('#modalEvaluateChange');
+        $this->assertSelectorExists('#modalDeleteChange');
+    }
+
+    public function testChangeCreateEditEvaluateDetailAndDelete(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAuthenticatedUser();
+        $client->loginUser($user);
+
+        // 1. Obtener token CSRF de la página de índice
+        $crawler = $client->request('GET', '/operations/changes');
+        $csrfToken = $crawler->filter('form[action*="changes/create"] input[name="_csrf_token"]')->attr('value');
+
+        // 2. Crear Solicitud de Cambio
+        $client->request('POST', '/operations/changes/create', [
+            '_csrf_token' => $csrfToken,
+            'title' => 'Cambio de Prueba Automatizada CAB',
+            'description' => 'Actualización de base de datos y optimización de índices.',
+            'risk_level' => ChangeRiskLevel::MEDIO->value,
+            'status' => ChangeStatus::SOLICITADO->value,
+            'scheduled_start' => '2026-11-25T22:00',
+            'scheduled_end' => '2026-11-26T02:00',
+        ]);
+
+        $this->assertResponseRedirects('/operations/changes');
+        $client->followRedirect();
+
+        // 3. Verificar que se persistió en la BD
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $change = $em->getRepository(Change::class)->findOneBy(['title' => 'Cambio de Prueba Automatizada CAB']);
+        $this->assertNotNull($change);
+        $this->assertSame(ChangeRiskLevel::MEDIO, $change->getRiskLevel());
+        $this->assertSame(ChangeStatus::SOLICITADO, $change->getStatus());
+
+        $id = (string) $change->getId();
+
+        // 4. Detalle AJAX JSON
+        $client->request('GET', '/operations/changes/' . $id . '/detail');
+        $this->assertResponseIsSuccessful();
+        $detailData = json_decode((string) $client->getResponse()->getContent(), true);
+        $this->assertTrue($detailData['success']);
+        $this->assertSame('Cambio de Prueba Automatizada CAB', $detailData['change']['title']);
+        $this->assertSame('Medio', $detailData['change']['riskLevel']);
+
+        // 5. Evaluación CAB (Aprobar cambio)
+        $crawler = $client->request('GET', '/operations/changes');
+        $csrfJson = $crawler->filter('#csrfTokensChangeData')->text();
+        $csrfTokens = json_decode($csrfJson, true);
+        $evalToken = $csrfTokens[$id]['evaluate'] ?? null;
+        $this->assertNotNull($evalToken);
+
+        $client->request('POST', '/operations/changes/' . $id . '/evaluate', [
+            '_csrf_token' => $evalToken,
+            'decision' => 'aprobar',
+        ]);
+
+        $this->assertResponseRedirects('/operations/changes');
+        $client->followRedirect();
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $approvedChange = $em->getRepository(Change::class)->find($change->getId());
+        $this->assertNotNull($approvedChange);
+        $this->assertSame(ChangeStatus::APROBADO, $approvedChange->getStatus());
+        $this->assertNotNull($approvedChange->getApprover());
+
+        // 6. Editar Cambio
+        $editToken = $csrfTokens[$id]['edit'] ?? null;
+        $this->assertNotNull($editToken);
+
+        $client->request('POST', '/operations/changes/' . $id . '/edit', [
+            '_csrf_token' => $editToken,
+            'title' => 'Cambio de Prueba Actualizado CAB',
+            'risk_level' => ChangeRiskLevel::ALTO->value,
+            'status' => ChangeStatus::APROBADO->value,
+            'description' => 'Descripción actualizada tras revisión CAB.',
+            'scheduled_start' => '2026-11-27T01:00',
+            'scheduled_end' => '2026-11-27T04:00',
+        ]);
+
+        $this->assertResponseRedirects('/operations/changes');
+        $client->followRedirect();
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $updatedChange = $em->getRepository(Change::class)->find($change->getId());
+        $this->assertNotNull($updatedChange);
+        $this->assertSame('Cambio de Prueba Actualizado CAB', $updatedChange->getTitle());
+        $this->assertSame(ChangeRiskLevel::ALTO, $updatedChange->getRiskLevel());
+
+        // 7. Eliminar Cambio
+        $deleteToken = $csrfTokens[$id]['delete'] ?? null;
+        $this->assertNotNull($deleteToken);
+
+        $client->request('POST', '/operations/changes/' . $id . '/delete', [
+            '_csrf_token' => $deleteToken,
+        ]);
+
+        $this->assertResponseRedirects('/operations/changes');
+        $client->followRedirect();
+
+        $deletedChange = $em->getRepository(Change::class)->find($change->getId());
+        $this->assertNull($deletedChange);
     }
 }
