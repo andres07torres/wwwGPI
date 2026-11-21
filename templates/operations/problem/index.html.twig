@@ -511,7 +511,7 @@
      MODAL 4: CONFIRMAR ELIMINACIÓN
      ========================================================================= -->
 <div class="modal fade" id="modalDeleteProblem" tabindex="-1" aria-labelledby="modalDeleteProblemLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered modal-sm">
+	<div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
 		<div class="modal-content border-0 shadow">
 			<form method="POST" id="formDeleteProblem" action="" data-turbo="false">
 				<input type="hidden" name="_csrf_token" id="deleteCsrfToken" value="">
@@ -526,9 +526,9 @@
 						Esta acción no se puede deshacer. Los tickets asociados no se eliminarán.
 					</div>
 				</div>
-				<div class="modal-footer bg-light border-top p-3 d-flex justify-content-center gap-3">
-					<button type="submit" class="btn btn-danger px-4">Guardar</button>
-					<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+				<div class="modal-footer bg-light border-top p-3 d-flex flex-row flex-nowrap justify-content-center gap-3">
+					<button type="submit" class="btn btn-danger px-4" style="min-width: 120px;">Eliminar</button>
+					<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal" style="min-width: 120px;">Cancelar</button>
 				</div>
 			</form>
 		</div>

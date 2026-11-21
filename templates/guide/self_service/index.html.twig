@@ -1,0 +1,875 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Autoservicio (Clientes){% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo y Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Guías</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Autoservicio (Clientes)</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Autoservicio (Clientes)</h1>
+				<p class="text-muted mb-0">
+					Base de conocimiento pública, preguntas frecuentes, manuales de uso y guías de auto-resolución para usuarios.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateGuide">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"/>
+						<line x1="5" y1="12" x2="19" y2="12"/>
+					</svg>
+					<span>Nueva Guía</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Cartas de Indicadores Clave (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Total Guías Públicas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Guías Disponibles">Total Guías</span>
+						<div class="kpi-card-value text-truncate">{{ stats.totalArticles }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Total artículos publicados">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+							<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: Categorías Temáticas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Categorías">Categorías</span>
+						<div class="kpi-card-value text-truncate" style="color: var(--panel, #14212B);">{{ stats.totalCategories }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Categorías activas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="3" y="3" width="7" height="7"/>
+							<rect x="14" y="3" width="7" height="7"/>
+							<rect x="14" y="14" width="7" height="7"/>
+							<rect x="3" y="14" width="7" height="7"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Vistas Acumuladas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Lecturas">Consultas</span>
+						<div class="kpi-card-value text-truncate text-success">{{ stats.totalViews }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Total visualizaciones">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+							<circle cx="12" cy="12" r="3"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Nuevas este Mes -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Nuevas este mes">Nuevas (Mes)</span>
+						<div class="kpi-card-value text-truncate text-warning">{{ stats.newThisMonth }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Guías recientes">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 14 14"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Barra de Búsqueda de Autoservicio y Filtros -->
+	<div class="card border-0 shadow-sm rounded-3 mb-4 bg-white p-3">
+		<div class="row g-3 align-items-center justify-content-between">
+			<!-- Buscador en tiempo real -->
+			<div class="col-12 col-md-6 col-lg-5">
+				<div class="input-group">
+					<span class="input-group-text bg-white border-end-0 text-muted">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</span>
+					<input type="text" id="guideSearchInput" class="form-control border-start-0 ps-0" placeholder="¿En qué podemos ayudarte? Buscar soluciones, VPN, contraseñas...">
+				</div>
+			</div>
+
+			<!-- Selector de Categorías -->
+			<div class="col-12 col-md-4 col-lg-4">
+				<select id="guideCategoryFilter" class="form-select">
+					<option value="">Todas las Categorías ({{ categories|length }})</option>
+					{% for cat in categories %}
+						<option value="{{ cat.id }}">{{ cat.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+
+			<!-- Alternador de Vistas (Tarjetas vs Tabla) -->
+			<div class="col-12 col-md-2 col-lg-3 text-md-end">
+				<div class="btn-group btn-group-sm" role="group" aria-label="Cambiar vista">
+					<button type="button" class="btn btn-outline-secondary active" id="btnViewCards" title="Vista Tarjetas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<rect x="3" y="3" width="7" height="7"/>
+							<rect x="14" y="3" width="7" height="7"/>
+							<rect x="14" y="14" width="7" height="7"/>
+							<rect x="3" y="14" width="7" height="7"/>
+						</svg>
+						<span class="d-none d-lg-inline ms-1">Tarjetas</span>
+					</button>
+					<button type="button" class="btn btn-outline-secondary" id="btnViewTable" title="Vista Tabla">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<line x1="8" y1="6" x2="21" y2="6"/>
+							<line x1="8" y1="12" x2="21" y2="12"/>
+							<line x1="8" y1="18" x2="21" y2="18"/>
+							<line x1="3" y1="6" x2="3.01" y2="6"/>
+							<line x1="3" y1="12" x2="3.01" y2="12"/>
+							<line x1="3" y1="18" x2="3.01" y2="18"/>
+						</svg>
+						<span class="d-none d-lg-inline ms-1">Tabla</span>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Pills de Categorías Rápidas -->
+		<div class="d-flex flex-wrap gap-2 mt-3 pt-2 border-top" id="categoryPillsContainer">
+			<button type="button" class="btn btn-xs category-pill active btn-panel-action" data-cat-id="">
+				Todas ({{ articles|length }})
+			</button>
+			{% for cat in categories %}
+				<button type="button" class="btn btn-xs category-pill btn-outline-secondary" data-cat-id="{{ cat.id }}">
+					{{ cat.name }}
+				</button>
+			{% endfor %}
+		</div>
+	</div>
+
+	<!-- =========================================================================
+	     VISTA 1: TARJETAS DE SOLUCIONES (CARDS GRID)
+	     ========================================================================= -->
+	<div id="guidesCardsContainer" class="row g-3 mb-4">
+		{% for a in articles %}
+			<div class="col-12 col-md-6 col-xl-4 guide-card-col" 
+				 data-id="{{ a.id }}"
+				 data-title="{{ a.title|lower }}" 
+				 data-content="{{ a.content|lower }}" 
+				 data-category-id="{{ a.category ? a.category.id : '' }}" 
+				 data-category-name="{{ a.category ? a.category.name|lower : '' }}">
+				<div class="card h-100 border-0 shadow-sm rounded-3 bg-white p-3 d-flex flex-column justify-content-between guide-card-item">
+					<div>
+						<!-- Cabecera de la tarjeta con categoría y vistas -->
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<span class="guide-category-text text-truncate" style="max-width: 200px;">
+								{{ a.category ? a.category.name : 'General' }}
+							</span>
+							<span class="text-muted small d-inline-flex align-items-center gap-1" title="Veces consultada">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+									<circle cx="12" cy="12" r="3"/>
+								</svg>
+								<span class="views-counter-{{ a.id }}">{{ a.viewsCount }}</span>
+							</span>
+						</div>
+
+						<!-- Título del Artículo -->
+						<h5 class="card-title fw-bold text-dark h6 mb-2 lh-base">
+							<a href="javascript:void(0)" class="text-decoration-none text-dark hover-primary btn-open-detail" data-bs-toggle="modal" data-bs-target="#modalDetailGuide" data-id="{{ a.id }}">
+								{{ a.title }}
+							</a>
+						</h5>
+
+						<!-- Extracto del contenido -->
+						<p class="card-text text-muted small mb-3 text-break line-clamp-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 58px;">
+							{{ a.content }}
+						</p>
+					</div>
+
+					<!-- Pie de la Tarjeta con Autor y Acciones -->
+					<div class="pt-3 border-top d-flex align-items-center justify-content-between gap-2 mt-auto">
+						<div class="text-muted small text-truncate" style="max-width: 150px;">
+							<span class="fw-medium text-dark">{{ a.author ? a.author.name : 'Equipo GPI' }}</span>
+							<span class="d-block text-muted" style="font-size: 11px;">{{ a.createdAt|date('d/m/Y') }}</span>
+						</div>
+						<div class="d-inline-flex align-items-center gap-1">
+							<button type="button" class="btn btn-sm btn-outline-panel btn-open-detail d-inline-flex align-items-center gap-1 px-2.5" data-bs-toggle="modal" data-bs-target="#modalDetailGuide" data-id="{{ a.id }}" title="Leer guía completa">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+									<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+								</svg>
+								<span>Leer</span>
+							</button>
+							<button type="button" class="btn btn-sm btn-outline-panel btn-icon-action btn-open-edit" data-bs-toggle="modal" data-bs-target="#modalEditGuide" data-id="{{ a.id }}" title="Editar guía">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M12 20h9"/>
+									<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+								</svg>
+							</button>
+							<button type="button" class="btn btn-sm btn-outline-danger btn-icon-action btn-open-delete" data-bs-toggle="modal" data-bs-target="#modalDeleteGuide" data-id="{{ a.id }}" data-title="{{ a.title|e('html_attr') }}" title="Eliminar guía">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<polyline points="3 6 5 6 21 6"/>
+									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+								</svg>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+
+	<!-- =========================================================================
+	     VISTA 2: TABLA DE ADMINISTRACIÓN (TABLE LIST)
+	     ========================================================================= -->
+	<div id="guidesTableContainer" class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4 d-none">
+		<div class="table-responsive">
+			<table class="table table-hover align-middle mb-0" id="guidesTable">
+				<thead class="bg-light border-bottom">
+					<tr class="small text-secondary text-uppercase">
+						<th class="ps-3 py-3" style="width: 40%;">Título de la Guía</th>
+						<th class="py-3">Categoría</th>
+						<th class="py-3 text-center">Vistas</th>
+						<th class="py-3">Autor</th>
+						<th class="py-3">Fecha</th>
+						<th class="pe-3 py-3 text-end">Acciones</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for a in articles %}
+						<tr class="guide-table-row" 
+							data-id="{{ a.id }}"
+							data-title="{{ a.title|lower }}" 
+							data-content="{{ a.content|lower }}" 
+							data-category-id="{{ a.category ? a.category.id : '' }}" 
+							data-category-name="{{ a.category ? a.category.name|lower : '' }}">
+							<td class="ps-3 py-3">
+								<a href="javascript:void(0)" class="fw-semibold text-dark text-decoration-none btn-open-detail hover-primary" data-bs-toggle="modal" data-bs-target="#modalDetailGuide" data-id="{{ a.id }}">
+									{{ a.title }}
+								</a>
+							</td>
+							<td class="py-3">
+								<span class="guide-category-text">
+									{{ a.category ? a.category.name : 'General' }}
+								</span>
+							</td>
+							<td class="py-3 text-center">
+								<span class="badge bg-light text-muted border fw-semibold">
+									<span class="views-counter-{{ a.id }}">{{ a.viewsCount }}</span>
+								</span>
+							</td>
+							<td class="py-3 text-secondary small">
+								{{ a.author ? a.author.name : 'Equipo GPI' }}
+							</td>
+							<td class="py-3 text-secondary small">
+								{{ a.createdAt|date('d/m/Y') }}
+							</td>
+							<td class="pe-3 py-3 text-end">
+								<div class="d-inline-flex align-items-center gap-1">
+									<button type="button" class="btn btn-sm btn-outline-panel btn-icon-action btn-open-detail" data-bs-toggle="modal" data-bs-target="#modalDetailGuide" data-id="{{ a.id }}" title="Leer guía">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+											<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+										</svg>
+									</button>
+									<button type="button" class="btn btn-sm btn-outline-panel btn-icon-action btn-open-edit" data-bs-toggle="modal" data-bs-target="#modalEditGuide" data-id="{{ a.id }}" title="Editar guía">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M12 20h9"/>
+											<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+										</svg>
+									</button>
+									<button type="button" class="btn btn-sm btn-outline-danger btn-icon-action btn-open-delete" data-bs-toggle="modal" data-bs-target="#modalDeleteGuide" data-id="{{ a.id }}" data-title="{{ a.title|e('html_attr') }}" title="Eliminar guía">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<polyline points="3 6 5 6 21 6"/>
+											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+										</svg>
+									</button>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- Estado Vacío (Empty State) -->
+	<div id="guidesEmptyState" class="card border-0 shadow-sm rounded-3 p-5 text-center bg-white mb-4" style="{{ articles|length == 0 ? '' : 'display: none;' }}">
+		<div class="mb-3 text-muted opacity-50">
+			<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+				<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+				<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+			</svg>
+		</div>
+		<h5 class="fw-bold text-dark mb-1">No se encontraron guías de autoservicio</h5>
+		<p class="text-muted small mb-3">No hay artículos registrados que coincidan con los criterios de búsqueda.</p>
+		<div>
+			<button type="button" class="btn btn-panel-action btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateGuide">
+				Crear Primera Guía
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 1: CREAR NUEVA GUÍA DE AUTOSERVICIO
+     ========================================================================= -->
+<div class="modal fade" id="modalCreateGuide" tabindex="-1" aria-labelledby="modalCreateGuideLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" action="{{ path('app_guide_self_service_create') }}" data-turbo="false">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_guide') }}">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0" id="modalCreateGuideLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+							<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+						</svg>
+						<span class="text-break">Publicar Nueva Guía (Autoservicio)</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="mb-3">
+						<label for="create_guide_title" class="form-label small fw-semibold text-secondary">Título de la Guía o Pregunta Frecuente <span class="text-danger">*</span></label>
+						<input type="text" id="create_guide_title" name="title" class="form-control" required placeholder="Ej. ¿Cómo solicitar acceso a la carpeta compartida en red?" maxlength="255">
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-6">
+							<label for="create_guide_category" class="form-label small fw-semibold text-secondary">Categoría Temática <span class="text-danger">*</span></label>
+							<select id="create_guide_category" name="category_id" class="form-select">
+								{% for cat in categories %}
+									<option value="{{ cat.id }}">{{ cat.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-12 col-md-6">
+							<label for="create_new_category" class="form-label small fw-semibold text-secondary">O Nueva Categoría (Opcional)</label>
+							<input type="text" id="create_new_category" name="new_category_name" class="form-control" placeholder="Escribir nombre si no existe...">
+						</div>
+					</div>
+
+					<div class="mb-2">
+						<label for="create_guide_content" class="form-label small fw-semibold text-secondary">Instrucciones Paso a Paso / Contenido de la Solución <span class="text-danger">*</span></label>
+						<textarea id="create_guide_content" name="content" class="form-control" rows="8" required placeholder="Describa de forma clara y estructurada los pasos que el usuario o cliente debe seguir..."></textarea>
+						<div class="form-text small text-muted">El contenido se formateará preservando los saltos de línea y numeraciones.</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+					<button type="submit" class="btn btn-panel-action px-4">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: LECTURA DETALLADA DE LA GUÍA (AJAX)
+     ========================================================================= -->
+<div class="modal fade" id="modalDetailGuide" tabindex="-1" aria-labelledby="modalDetailGuideLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<div class="modal-header border-bottom px-4 py-3">
+				<div class="min-w-0 me-2">
+					<span id="detailGuideCategoryBadge" class="guide-category-text mb-1 d-inline-block">General</span>
+					<h5 class="modal-title fw-bold text-dark text-break mb-0" id="detailGuideTitle">Cargando guía...</h5>
+				</div>
+				<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body px-4 py-3">
+				<!-- Metadatos de la guía -->
+				<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 px-3 bg-light rounded-3 mb-3 small text-muted border">
+					<div class="d-flex align-items-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+							<circle cx="12" cy="7" r="4"/>
+						</svg>
+						<span>Autor: <strong class="text-dark" id="detailGuideAuthor">-</strong></span>
+					</div>
+					<div class="d-flex align-items-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+							<line x1="16" y1="2" x2="16" y2="6"/>
+							<line x1="8" y1="2" x2="8" y2="6"/>
+							<line x1="3" y1="10" x2="21" y2="10"/>
+						</svg>
+						<span id="detailGuideDate">-</span>
+					</div>
+					<div class="d-flex align-items-center gap-2 text-success">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+							<circle cx="12" cy="12" r="3"/>
+						</svg>
+						<span><strong id="detailGuideViews">0</strong> lecturas</span>
+					</div>
+				</div>
+
+				<!-- Contenido del Artículo -->
+				<div class="p-3 bg-white border rounded-3 text-dark text-break lh-base" id="detailGuideContent" style="white-space: pre-wrap; font-size: 0.935rem;">
+					Cargando contenido...
+				</div>
+			</div>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+				<button type="button" class="btn btn-panel-action px-4" data-bs-dismiss="modal">Guardar</button>
+				<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 3: EDITAR GUÍA
+     ========================================================================= -->
+<div class="modal fade" id="modalEditGuide" tabindex="-1" aria-labelledby="modalEditGuideLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formEditGuide" action="#" data-turbo="false">
+				<input type="hidden" name="_csrf_token" id="edit_guide_csrf" value="">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0" id="modalEditGuideLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="M12 20h9"/>
+							<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+						</svg>
+						<span class="text-break">Editar Guía de Autoservicio</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="mb-3">
+						<label for="edit_guide_title" class="form-label small fw-semibold text-secondary">Título de la Guía <span class="text-danger">*</span></label>
+						<input type="text" id="edit_guide_title" name="title" class="form-control" required maxlength="255">
+					</div>
+
+					<div class="mb-3">
+						<label for="edit_guide_category" class="form-label small fw-semibold text-secondary">Categoría <span class="text-danger">*</span></label>
+						<select id="edit_guide_category" name="category_id" class="form-select">
+							{% for cat in categories %}
+								<option value="{{ cat.id }}">{{ cat.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="mb-2">
+						<label for="edit_guide_content" class="form-label small fw-semibold text-secondary">Contenido de la Solución <span class="text-danger">*</span></label>
+						<textarea id="edit_guide_content" name="content" class="form-control" rows="8" required></textarea>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+					<button type="submit" class="btn btn-panel-action px-4">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 4: CONFIRMAR ELIMINACIÓN DE GUÍA
+     ========================================================================= -->
+<div class="modal fade" id="modalDeleteGuide" tabindex="-1" aria-labelledby="modalDeleteGuideLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formDeleteGuide" action="#" data-turbo="false">
+				<input type="hidden" name="_csrf_token" id="delete_guide_csrf" value="">
+				<div class="modal-body text-center p-4">
+					<div class="avatar-circle-lg bg-danger-subtle text-danger mx-auto mb-3">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="3 6 5 6 21 6"/>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+						</svg>
+					</div>
+					<h5 class="fw-bold text-dark mb-1">¿Eliminar guía?</h5>
+					<p class="text-muted small mb-2">
+						¿Está seguro de que desea eliminar permanentemente la guía?
+					</p>
+					<div class="p-2 bg-light border rounded-3 mb-3 fw-semibold text-dark text-break small" id="deleteGuideTitle">-</div>
+					<div class="alert alert-warning small mb-0 py-1.5 text-start">
+						Esta acción removerá el artículo de la base de autoservicio.
+					</div>
+				</div>
+				<div class="modal-footer border-0 px-3 pb-4 pt-0 d-flex flex-row flex-nowrap justify-content-center gap-3">
+					<button type="submit" class="btn btn-danger px-4 py-2 fw-semibold rounded-3" style="min-width: 120px;">Eliminar</button>
+					<button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-3" data-bs-dismiss="modal" style="min-width: 120px;">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Mapas CSRF para Edición y Eliminación dinámica -->
+<script type="application/json" id="csrfTokensGuideData">
+{
+	{% for a in articles %}
+		"{{ a.id }}": {
+			"edit": "{{ csrf_token('edit_guide_' ~ a.id) }}",
+			"delete": "{{ csrf_token('delete_guide_' ~ a.id) }}"
+		}{% if not loop.last %},{% endif %}
+	{% endfor %}
+}
+</script>
+
+<style>
+.guide-category-text,
+.badge-category-panel {
+	color: #14212B !important;
+	background: transparent !important;
+	background-color: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	font-weight: 600;
+	font-size: 0.85rem;
+	padding: 0 !important;
+	margin: 0 !important;
+	border-radius: 0 !important;
+	display: inline-block;
+}
+.btn-outline-panel {
+	color: #14212B !important;
+	border: 1px solid #14212B !important;
+	background-color: transparent !important;
+	font-weight: 500;
+	border-radius: 6px;
+	transition: all 0.2s ease-in-out;
+}
+.btn-outline-panel:hover,
+.btn-outline-panel:focus,
+.btn-outline-panel:active {
+	background-color: #14212B !important;
+	border-color: #14212B !important;
+	color: #FFFFFF !important;
+}
+.btn-outline-panel:hover svg,
+.btn-outline-panel:focus svg,
+.btn-outline-panel:active svg {
+	stroke: #FFFFFF !important;
+}
+.btn-icon-action {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	transition: all 0.15s ease-in-out;
+}
+.btn-icon-action:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+.category-pill {
+	border-radius: 20px;
+	padding: 4px 12px;
+	font-weight: 500;
+	transition: all 0.15s ease;
+}
+.category-pill.active {
+	background-color: #14212B !important;
+	border-color: #14212B !important;
+	color: #FFFFFF !important;
+}
+.category-pill:not(.active):hover {
+	border-color: #14212B !important;
+	color: #14212B !important;
+}
+#btnViewCards.active,
+#btnViewTable.active {
+	background-color: #14212B !important;
+	border-color: #14212B !important;
+	color: #FFFFFF !important;
+}
+.guide-card-item {
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+	border: 1px solid #eef2f6 !important;
+}
+.guide-card-item:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06) !important;
+}
+.hover-primary:hover {
+	color: #14212B !important;
+}
+.modal {
+	z-index: 1060 !important;
+}
+.modal-backdrop {
+	z-index: 1050 !important;
+}
+</style>
+
+<script>
+(function() {
+	function initSelfServiceModule() {
+		const searchInput = document.getElementById('guideSearchInput');
+		const categorySelect = document.getElementById('guideCategoryFilter');
+		const cardCols = Array.from(document.querySelectorAll('.guide-card-col'));
+		const tableRows = Array.from(document.querySelectorAll('.guide-table-row'));
+		const emptyState = document.getElementById('guidesEmptyState');
+		const cardsContainer = document.getElementById('guidesCardsContainer');
+		const tableContainer = document.getElementById('guidesTableContainer');
+
+		const csrfMapEl = document.getElementById('csrfTokensGuideData');
+		let csrfMap = {};
+		if (csrfMapEl) {
+			try { csrfMap = JSON.parse(csrfMapEl.textContent); } catch (e) { csrfMap = {}; }
+		}
+
+		let activeCatId = '';
+
+		// -------------------------------------------------------------------------
+		// 1. Filtrado en tiempo real (Buscador y Categorías)
+		// -------------------------------------------------------------------------
+		function applyGuideFilters() {
+			const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+			const selectedCat = activeCatId || (categorySelect ? categorySelect.value : '');
+
+			let visibleCount = 0;
+
+			// Filtrar Tarjetas
+			cardCols.forEach(col => {
+				const title = col.dataset.title || '';
+				const content = col.dataset.content || '';
+				const catId = col.dataset.categoryId || '';
+				const catName = col.dataset.categoryName || '';
+
+				const matchesQ = !q || title.includes(q) || content.includes(q) || catName.includes(q);
+				const matchesCat = !selectedCat || catId === selectedCat;
+
+				if (matchesQ && matchesCat) {
+					col.style.display = '';
+					visibleCount++;
+				} else {
+					col.style.display = 'none';
+				}
+			});
+
+			// Filtrar Filas de Tabla
+			tableRows.forEach(row => {
+				const title = row.dataset.title || '';
+				const content = row.dataset.content || '';
+				const catId = row.dataset.categoryId || '';
+				const catName = row.dataset.categoryName || '';
+
+				const matchesQ = !q || title.includes(q) || content.includes(q) || catName.includes(q);
+				const matchesCat = !selectedCat || catId === selectedCat;
+
+				row.style.display = (matchesQ && matchesCat) ? '' : 'none';
+			});
+
+			// Mostrar u ocultar estado vacío
+			if (emptyState) {
+				emptyState.style.display = (visibleCount === 0) ? '' : 'none';
+			}
+		}
+
+		if (searchInput) searchInput.addEventListener('input', applyGuideFilters);
+		if (categorySelect) {
+			categorySelect.addEventListener('change', function() {
+				activeCatId = this.value;
+				updatePillsActiveState(activeCatId);
+				applyGuideFilters();
+			});
+		}
+
+		// Pills de Categorías
+		document.querySelectorAll('.category-pill').forEach(pill => {
+			pill.addEventListener('click', function() {
+				activeCatId = this.dataset.catId || '';
+				if (categorySelect) categorySelect.value = activeCatId;
+				updatePillsActiveState(activeCatId);
+				applyGuideFilters();
+			});
+		});
+
+		function updatePillsActiveState(catId) {
+			document.querySelectorAll('.category-pill').forEach(p => {
+				const isMatch = (p.dataset.catId || '') === catId;
+				p.classList.toggle('active', isMatch);
+				p.classList.toggle('btn-panel-action', isMatch);
+				p.classList.toggle('btn-outline-secondary', !isMatch);
+			});
+		}
+
+		// -------------------------------------------------------------------------
+		// 2. Alternador de Vistas (Tarjetas vs Tabla)
+		// -------------------------------------------------------------------------
+		const btnViewCards = document.getElementById('btnViewCards');
+		const btnViewTable = document.getElementById('btnViewTable');
+
+		function setView(view) {
+			if (view === 'table') {
+				cardsContainer?.classList.add('d-none');
+				tableContainer?.classList.remove('d-none');
+				btnViewCards?.classList.remove('active');
+				btnViewTable?.classList.add('active');
+				try { localStorage.setItem('gpi_guide_view', 'table'); } catch(e) {}
+			} else {
+				cardsContainer?.classList.remove('d-none');
+				tableContainer?.classList.add('d-none');
+				btnViewCards?.classList.add('active');
+				btnViewTable?.classList.remove('active');
+				try { localStorage.setItem('gpi_guide_view', 'cards'); } catch(e) {}
+			}
+		}
+
+		btnViewCards?.addEventListener('click', () => setView('cards'));
+		btnViewTable?.addEventListener('click', () => setView('table'));
+
+		// Cargar preferencia previa
+		try {
+			const savedView = localStorage.getItem('gpi_guide_view');
+			if (savedView === 'table') setView('table');
+		} catch(e) {}
+
+		// -------------------------------------------------------------------------
+		// 3. Modales de Acción (Nativo Bootstrap con show.bs.modal)
+		// -------------------------------------------------------------------------
+		const modalDetailEl = document.getElementById('modalDetailGuide');
+		const modalEditEl = document.getElementById('modalEditGuide');
+		const modalDeleteEl = document.getElementById('modalDeleteGuide');
+
+		// Modal 2: Lectura Detallada (AJAX + incremento de vistas)
+		if (modalDetailEl && !modalDetailEl.dataset.listenerAttached) {
+			modalDetailEl.dataset.listenerAttached = 'true';
+			modalDetailEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-open-detail') || event.relatedTarget) : null;
+				if (!btn || !btn.dataset.id) return;
+
+				const id = btn.dataset.id;
+				document.getElementById('detailGuideTitle').textContent = 'Cargando contenido...';
+				document.getElementById('detailGuideContent').textContent = 'Cargando información técnica...';
+				document.getElementById('detailGuideAuthor').textContent = '-';
+				document.getElementById('detailGuideDate').textContent = '-';
+				document.getElementById('detailGuideViews').textContent = '...';
+
+				fetch(`/guides/self-service/${id}/detail`)
+					.then(r => r.json())
+					.then(d => {
+						if (!d.success) return;
+						const art = d.article;
+
+						document.getElementById('detailGuideTitle').textContent = art.title;
+						document.getElementById('detailGuideCategoryBadge').textContent = art.category ? art.category.name : 'General';
+						document.getElementById('detailGuideAuthor').textContent = art.author ? art.author.name : 'Equipo GPI';
+						document.getElementById('detailGuideDate').textContent = art.createdAt;
+						document.getElementById('detailGuideViews').textContent = art.viewsCount;
+						document.getElementById('detailGuideContent').textContent = art.content;
+
+						// Actualizar contadores en la vista en vivo
+						document.querySelectorAll(`.views-counter-${id}`).forEach(el => {
+							el.textContent = art.viewsCount;
+						});
+					})
+					.catch(err => {
+						console.error('Error al cargar detalle:', err);
+					});
+			});
+		}
+
+		// Modal 3: Editar Guía
+		const formEdit = document.getElementById('formEditGuide');
+		if (modalEditEl && !modalEditEl.dataset.listenerAttached) {
+			modalEditEl.dataset.listenerAttached = 'true';
+			modalEditEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-open-edit') || event.relatedTarget) : null;
+				if (!btn || !btn.dataset.id) return;
+
+				const id = btn.dataset.id;
+				if (formEdit) formEdit.action = `/guides/self-service/${id}/edit`;
+				document.getElementById('edit_guide_csrf').value = csrfMap[id]?.edit || '';
+
+				fetch(`/guides/self-service/${id}/detail`)
+					.then(r => r.json())
+					.then(d => {
+						if (!d.success) return;
+						const art = d.article;
+
+						document.getElementById('edit_guide_title').value = art.title;
+						document.getElementById('edit_guide_content').value = art.content;
+						if (art.category && art.category.id) {
+							document.getElementById('edit_guide_category').value = art.category.id;
+						}
+					})
+					.catch(err => {
+						console.error('Error al cargar datos para edición:', err);
+					});
+			});
+		}
+
+		// Modal 4: Eliminar Guía
+		const formDelete = document.getElementById('formDeleteGuide');
+		if (modalDeleteEl && !modalDeleteEl.dataset.listenerAttached) {
+			modalDeleteEl.dataset.listenerAttached = 'true';
+			modalDeleteEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-open-delete') || event.relatedTarget) : null;
+				if (!btn) return;
+
+				const id = btn.dataset.id;
+				const title = btn.dataset.title;
+
+				if (formDelete) formDelete.action = `/guides/self-service/${id}/delete`;
+				document.getElementById('delete_guide_csrf').value = csrfMap[id]?.delete || '';
+				document.getElementById('deleteGuideTitle').textContent = title || '-';
+			});
+		}
+
+		// -------------------------------------------------------------------------
+		// 4. Blindaje Global Anti-Backdrop Huérfano
+		// -------------------------------------------------------------------------
+		if (!document.body.dataset.guideModalBackdropCleanupAttached) {
+			document.body.dataset.guideModalBackdropCleanupAttached = 'true';
+			document.addEventListener('hidden.bs.modal', function () {
+				setTimeout(function () {
+					if (!document.querySelector('.modal.show')) {
+						document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+						document.body.classList.remove('modal-open');
+						document.body.style.removeProperty('overflow');
+						document.body.style.removeProperty('padding-right');
+					}
+				}, 50);
+			});
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initSelfServiceModule);
+	} else {
+		initSelfServiceModule();
+	}
+	document.addEventListener('turbo:load', initSelfServiceModule);
+	document.addEventListener('turbo:render', initSelfServiceModule);
+})();
+</script>
+{% endblock %}

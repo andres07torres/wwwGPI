@@ -544,7 +544,7 @@
    3. MODAL: ELIMINAR ACTIVO (CI)
    ===================================================================== #}
 <div class="modal fade" id="modalDeleteCiItem" tabindex="-1" aria-labelledby="modalDeleteCiItemLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered modal-sm">
+	<div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
 		<div class="modal-content border-0 shadow">
 			<form action="" method="post" id="formDeleteCiItem">
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('delete_ci_item') }}">
@@ -564,9 +564,9 @@
 					</p>
 				</div>
 
-				<div class="modal-footer border-0 px-3 pb-3 pt-0 justify-content-center gap-3">
-					<button type="submit" class="btn btn-danger px-4 py-2 fw-semibold rounded-3">Guardar</button>
-					<button type="button" class="btn btn-outline-secondary px-4 btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				<div class="modal-footer border-0 px-3 pb-4 pt-0 d-flex flex-row flex-nowrap justify-content-center gap-3">
+					<button type="submit" class="btn btn-danger px-4 py-2 fw-semibold rounded-3" style="min-width: 120px;">Eliminar</button>
+					<button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-3 btn-modal-cancel" data-bs-dismiss="modal" style="min-width: 120px;">Cancelar</button>
 				</div>
 			</form>
 		</div>
