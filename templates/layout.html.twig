@@ -483,6 +483,34 @@
 		}
 		document.addEventListener('turbo:load', runSweetAlertFlashes);
 
+		// Asegurar que el sidebar offcanvas en móvil permanezca cerrado al navegar o recargar
+		function closeMobileSidebarOnNavigate() {
+			var sidebar = document.getElementById('appSidebar');
+			if (sidebar) {
+				sidebar.classList.remove('show', 'showing');
+				if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+					var inst = bootstrap.Offcanvas.getInstance(sidebar);
+					if (inst) {
+						try { inst.hide(); } catch(e) {}
+					}
+				}
+			}
+			document.querySelectorAll('.offcanvas-backdrop').forEach(function(el) { el.remove(); });
+			document.body.classList.remove('modal-open');
+			document.body.style.removeProperty('overflow');
+			document.body.style.removeProperty('padding-right');
+		}
+
+		document.addEventListener('turbo:before-visit', closeMobileSidebarOnNavigate);
+		document.addEventListener('turbo:before-render', closeMobileSidebarOnNavigate);
+		document.addEventListener('turbo:render', closeMobileSidebarOnNavigate);
+		document.addEventListener('turbo:load', closeMobileSidebarOnNavigate);
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', closeMobileSidebarOnNavigate);
+		} else {
+			closeMobileSidebarOnNavigate();
+		}
+
 		// Control del Skeleton Global en Navegación Turbo
 		var skeletonTimer = null;
 		function showSkeletonOnSlowLoad() {

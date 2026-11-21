@@ -508,6 +508,13 @@ a:hover {
     max-width: 80vw !important;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45);
   }
+
+  /* Blindaje total anti-destello: el sidebar en móvil NUNCA debe desplazarse ni parpadear en cargas o transiciones de página */
+  .app-sidebar.offcanvas-lg:not(.show):not(.showing) {
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    transition: none !important;
+  }
 }
 
 @media (min-width: 992px) {
