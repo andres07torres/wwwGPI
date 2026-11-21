@@ -98,19 +98,20 @@
 				</li>
 
 				<!-- 4. Operaciones -->
+				{% set is_operations_route = app.request.attributes.get('_route') starts with 'app_operations_' %}
 				<li>
-					<a class="sidebar-link" data-bs-toggle="collapse" href="#menuOperaciones" role="button" aria-expanded="false" aria-controls="menuOperaciones">
+					<a class="sidebar-link {{ is_operations_route ? 'active' : '' }}" data-bs-toggle="collapse" href="#menuOperaciones" role="button" aria-expanded="{{ is_operations_route ? 'true' : 'false' }}" aria-controls="menuOperaciones">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
 						</svg>
 						<span>Operaciones</span>
 						<svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
 					</a>
-					<div class="collapse" id="menuOperaciones">
+					<div class="collapse {{ is_operations_route ? 'show' : '' }}" id="menuOperaciones">
 						<ul class="sidebar-submenu">
-							<li><a href="#" class="sidebar-sublink">Gestión de Problemas</a></li>
-							<li><a href="#" class="sidebar-sublink">Aprobaciones (Comité CAB)</a></li>
-							<li><a href="#" class="sidebar-sublink">Calendario Mantenimiento</a></li>
+							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_problem_' ? 'active' : '' }}">Gestión de Problemas</a></li>
+							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_change_' ? 'active' : '' }}">Gestión de Cambios</a></li>
+							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_maintenance_' ? 'active' : '' }}">Calendario de Mantenimientos</a></li>
 						</ul>
 					</div>
 				</li>
