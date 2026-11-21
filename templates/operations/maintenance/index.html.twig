@@ -1,0 +1,1012 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Mantenimientos{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo y Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Operaciones</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Mantenimientos</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Mantenimientos</h1>
+				<p class="text-muted mb-0">
+					Calendario interactivo de ventanas de mantenimiento, control de cortes de servicio y prevención de colisiones en infraestructura.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalScheduleMaintenance">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+						<line x1="16" y1="2" x2="16" y2="6"/>
+						<line x1="8" y1="2" x2="8" y2="6"/>
+						<line x1="3" y1="10" x2="21" y2="10"/>
+						<line x1="12" y1="14" x2="12" y2="18"/>
+						<line x1="10" y1="16" x2="14" y2="16"/>
+					</svg>
+					<span>Programar Mantenimiento</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Cartas de Indicadores Clave (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Total Ventanas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Total Ventanas">Total Ventanas</span>
+						<div class="kpi-card-value text-truncate">{{ stats.total }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Total de ventanas programadas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+							<line x1="16" y1="2" x2="16" y2="6"/>
+							<line x1="8" y1="2" x2="8" y2="6"/>
+							<line x1="3" y1="10" x2="21" y2="10"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: En Ejecución / Activas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="En Ejecución">En Ejecución</span>
+						<div class="kpi-card-value text-truncate text-warning">{{ stats.in_progress }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Mantenimientos activos ahora">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 16 14"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Próximas Ventanas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Próximas Ventanas">Próximas</span>
+						<div class="kpi-card-value text-truncate text-primary">{{ stats.upcoming }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Ventanas programadas a futuro">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M5 12h14"/>
+							<path d="m12 5 7 7-7 7"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Completadas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Completadas">Completadas</span>
+						<div class="kpi-card-value text-truncate text-success">{{ stats.completed }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Ventanas finalizadas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="20 6 9 17 4 12"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Componente Principal: Calendario y Cronograma -->
+	<div class="card border-0 shadow-sm rounded-3 mb-4">
+		<!-- Header del Calendario con Navegación y Filtros -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+				<!-- Controles de Mes / Navegación -->
+				<div class="d-flex align-items-center gap-2">
+					<div class="btn-group btn-group-sm">
+						<button type="button" class="btn btn-outline-secondary" id="calPrevBtn" title="Mes anterior">
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+						</button>
+						<button type="button" class="btn btn-outline-secondary fw-semibold px-3" id="calTodayBtn">Hoy</button>
+						<button type="button" class="btn btn-outline-secondary" id="calNextBtn" title="Mes siguiente">
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+						</button>
+					</div>
+					<!-- Selector Desplegable de Mes, Año y Fecha -->
+					<div class="dropdown ms-2 position-relative">
+						<button type="button" class="btn btn-outline-light text-dark fw-bold border py-1 px-2.5 d-flex align-items-center gap-2 shadow-sm rounded-2 text-decoration-none" id="btnMonthPickerDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Desplegar selector de mes, año o fecha">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary flex-shrink-0">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+								<line x1="16" y1="2" x2="16" y2="6"/>
+								<line x1="8" y1="2" x2="8" y2="6"/>
+								<line x1="3" y1="10" x2="21" y2="10"/>
+							</svg>
+							<span id="calendarCurrentMonthTitle" class="text-capitalize fs-6">Noviembre 2026</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-muted"><polyline points="6 9 12 15 18 9"/></svg>
+						</button>
+						<div class="dropdown-menu shadow-lg border-0 p-3 rounded-3" id="monthPickerDropdownMenu" style="min-width: 290px; z-index: 1050;" aria-labelledby="btnMonthPickerDropdown">
+							<div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+								<button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="pickerYearPrev" title="Año anterior">&laquo;</button>
+								<span class="fw-bold text-dark fs-6" id="pickerYearDisplay">2026</span>
+								<button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="pickerYearNext" title="Año siguiente">&raquo;</button>
+							</div>
+
+							<div class="d-grid gap-1 mb-3" style="grid-template-columns: repeat(3, 1fr);" id="pickerMonthsGrid">
+								<!-- Botones de 12 meses -->
+							</div>
+
+							<div class="pt-2 border-top">
+								<label class="form-label small fw-semibold text-secondary mb-1">Ir a fecha exacta:</label>
+								<div class="input-group input-group-sm">
+									<input type="date" class="form-control" id="pickerSpecificDate">
+									<button class="btn btn-panel-action" type="button" id="pickerGoSpecificDate">Ir</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Toolbar de Vistas y Filtros -->
+				<div class="d-flex flex-wrap align-items-center gap-2">
+					<!-- Switch de Vista (Mes / Agenda) -->
+					<div class="btn-group btn-group-sm" role="group" aria-label="Cambiar vista">
+						<button type="button" class="btn btn-outline-panel active" id="viewModeMonthBtn">
+							<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+								<line x1="16" y1="2" x2="16" y2="6"/>
+								<line x1="8" y1="2" x2="8" y2="6"/>
+								<line x1="3" y1="10" x2="21" y2="10"/>
+							</svg>
+							Mes
+						</button>
+						<button type="button" class="btn btn-outline-panel" id="viewModeAgendaBtn">
+							<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+								<line x1="8" y1="6" x2="21" y2="6"/>
+								<line x1="8" y1="12" x2="21" y2="12"/>
+								<line x1="8" y1="18" x2="21" y2="18"/>
+								<line x1="3" y1="6" x2="3.01" y2="6"/>
+								<line x1="3" y1="12" x2="3.01" y2="12"/>
+								<line x1="3" y1="18" x2="3.01" y2="18"/>
+							</svg>
+							Agenda / Lista
+						</button>
+					</div>
+
+					<!-- Filtro por Nivel de Riesgo -->
+					<select id="calRiskFilter" class="form-select form-select-sm" style="width: auto; min-width: 130px;">
+						<option value="">Todos los Riesgos</option>
+						{% for rk in riskLevels %}
+							<option value="{{ rk.value }}">{{ rk.value }}</option>
+						{% endfor %}
+					</select>
+
+					<!-- Filtro por Activo Afectado (CMDB) -->
+					<select id="calCiFilter" class="form-select form-select-sm" style="width: auto; min-width: 160px;">
+						<option value="">Todos los Activos</option>
+						{% for ci in availableCis %}
+							<option value="{{ ci.name|lower }}">{{ ci.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<!-- VISTA 1: CALENDARIO EN CUADRÍCULA MENSUAL -->
+		<div id="calendarMonthViewContainer" class="p-3">
+			<div class="calendar-grid-header d-grid text-center fw-bold text-secondary small py-2 bg-light rounded-top border mb-1" style="grid-template-columns: repeat(7, 1fr);">
+				<div>LUN</div>
+				<div>MAR</div>
+				<div>MIÉ</div>
+				<div>JUE</div>
+				<div>VIE</div>
+				<div class="text-primary">SÁB</div>
+				<div class="text-primary">DOM</div>
+			</div>
+			<div id="calendarMonthGrid" class="calendar-month-cells d-grid gap-1" style="grid-template-columns: repeat(7, 1fr);">
+				<!-- Las celdas del mes se renderizan dinámicamente con JavaScript -->
+			</div>
+		</div>
+
+		<!-- VISTA 2: AGENDA CRONOLÓGICA / TIMELINE -->
+		<div id="calendarAgendaViewContainer" class="p-3 d-none">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0" id="maintenanceAgendaTable">
+					<thead class="table-light text-secondary small fw-semibold">
+						<tr>
+							<th class="ps-3 py-3" style="min-width: 220px;">MANTENIMIENTO / ALCANCE</th>
+							<th class="py-3" style="min-width: 100px;">RIESGO</th>
+							<th class="py-3" style="min-width: 120px;">ESTADO</th>
+							<th class="py-3" style="min-width: 200px;">VENTANA DE CORTE</th>
+							<th class="py-3" style="min-width: 150px;">ACTIVOS AFECTADOS</th>
+							<th class="py-3" style="min-width: 160px;">RESPONSABLE</th>
+							<th class="text-end pe-3 py-3" style="min-width: 110px;">ACCIONES</th>
+						</tr>
+					</thead>
+					<tbody id="maintenanceAgendaTbody" class="small">
+						<!-- Filas renderizadas dinámicamente con JS -->
+					</tbody>
+				</table>
+			</div>
+			<div id="emptyAgendaState" class="text-center py-5 text-muted d-none">
+				<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="opacity-50 mb-2">
+					<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+					<line x1="16" y1="2" x2="16" y2="6"/>
+					<line x1="8" y1="2" x2="8" y2="6"/>
+					<line x1="3" y1="10" x2="21" y2="10"/>
+				</svg>
+				<h6 class="fw-bold mb-1">No hay mantenimientos programados</h6>
+				<p class="small mb-0">No se encontraron ventanas para el período o filtros seleccionados.</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 1: PROGRAMAR MANTENIMIENTO
+     ========================================================================= -->
+<div class="modal fade" id="modalScheduleMaintenance" tabindex="-1" aria-labelledby="modalScheduleMaintenanceLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" action="{{ path('app_operations_maintenance_schedule') }}" data-turbo="false">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('schedule_maintenance') }}">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalScheduleMaintenanceLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+							<line x1="16" y1="2" x2="16" y2="6"/>
+							<line x1="8" y1="2" x2="8" y2="6"/>
+							<line x1="3" y1="10" x2="21" y2="10"/>
+						</svg>
+						<span class="text-break">Programar Ventana de Mantenimiento</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-8">
+							<label for="sched_title" class="form-label small fw-semibold text-secondary">Título del Mantenimiento <span class="text-danger">*</span></label>
+							<input type="text" id="sched_title" name="title" class="form-control" required placeholder="Ej. Mantenimiento Preventivo de Servidor de Base de Datos" maxlength="200">
+						</div>
+						<div class="col-12 col-md-4">
+							<label for="sched_risk" class="form-label small fw-semibold text-secondary">Nivel de Riesgo <span class="text-danger">*</span></label>
+							<select id="sched_risk" name="risk_level" class="form-select">
+								{% for rk in riskLevels %}
+									<option value="{{ rk.value }}" {{ rk.value == 'Medio' ? 'selected' : '' }}>{{ rk.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-6">
+							<label for="sched_start" class="form-label small fw-semibold text-secondary">Inicio de la Ventana <span class="text-danger">*</span></label>
+							<input type="datetime-local" id="sched_start" name="scheduled_start" class="form-control" required>
+						</div>
+						<div class="col-12 col-md-6">
+							<label for="sched_end" class="form-label small fw-semibold text-secondary">Fin Estimado de la Ventana <span class="text-danger">*</span></label>
+							<input type="datetime-local" id="sched_end" name="scheduled_end" class="form-control" required>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="sched_desc" class="form-label small fw-semibold text-secondary">Procedimiento & Alcance Técnico</label>
+						<textarea id="sched_desc" name="description" class="form-control" rows="3" placeholder="Detalle los trabajos a ejecutar, servicios que experimentarán corte y tiempo estimado de recuperación..."></textarea>
+					</div>
+
+					<!-- Selección de Activos Afectados (CMDB) -->
+					<div class="mb-2">
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<label class="form-label small fw-semibold text-secondary mb-0">Activos de Infraestructura en Mantenimiento (CMDB)</label>
+						</div>
+						<div class="mb-2">
+							<input type="text" id="schedCiSearch" class="form-control form-control-sm" placeholder="Buscar servidores, bases de datos o switches por nombre o IP...">
+						</div>
+						<div class="border rounded-3 p-2 bg-light" style="max-height: 180px; overflow-y: auto;">
+							{% if availableCis|length > 0 %}
+								{% for ci in availableCis %}
+									<div class="form-check py-1 sched-ci-item" data-search="{{ ci.name|lower }} {{ ci.ipAddress|lower }}">
+										<input class="form-check-input" type="checkbox" name="ci_ids[]" value="{{ ci.id }}" id="ci_sched_{{ ci.id }}">
+										<label class="form-check-label d-flex align-items-center justify-content-between w-100 cursor-pointer small" for="ci_sched_{{ ci.id }}">
+											<span class="fw-semibold text-dark">{{ ci.name }}</span>
+											<span class="text-muted small">
+												{{ ci.category ? ci.category.name : 'CI' }}
+												{% if ci.ipAddress %} · {{ ci.ipAddress }}{% endif %}
+											</span>
+										</label>
+									</div>
+								{% endfor %}
+							{% else %}
+								<div class="text-muted small text-center py-2">No hay activos registrados en CMDB.</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+					<button type="submit" class="btn btn-panel-action px-4">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary px-4 btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: REPROGRAMAR FECHAS DE VENTANA
+     ========================================================================= -->
+<div class="modal fade" id="modalRescheduleMaintenance" tabindex="-1" aria-labelledby="modalRescheduleMaintenanceLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formRescheduleMaintenance" action="#" data-turbo="false">
+				<input type="hidden" name="_csrf_token" id="reschedule_csrf" value="">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0" id="modalRescheduleMaintenanceLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary flex-shrink-0">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 16 14"/>
+						</svg>
+						<span class="text-break">Reprogramar Ventana</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="p-3 bg-light border rounded-3 mb-3">
+						<div class="fw-bold text-dark" id="rescheduleMaintenanceTitle">-</div>
+						<div class="small text-muted mt-1">Ajuste el rango de fecha y hora programado para esta intervención.</div>
+					</div>
+					<div class="mb-3">
+						<label for="reschedule_start" class="form-label small fw-semibold text-secondary">Nueva Fecha y Hora de Inicio <span class="text-danger">*</span></label>
+						<input type="datetime-local" id="reschedule_start" name="scheduled_start" class="form-control" required>
+					</div>
+					<div class="mb-3">
+						<label for="reschedule_end" class="form-label small fw-semibold text-secondary">Nueva Fecha y Hora de Fin</label>
+						<input type="datetime-local" id="reschedule_end" name="scheduled_end" class="form-control">
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+					<button type="submit" class="btn btn-panel-action px-4">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary px-4 btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 3: DETALLE DE MANTENIMIENTO
+     ========================================================================= -->
+<div class="modal fade" id="modalDetailMaintenance" tabindex="-1" aria-labelledby="modalDetailMaintenanceLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<div class="modal-header border-bottom px-4 py-3">
+				<div class="min-w-0 me-2">
+					<div class="d-flex align-items-center gap-2 mb-1">
+						<span id="detailMaintRiskBadge" class="badge bg-secondary px-2 py-1">Riesgo</span>
+						<span id="detailMaintStatusBadge" class="badge bg-primary px-2 py-1">Estado</span>
+					</div>
+					<h5 class="modal-title fw-bold text-dark text-break mb-0" id="detailMaintTitle">Detalle de Ventana de Mantenimiento</h5>
+				</div>
+				<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body px-4 py-3">
+				<div class="row g-3 mb-4 bg-light p-3 rounded-3 border">
+					<div class="col-12 col-md-6">
+						<div class="text-muted small mb-1">Solicitante:</div>
+						<div class="fw-bold text-dark" id="detailMaintRequester">-</div>
+					</div>
+					<div class="col-12 col-md-6">
+						<div class="text-muted small mb-1">Aprobación CAB:</div>
+						<div class="fw-bold text-dark" id="detailMaintApprover">-</div>
+					</div>
+					<div class="col-12">
+						<div class="text-muted small mb-1">Ventana Programada:</div>
+						<div class="fw-bold text-dark d-flex align-items-center gap-2" id="detailMaintWindow">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary flex-shrink-0">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+								<line x1="16" y1="2" x2="16" y2="6"/>
+								<line x1="8" y1="2" x2="8" y2="6"/>
+								<line x1="3" y1="10" x2="21" y2="10"/>
+							</svg>
+							<span id="detailMaintWindowText">-</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="mb-4">
+					<h6 class="fw-bold text-secondary text-uppercase small mb-2">Procedimiento & Alcance Técnico</h6>
+					<div class="p-3 bg-white border rounded-3 text-dark small" id="detailMaintDescription" style="white-space: pre-wrap;">-</div>
+				</div>
+
+				<div class="mb-3">
+					<h6 class="fw-bold text-secondary text-uppercase small mb-2 d-flex align-items-center justify-content-between">
+						<span>Activos de Infraestructura en Mantenimiento</span>
+						<span class="badge bg-secondary fw-normal" id="detailMaintCiCount">0</span>
+					</h6>
+					<div id="detailMaintCiList" class="d-flex flex-wrap gap-2">
+						<span class="text-muted small">Sin activos especificados.</span>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+				<button type="button" class="btn btn-panel-action px-4" id="btnDetailOpenReschedule">Guardar</button>
+				<button type="button" class="btn btn-outline-secondary px-4 btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Mapas CSRF para Reprogramación Dinámica -->
+<script type="application/json" id="csrfTokensMaintenanceData">
+{
+	{% for m in maintenances %}
+		"{{ m.id }}": "{{ csrf_token('reschedule_maintenance_' ~ m.id) }}"{% if not loop.last %},{% endif %}
+	{% endfor %}
+}
+</script>
+
+<!-- Datos de Eventos de Mantenimiento para el Calendario -->
+<script type="application/json" id="maintenanceEventsData">
+{{ eventsJson|raw }}
+</script>
+
+<style>
+/* Estilos del Calendario Mensual */
+.calendar-day-cell {
+	min-height: 110px;
+	background-color: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	padding: 6px;
+	display: flex;
+	flex-direction: column;
+	transition: background-color 0.15s ease-in-out;
+}
+.calendar-day-cell:hover {
+	background-color: #f8fafc;
+}
+.calendar-day-cell.other-month {
+	background-color: #f8fafc;
+	opacity: 0.6;
+}
+.calendar-day-cell.is-today {
+	border-color: #0284c7;
+	box-shadow: inset 0 0 0 1px #0284c7;
+}
+.calendar-day-number {
+	font-size: 12px;
+	font-weight: 600;
+	color: #64748b;
+	margin-bottom: 4px;
+}
+.calendar-day-cell.is-today .calendar-day-number {
+	color: #0284c7;
+	font-weight: 700;
+}
+.maint-chip {
+	font-size: 11px;
+	padding: 3px 6px;
+	border-radius: 4px;
+	margin-bottom: 3px;
+	cursor: pointer;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: block;
+	text-decoration: none;
+	font-weight: 500;
+	border: 1px solid transparent;
+	transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.maint-chip:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.maint-chip-critico { background-color: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+.maint-chip-alto { background-color: #ffedd5; color: #c2410c; border-color: #fdba74; }
+.maint-chip-medio { background-color: #fef3c7; color: #b45309; border-color: #fde68a; }
+.maint-chip-bajo { background-color: #dcfce7; color: #15803d; border-color: #86efac; }
+</style>
+
+<script>
+(function() {
+	function initMaintenanceModule() {
+		const calendarMonthGrid = document.getElementById('calendarMonthGrid');
+		if (!calendarMonthGrid) return;
+
+		// -------------------------------------------------------------------------
+		// 1. Cargar datos de eventos y mapas CSRF
+		// -------------------------------------------------------------------------
+		const eventsEl = document.getElementById('maintenanceEventsData');
+		let allEvents = [];
+		if (eventsEl) {
+			try { allEvents = JSON.parse(eventsEl.textContent); } catch (e) { allEvents = []; }
+		}
+
+		const csrfEl = document.getElementById('csrfTokensMaintenanceData');
+		let csrfMap = {};
+		if (csrfEl) {
+			try { csrfMap = JSON.parse(csrfEl.textContent); } catch (e) { csrfMap = {}; }
+		}
+
+	// -------------------------------------------------------------------------
+	// 2. Estado de visualización y calendario
+	// -------------------------------------------------------------------------
+	const today = new Date();
+	let currentYear = today.getFullYear();
+	let currentMonth = today.getMonth(); // 0 a 11
+
+	const monthNames = [
+		'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+		'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+	];
+
+	const calendarTitle = document.getElementById('calendarCurrentMonthTitle');
+	const agendaTbody = document.getElementById('maintenanceAgendaTbody');
+	const emptyAgendaState = document.getElementById('emptyAgendaState');
+
+	const calRiskFilter = document.getElementById('calRiskFilter');
+	const calCiFilter = document.getElementById('calCiFilter');
+
+	const viewModeMonthBtn = document.getElementById('viewModeMonthBtn');
+	const viewModeAgendaBtn = document.getElementById('viewModeAgendaBtn');
+	const monthViewContainer = document.getElementById('calendarMonthViewContainer');
+	const agendaViewContainer = document.getElementById('calendarAgendaViewContainer');
+
+	let activeView = 'month';
+
+	// -------------------------------------------------------------------------
+	// 2.1 Selector Desplegable de Mes y Año (Month/Year Picker)
+	// -------------------------------------------------------------------------
+	const pickerYearDisplay = document.getElementById('pickerYearDisplay');
+	const pickerMonthsGrid = document.getElementById('pickerMonthsGrid');
+	const btnMonthPickerDropdown = document.getElementById('btnMonthPickerDropdown');
+	let pickerYear = currentYear;
+
+	const shortMonths = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+	function renderPickerMonths() {
+		if (!pickerMonthsGrid) return;
+		pickerMonthsGrid.innerHTML = '';
+		if (pickerYearDisplay) pickerYearDisplay.textContent = pickerYear;
+
+		shortMonths.forEach((mName, idx) => {
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			const isCurrent = (idx === currentMonth && pickerYear === currentYear);
+			btn.className = `btn btn-sm py-1.5 fw-semibold ${isCurrent ? 'btn-panel-action' : 'btn-outline-light text-dark border'}`;
+			btn.textContent = mName;
+			btn.addEventListener('click', () => {
+				currentMonth = idx;
+				currentYear = pickerYear;
+				renderMonthCalendar();
+
+				if (btnMonthPickerDropdown) {
+					const bsDropdown = bootstrap.Dropdown.getInstance(btnMonthPickerDropdown) || new bootstrap.Dropdown(btnMonthPickerDropdown);
+					if (bsDropdown) bsDropdown.hide();
+				}
+			});
+			pickerMonthsGrid.appendChild(btn);
+		});
+	}
+
+	document.getElementById('pickerYearPrev')?.addEventListener('click', () => {
+		pickerYear--;
+		renderPickerMonths();
+	});
+
+	document.getElementById('pickerYearNext')?.addEventListener('click', () => {
+		pickerYear++;
+		renderPickerMonths();
+	});
+
+	document.getElementById('pickerGoSpecificDate')?.addEventListener('click', () => {
+		const val = document.getElementById('pickerSpecificDate')?.value;
+		if (val) {
+			const parts = val.split('-');
+			if (parts.length === 3) {
+				currentYear = parseInt(parts[0], 10);
+				currentMonth = parseInt(parts[1], 10) - 1;
+				pickerYear = currentYear;
+				renderMonthCalendar();
+
+				if (btnMonthPickerDropdown) {
+					const bsDropdown = bootstrap.Dropdown.getInstance(btnMonthPickerDropdown) || new bootstrap.Dropdown(btnMonthPickerDropdown);
+					if (bsDropdown) bsDropdown.hide();
+				}
+			}
+		}
+	});
+
+	function getFilteredEvents() {
+		const selRisk = (calRiskFilter ? calRiskFilter.value : '').trim();
+		const selCi = (calCiFilter ? calCiFilter.value : '').trim().toLowerCase();
+
+		return allEvents.filter(ev => {
+			const matchesRisk = !selRisk || ev.risk === selRisk;
+			let matchesCi = true;
+			if (selCi) {
+				matchesCi = (ev.cis || []).some(ci => (ci.name || '').toLowerCase().includes(selCi));
+			}
+			return matchesRisk && matchesCi;
+		});
+	}
+
+	// -------------------------------------------------------------------------
+	// 3. Renderizar vista de Mes
+	// -------------------------------------------------------------------------
+	function renderMonthCalendar() {
+		if (!calendarMonthGrid) return;
+		calendarMonthGrid.innerHTML = '';
+
+		calendarTitle.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+		pickerYear = currentYear;
+		renderPickerMonths();
+
+		const firstDay = new Date(currentYear, currentMonth, 1);
+		const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+		// Ajustar primer día de semana a Lunes (0 = Lunes, 6 = Domingo)
+		let firstDayOfWeek = firstDay.getDay() - 1;
+		if (firstDayOfWeek === -1) firstDayOfWeek = 6;
+
+		const totalDays = lastDay.getDate();
+
+		// Días del mes previo para rellenar
+		const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+		for (let p = firstDayOfWeek - 1; p >= 0; p--) {
+			const dayNum = prevMonthLastDay - p;
+			const cell = createDayCell(dayNum, true);
+			calendarMonthGrid.appendChild(cell);
+		}
+
+		const filtered = getFilteredEvents();
+
+		// Días del mes actual
+		for (let d = 1; d <= totalDays; d++) {
+			const isToday = (
+				d === today.getDate() &&
+				currentMonth === today.getMonth() &&
+				currentYear === today.getFullYear()
+			);
+
+			const cell = createDayCell(d, false, isToday);
+
+			// Buscar eventos para este día
+			const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+			const dayEvents = filtered.filter(ev => ev.startDate === dateStr);
+
+			dayEvents.forEach(ev => {
+				const chip = document.createElement('div');
+				const riskSafe = (ev.risk || 'Medio').toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+				const riskClass = `maint-chip-${riskSafe}`;
+				chip.className = `maint-chip ${riskClass}`;
+				chip.title = `${ev.title} (${ev.startTime || ''} - ${ev.endTime || ''})`;
+				chip.innerHTML = `<strong>${ev.startTime || ''}</strong> ${ev.title}`;
+				chip.addEventListener('click', (e) => {
+					e.stopPropagation();
+					openDetailModal(ev.id);
+				});
+				cell.appendChild(chip);
+			});
+
+			calendarMonthGrid.appendChild(cell);
+		}
+
+		// Completar la cuadrícula con días del mes siguiente hasta múltiplo de 7
+		const remaining = (7 - ((firstDayOfWeek + totalDays) % 7)) % 7;
+		for (let n = 1; n <= remaining; n++) {
+			const cell = createDayCell(n, true);
+			calendarMonthGrid.appendChild(cell);
+		}
+	}
+
+	function createDayCell(dayNum, isOtherMonth, isToday = false) {
+		const cell = document.createElement('div');
+		cell.className = `calendar-day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'is-today' : ''}`;
+
+		const numEl = document.createElement('div');
+		numEl.className = 'calendar-day-number';
+		numEl.textContent = dayNum;
+		cell.appendChild(numEl);
+
+		return cell;
+	}
+
+	// -------------------------------------------------------------------------
+	// 4. Renderizar vista de Agenda / Lista
+	// -------------------------------------------------------------------------
+	function renderAgenda() {
+		if (!agendaTbody) return;
+		agendaTbody.innerHTML = '';
+
+		const filtered = getFilteredEvents();
+
+		if (filtered.length === 0) {
+			if (emptyAgendaState) emptyAgendaState.classList.remove('d-none');
+			return;
+		}
+
+		if (emptyAgendaState) emptyAgendaState.classList.add('d-none');
+
+		filtered.forEach(ev => {
+			const tr = document.createElement('tr');
+
+			let riskBadge = 'bg-light text-secondary border';
+			if (ev.risk === 'Bajo') riskBadge = 'bg-success-subtle text-success border border-success-subtle';
+			else if (ev.risk === 'Medio') riskBadge = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+			else if (ev.risk === 'Alto') riskBadge = 'bg-orange-subtle text-orange border';
+			else if (ev.risk === 'Crítico') riskBadge = 'bg-danger-subtle text-danger border border-danger-subtle';
+
+			let statusBadge = 'badge bg-secondary';
+			if (ev.status === 'Aprobado') statusBadge = 'badge bg-primary-subtle text-primary border border-primary-subtle';
+			else if (ev.status === 'Implementado') statusBadge = 'badge bg-success-subtle text-success border border-success-subtle';
+			else if (ev.status === 'Rechazado') statusBadge = 'badge bg-danger-subtle text-danger border border-danger-subtle';
+			else if (ev.status === 'En Revisión') statusBadge = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+
+			let cisText = `${ev.ciCount} CI${ev.ciCount > 1 ? 's' : ''}`;
+			if (ev.ciCount === 0) cisText = '0 CIs';
+
+			tr.innerHTML = `
+				<td class="ps-3 py-3">
+					<div class="fw-bold text-dark text-break">${ev.title}</div>
+					${ev.description ? `<div class="text-muted small text-truncate" style="max-width: 280px;">${ev.description}</div>` : ''}
+				</td>
+				<td class="py-3">
+					<span class="badge ${riskBadge} px-2 py-1 fw-semibold">${ev.risk}</span>
+				</td>
+				<td class="py-3">
+					<span class="${statusBadge} px-2 py-1 fw-semibold">${ev.status}</span>
+				</td>
+				<td class="py-3">
+					<div class="fw-medium text-dark">${ev.startFormatted}</div>
+					<div class="text-muted small">a ${ev.endFormatted}</div>
+				</td>
+				<td class="py-3">
+					<span class="badge bg-light text-dark border px-2 py-1">${cisText}</span>
+				</td>
+				<td class="py-3">
+					<div class="small fw-medium text-dark">${ev.requester}</div>
+					<div class="text-muted small">${ev.approver}</div>
+				</td>
+				<td class="py-3 text-end pe-3">
+					<div class="btn-group btn-group-sm">
+						<button type="button" class="btn btn-outline-secondary btn-maint-detail" data-id="${ev.id}" title="Ver detalle">
+							<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+								<circle cx="12" cy="12" r="3"/>
+							</svg>
+						</button>
+						<button type="button" class="btn btn-outline-panel btn-maint-resched" data-id="${ev.id}" title="Reprogramar">
+							<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<circle cx="12" cy="12" r="10"/>
+								<polyline points="12 6 12 12 16 14"/>
+							</svg>
+						</button>
+					</div>
+				</td>
+			`;
+
+			tr.querySelector('.btn-maint-detail').addEventListener('click', () => openDetailModal(ev.id));
+			tr.querySelector('.btn-maint-resched').addEventListener('click', () => openRescheduleModal(ev.id));
+
+			agendaTbody.appendChild(tr);
+		});
+	}
+
+	function refreshView() {
+		if (activeView === 'month') {
+			renderMonthCalendar();
+		} else {
+			renderAgenda();
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// 5. Controles de Navegación y Filtros
+	// -------------------------------------------------------------------------
+	document.getElementById('calPrevBtn')?.addEventListener('click', function () {
+		currentMonth--;
+		if (currentMonth < 0) {
+			currentMonth = 11;
+			currentYear--;
+		}
+		renderMonthCalendar();
+	});
+
+	document.getElementById('calNextBtn')?.addEventListener('click', function () {
+		currentMonth++;
+		if (currentMonth > 11) {
+			currentMonth = 0;
+			currentYear++;
+		}
+		renderMonthCalendar();
+	});
+
+	document.getElementById('calTodayBtn')?.addEventListener('click', function () {
+		currentYear = today.getFullYear();
+		currentMonth = today.getMonth();
+		renderMonthCalendar();
+	});
+
+	calRiskFilter?.addEventListener('change', refreshView);
+	calCiFilter?.addEventListener('change', refreshView);
+
+	viewModeMonthBtn?.addEventListener('click', function () {
+		activeView = 'month';
+		this.classList.add('active');
+		viewModeAgendaBtn?.classList.remove('active');
+		monthViewContainer?.classList.remove('d-none');
+		agendaViewContainer?.classList.add('d-none');
+		renderMonthCalendar();
+	});
+
+	viewModeAgendaBtn?.addEventListener('click', function () {
+		activeView = 'agenda';
+		this.classList.add('active');
+		viewModeMonthBtn?.classList.remove('active');
+		monthViewContainer?.classList.add('d-none');
+		agendaViewContainer?.classList.remove('d-none');
+		renderAgenda();
+	});
+
+	// Buscador de CIs en modal de programar
+	const schedCiSearch = document.getElementById('schedCiSearch');
+	if (schedCiSearch) {
+		schedCiSearch.addEventListener('input', function () {
+			const term = this.value.trim().toLowerCase();
+			document.querySelectorAll('.sched-ci-item').forEach(item => {
+				const s = item.dataset.search || '';
+				item.style.display = (!term || s.includes(term)) ? '' : 'none';
+			});
+		});
+	}
+
+	// -------------------------------------------------------------------------
+	// 6. Modal Detalle de Mantenimiento (Nativo Bootstrap getOrCreateInstance)
+	// -------------------------------------------------------------------------
+	const modalDetailEl = document.getElementById('modalDetailMaintenance');
+	const modalReschedEl = document.getElementById('modalRescheduleMaintenance');
+	let currentDetailMaintId = null;
+
+	function openDetailModal(id) {
+		currentDetailMaintId = id;
+		const ev = allEvents.find(e => e.id === id);
+		if (!ev) return;
+
+		document.getElementById('detailMaintTitle').textContent = ev.title;
+		document.getElementById('detailMaintRequester').textContent = ev.requester;
+		document.getElementById('detailMaintApprover').textContent = ev.approver;
+		document.getElementById('detailMaintDescription').textContent = ev.description || 'Sin procedimiento detallado.';
+		document.getElementById('detailMaintWindowText').textContent = `${ev.startFormatted} a ${ev.endFormatted}`;
+
+		const riskBadge = document.getElementById('detailMaintRiskBadge');
+		riskBadge.textContent = 'Riesgo: ' + ev.risk;
+		riskBadge.className = 'badge px-2 py-1 fw-semibold ' + (
+			ev.risk === 'Crítico' ? 'bg-danger' :
+			ev.risk === 'Alto' ? 'bg-warning text-dark' :
+			ev.risk === 'Medio' ? 'bg-info text-dark' : 'bg-success'
+		);
+
+		const statusBadge = document.getElementById('detailMaintStatusBadge');
+		statusBadge.textContent = ev.status;
+		statusBadge.className = 'badge px-2 py-1 fw-semibold ' + (
+			ev.status === 'Aprobado' ? 'bg-primary' :
+			ev.status === 'Implementado' ? 'bg-success' :
+			ev.status === 'Rechazado' ? 'bg-danger' : 'bg-secondary'
+		);
+
+		const ciCount = document.getElementById('detailMaintCiCount');
+		const ciList = document.getElementById('detailMaintCiList');
+		ciCount.textContent = ev.ciCount;
+		ciList.innerHTML = '';
+
+		if (ev.cis && ev.cis.length > 0) {
+			ev.cis.forEach(ci => {
+				const chip = document.createElement('span');
+				chip.className = 'badge bg-white text-dark border p-2 d-inline-flex align-items-center gap-1.5 shadow-sm';
+				chip.innerHTML = `
+					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+						<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+					</svg>
+					<strong>${ci.name}</strong>
+					<span class="text-muted small">(${ci.category}${ci.ip ? ' · ' + ci.ip : ''})</span>
+				`;
+				ciList.appendChild(chip);
+			});
+		} else {
+			ciList.innerHTML = '<span class="text-muted small">Sin activos especificados.</span>';
+		}
+
+		if (modalDetailEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+			bootstrap.Modal.getOrCreateInstance(modalDetailEl).show();
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// 7. Modal Reprogramar Mantenimiento
+	// -------------------------------------------------------------------------
+	const formResched = document.getElementById('formRescheduleMaintenance');
+
+	function openRescheduleModal(id) {
+		const ev = allEvents.find(e => e.id === id);
+		if (!ev) return;
+
+		formResched.action = `/operations/maintenance/${id}/reschedule`;
+		document.getElementById('reschedule_csrf').value = csrfMap[id] || '';
+		document.getElementById('rescheduleMaintenanceTitle').textContent = ev.title;
+		document.getElementById('reschedule_start').value = ev.start ? ev.start.substring(0, 16) : '';
+		document.getElementById('reschedule_end').value = ev.end ? ev.end.substring(0, 16) : '';
+
+		if (modalReschedEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+			bootstrap.Modal.getOrCreateInstance(modalReschedEl).show();
+		}
+	}
+
+	const btnDetailResched = document.getElementById('btnDetailOpenReschedule');
+	if (btnDetailResched && !btnDetailResched.dataset.listenerAttached) {
+		btnDetailResched.dataset.listenerAttached = 'true';
+		btnDetailResched.addEventListener('click', function () {
+			if (!currentDetailMaintId) return;
+
+			const targetId = currentDetailMaintId;
+			const bsDetail = typeof bootstrap !== 'undefined' && bootstrap.Modal ? bootstrap.Modal.getInstance(modalDetailEl) : null;
+
+			if (modalDetailEl && bsDetail) {
+				modalDetailEl.addEventListener('hidden.bs.modal', function onDetailHide() {
+					modalDetailEl.removeEventListener('hidden.bs.modal', onDetailHide);
+					openRescheduleModal(targetId);
+				}, { once: true });
+				bsDetail.hide();
+			} else {
+				openRescheduleModal(targetId);
+			}
+		});
+	}
+
+	// -------------------------------------------------------------------------
+	// 8. Blindaje Global Anti-Backdrop Huérfano
+	// -------------------------------------------------------------------------
+	if (!document.body.dataset.maintModalBackdropCleanupAttached) {
+		document.body.dataset.maintModalBackdropCleanupAttached = 'true';
+		document.addEventListener('hidden.bs.modal', function () {
+			setTimeout(function () {
+				if (!document.querySelector('.modal.show')) {
+					document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+					document.body.classList.remove('modal-open');
+					document.body.style.removeProperty('overflow');
+					document.body.style.removeProperty('padding-right');
+				}
+			}, 50);
+		});
+	}
+
+	// Inicializar la vista
+	renderMonthCalendar();
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initMaintenanceModule);
+	} else {
+		initMaintenanceModule();
+	}
+	document.addEventListener('turbo:load', initMaintenanceModule);
+	document.addEventListener('turbo:render', initMaintenanceModule);
+})();
+</script>
+{% endblock %}

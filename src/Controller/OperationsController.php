@@ -904,6 +904,293 @@ final class OperationsController extends AbstractController
         ]);
     }
 
+    // =========================================================================
+    // SUB-MÓDULO: CALENDARIO DE MANTENIMIENTOS
+    // =========================================================================
+
+    #[Route('/maintenance', name: 'app_operations_maintenance_index', methods: ['GET'])]
+    public function maintenanceIndex(
+        ChangeRepository $changeRepository,
+        CiItemRepository $ciItemRepository,
+    ): Response {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $allChanges = $changeRepository->findBy([], ['scheduledStart' => 'ASC']);
+        $now = new \DateTimeImmutable();
+
+        $maintenances = [];
+        $total = 0;
+        $inProgress = 0;
+        $upcoming = 0;
+        $completed = 0;
+
+        $events = [];
+
+        foreach ($allChanges as $c) {
+            if ($c->getScheduledStart() === null) {
+                continue;
+            }
+
+            $maintenances[] = $c;
+            $total++;
+
+            $start = $c->getScheduledStart();
+            $end = $c->getScheduledEnd() ?? $start;
+
+            if ($c->getStatus() === ChangeStatus::IMPLEMENTADO || ($end < $now && $c->getStatus() !== ChangeStatus::RECHAZADO)) {
+                $completed++;
+            } elseif ($start <= $now && $end >= $now && $c->getStatus() !== ChangeStatus::RECHAZADO) {
+                $inProgress++;
+            } elseif ($start > $now && $c->getStatus() !== ChangeStatus::RECHAZADO) {
+                $upcoming++;
+            }
+
+            $cis = [];
+            foreach ($c->getCiItems() as $ci) {
+                $cis[] = [
+                    'id' => (string) $ci->getId(),
+                    'name' => $ci->getName(),
+                    'ip' => $ci->getIpAddress(),
+                    'category' => $ci->getCategory()?->getName() ?? 'CI',
+                ];
+            }
+
+            $events[] = [
+                'id' => (string) $c->getId(),
+                'title' => $c->getTitle(),
+                'description' => $c->getDescription() ?? '',
+                'risk' => $c->getRiskLevel()->value,
+                'status' => $c->getStatus()->value,
+                'start' => $start->format('Y-m-d\TH:i:s'),
+                'end' => $end->format('Y-m-d\TH:i:s'),
+                'startDate' => $start->format('Y-m-d'),
+                'startTime' => $start->format('H:i'),
+                'endDate' => $end->format('Y-m-d'),
+                'endTime' => $end->format('H:i'),
+                'startFormatted' => $start->format('d/m/Y H:i'),
+                'endFormatted' => $end->format('d/m/Y H:i'),
+                'requester' => $c->getRequester()?->getName() ?? 'N/A',
+                'approver' => $c->getApprover()?->getName() ?? 'Pendiente CAB',
+                'ciCount' => count($cis),
+                'cis' => $cis,
+            ];
+        }
+
+        $availableCis = $ciItemRepository->findBy([], ['name' => 'ASC']);
+
+        return $this->render('operations/maintenance/index.html.twig', [
+            'maintenances' => $maintenances,
+            'eventsJson' => json_encode($events, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            'availableCis' => $availableCis,
+            'stats' => [
+                'total' => $total,
+                'in_progress' => $inProgress,
+                'upcoming' => $upcoming,
+                'completed' => $completed,
+            ],
+            'riskLevels' => ChangeRiskLevel::cases(),
+            'statuses' => ChangeStatus::cases(),
+        ]);
+    }
+
+    #[Route('/maintenance/schedule', name: 'app_operations_maintenance_schedule', methods: ['POST'])]
+    public function maintenanceSchedule(
+        Request $request,
+        TenantRepository $tenantRepository,
+        CiItemRepository $ciItemRepository,
+        EntityManagerInterface $em,
+        CsrfTokenManagerInterface $csrfManager,
+    ): Response {
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $token = (string) $request->request->get('_csrf_token');
+        if (!$csrfManager->isTokenValid(new CsrfToken('schedule_maintenance', $token))) {
+            return $this->handleResponse($request, false, 'Token de seguridad inválido.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        $title = trim((string) $request->request->get('title'));
+        $description = trim((string) $request->request->get('description'));
+        $riskStr = (string) $request->request->get('risk_level', ChangeRiskLevel::MEDIO->value);
+        $statusStr = (string) $request->request->get('status', ChangeStatus::APROBADO->value);
+        $startStr = trim((string) $request->request->get('scheduled_start'));
+        $endStr = trim((string) $request->request->get('scheduled_end'));
+        $ciIds = (array) $request->request->all('ci_ids');
+
+        if (mb_strlen($title) < 3) {
+            return $this->handleResponse($request, false, 'El título del mantenimiento debe tener al menos 3 caracteres.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        if ($startStr === '') {
+            return $this->handleResponse($request, false, 'Debe especificar la fecha y hora de inicio de la ventana.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        try {
+            $scheduledStart = new \DateTimeImmutable($startStr);
+        } catch (\Exception) {
+            return $this->handleResponse($request, false, 'Fecha de inicio inválida.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        $scheduledEnd = null;
+        if ($endStr !== '') {
+            try {
+                $scheduledEnd = new \DateTimeImmutable($endStr);
+            } catch (\Exception) {
+                return $this->handleResponse($request, false, 'Fecha de fin inválida.', redirectRoute: 'app_operations_maintenance_index');
+            }
+        }
+
+        if ($scheduledEnd && $scheduledEnd < $scheduledStart) {
+            return $this->handleResponse($request, false, 'La fecha de fin no puede ser anterior a la fecha de inicio.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        $tenant = $currentUser->getTenant() ?? $tenantRepository->findOneBy([]);
+        if (!$tenant) {
+            $tenant = new Tenant();
+            $tenant->setName('Tenant Principal');
+            $tenant->setDomain('default');
+            $tenant->setStatus(true);
+            $em->persist($tenant);
+        }
+
+        $riskLevel = ChangeRiskLevel::tryFrom($riskStr) ?? ChangeRiskLevel::MEDIO;
+        $status = ChangeStatus::tryFrom($statusStr) ?? ChangeStatus::APROBADO;
+
+        $change = new Change();
+        $change->setTitle($title);
+        $change->setDescription($description !== '' ? $description : null);
+        $change->setTenant($tenant);
+        $change->setRequester($currentUser);
+        $change->setRiskLevel($riskLevel);
+        $change->setStatus($status);
+        $change->setScheduledStart($scheduledStart);
+        $change->setScheduledEnd($scheduledEnd);
+
+        if ($status === ChangeStatus::APROBADO) {
+            $change->setApprover($currentUser);
+        }
+
+        foreach ($ciIds as $ciId) {
+            try {
+                $ciUuid = Uuid::fromString((string) $ciId);
+                $ci = $ciItemRepository->find($ciUuid);
+                if ($ci) {
+                    $change->addCiItem($ci);
+                }
+            } catch (\InvalidArgumentException) {
+            }
+        }
+
+        $em->persist($change);
+        $em->flush();
+
+        if ($change->getTenant()) {
+            $audit = new AuditLog();
+            $audit->setTenant($change->getTenant());
+            $audit->setUser($currentUser);
+            $audit->setAction('SCHEDULE_OPERATION_MAINTENANCE');
+            $audit->setEntityType('Change');
+            $audit->setEntityId($change->getId());
+            $audit->setNewValues([
+                'title' => $change->getTitle(),
+                'scheduledStart' => $scheduledStart->format('Y-m-d H:i'),
+                'scheduledEnd' => $scheduledEnd?->format('Y-m-d H:i'),
+                'ciCount' => $change->getCiItems()->count(),
+            ]);
+            $em->persist($audit);
+            $em->flush();
+        }
+
+        return $this->handleResponse($request, true, sprintf('Ventana de mantenimiento "%s" programada con éxito.', $title), redirectRoute: 'app_operations_maintenance_index');
+    }
+
+    #[Route('/maintenance/{id}/reschedule', name: 'app_operations_maintenance_reschedule', methods: ['POST'])]
+    public function maintenanceReschedule(
+        string $id,
+        Request $request,
+        ChangeRepository $changeRepository,
+        EntityManagerInterface $em,
+        CsrfTokenManagerInterface $csrfManager,
+    ): Response {
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        try {
+            $uuid = Uuid::fromString($id);
+            $change = $changeRepository->find($uuid);
+        } catch (\InvalidArgumentException) {
+            return $this->handleResponse($request, false, 'Identificador de mantenimiento inválido.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        if (!$change) {
+            return $this->handleResponse($request, false, 'El mantenimiento no existe o fue eliminado.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        $token = (string) $request->request->get('_csrf_token');
+        if (!$csrfManager->isTokenValid(new CsrfToken('reschedule_maintenance_' . $id, $token))) {
+            return $this->handleResponse($request, false, 'Token de seguridad inválido.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        $startStr = trim((string) $request->request->get('scheduled_start'));
+        $endStr = trim((string) $request->request->get('scheduled_end'));
+
+        if ($startStr === '') {
+            return $this->handleResponse($request, false, 'Debe especificar la nueva fecha de inicio.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        try {
+            $scheduledStart = new \DateTimeImmutable($startStr);
+        } catch (\Exception) {
+            return $this->handleResponse($request, false, 'Fecha de inicio inválida.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        $scheduledEnd = null;
+        if ($endStr !== '') {
+            try {
+                $scheduledEnd = new \DateTimeImmutable($endStr);
+            } catch (\Exception) {
+                return $this->handleResponse($request, false, 'Fecha de fin inválida.', redirectRoute: 'app_operations_maintenance_index');
+            }
+        }
+
+        if ($scheduledEnd && $scheduledEnd < $scheduledStart) {
+            return $this->handleResponse($request, false, 'La fecha de fin no puede ser anterior a la de inicio.', redirectRoute: 'app_operations_maintenance_index');
+        }
+
+        $oldStart = $change->getScheduledStart()?->format('Y-m-d H:i');
+        $oldEnd = $change->getScheduledEnd()?->format('Y-m-d H:i');
+
+        $change->setScheduledStart($scheduledStart);
+        $change->setScheduledEnd($scheduledEnd);
+        $em->flush();
+
+        if ($change->getTenant()) {
+            $audit = new AuditLog();
+            $audit->setTenant($change->getTenant());
+            $audit->setUser($currentUser);
+            $audit->setAction('RESCHEDULE_OPERATION_MAINTENANCE');
+            $audit->setEntityType('Change');
+            $audit->setEntityId($change->getId());
+            $audit->setOldValues(['start' => $oldStart, 'end' => $oldEnd]);
+            $audit->setNewValues([
+                'start' => $scheduledStart->format('Y-m-d H:i'),
+                'end' => $scheduledEnd?->format('Y-m-d H:i'),
+            ]);
+            $em->persist($audit);
+            $em->flush();
+        }
+
+        return $this->handleResponse($request, true, sprintf('Ventana de mantenimiento "%s" reprogramada con éxito.', $change->getTitle()), redirectRoute: 'app_operations_maintenance_index');
+    }
+
     private function handleResponse(Request $request, bool $success, string $message, int $status = Response::HTTP_OK, string $redirectRoute = 'app_operations_problem_index'): Response
     {
         if ($request->isXmlHttpRequest() || str_contains((string) $request->headers->get('Accept'), 'application/json')) {

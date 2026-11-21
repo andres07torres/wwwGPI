@@ -256,26 +256,26 @@
 							</td>
 							<td class="py-3 text-end pe-3">
 								<div class="btn-group btn-group-sm">
-									<button type="button" class="btn btn-outline-secondary btn-detail-change" data-id="{{ c.id }}" title="Ver detalles y evaluación CAB">
+									<button type="button" class="btn btn-outline-secondary btn-detail-change" data-bs-toggle="modal" data-bs-target="#modalDetailChange" data-id="{{ c.id }}" title="Ver detalles y evaluación CAB">
 										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 											<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
 											<circle cx="12" cy="12" r="3"/>
 										</svg>
 									</button>
-									<button type="button" class="btn btn-outline-success btn-evaluate-change" data-id="{{ c.id }}" data-title="{{ c.title }}" data-risk="{{ c.riskLevel.value }}" title="Evaluar en CAB">
+									<button type="button" class="btn btn-outline-success btn-evaluate-change" data-bs-toggle="modal" data-bs-target="#modalEvaluateChange" data-id="{{ c.id }}" data-title="{{ c.title|e('html_attr') }}" data-risk="{{ c.riskLevel.value }}" title="Evaluar en CAB">
 										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 											<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
 											<polyline points="14 2 14 8 20 8"/>
 											<polyline points="9 15 12 18 16 13"/>
 										</svg>
 									</button>
-									<button type="button" class="btn btn-outline-panel btn-edit-change" data-id="{{ c.id }}" title="Editar cambio">
+									<button type="button" class="btn btn-outline-panel btn-edit-change" data-bs-toggle="modal" data-bs-target="#modalEditChange" data-id="{{ c.id }}" title="Editar cambio">
 										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 											<path d="M12 20h9"/>
 											<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
 										</svg>
 									</button>
-									<button type="button" class="btn btn-outline-danger btn-delete-change" data-id="{{ c.id }}" data-title="{{ c.title }}" title="Eliminar cambio">
+									<button type="button" class="btn btn-outline-danger btn-delete-change" data-bs-toggle="modal" data-bs-target="#modalDeleteChange" data-id="{{ c.id }}" data-title="{{ c.title|e('html_attr') }}" title="Eliminar cambio">
 										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 											<polyline points="3 6 5 6 21 6"/>
 											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -320,7 +320,7 @@
 <div class="modal fade" id="modalCreateChange" tabindex="-1" aria-labelledby="modalCreateChangeLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
 		<div class="modal-content border-0 shadow">
-			<form method="POST" action="{{ path('app_operations_change_create') }}">
+			<form method="POST" action="{{ path('app_operations_change_create') }}" data-turbo="false">
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_change') }}">
 				<div class="modal-header border-bottom px-4 py-3">
 					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalCreateChangeLabel">
@@ -410,7 +410,7 @@
 <div class="modal fade" id="modalEditChange" tabindex="-1" aria-labelledby="modalEditChangeLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
 		<div class="modal-content border-0 shadow">
-			<form method="POST" id="formEditChange" action="#">
+			<form method="POST" id="formEditChange" action="#" data-turbo="false">
 				<input type="hidden" name="_csrf_token" id="edit_change_csrf" value="">
 				<div class="modal-header border-bottom px-4 py-3">
 					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalEditChangeLabel">
@@ -555,14 +555,9 @@
 					</div>
 				</div>
 			</div>
-			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-between align-items-center">
-				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-				<button type="button" class="btn btn-outline-success" id="btnDetailOpenEvaluate">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-						<polyline points="9 15 12 18 16 13"/>
-					</svg>
-					Evaluar en CAB
-				</button>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+				<button type="button" class="btn btn-panel-action px-4" id="btnDetailOpenEvaluate">Guardar</button>
+				<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
 			</div>
 		</div>
 	</div>
@@ -574,9 +569,8 @@
 <div class="modal fade" id="modalEvaluateChange" tabindex="-1" aria-labelledby="modalEvaluateChangeLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content border-0 shadow">
-			<form method="POST" id="formEvaluateChange" action="#">
+			<form method="POST" id="formEvaluateChange" action="#" data-turbo="false">
 				<input type="hidden" name="_csrf_token" id="evaluate_change_csrf" value="">
-				<input type="hidden" name="decision" id="evaluate_decision_input" value="">
 				<div class="modal-header border-bottom px-4 py-3">
 					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0" id="modalEvaluateChangeLabel">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-success flex-shrink-0">
@@ -594,38 +588,19 @@
 						<div class="fw-bold text-dark" id="evaluateChangeTitle">-</div>
 						<div class="small text-muted mt-1">Riesgo evaluado: <span class="fw-semibold text-dark" id="evaluateChangeRisk">-</span></div>
 					</div>
-					<div class="d-grid gap-2">
-						<button type="button" class="btn btn-success d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision" data-decision="aprobar">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-								<polyline points="20 6 9 17 4 12"/>
-							</svg>
-							<span>Aprobar Cambio (Autorizar Ventana)</span>
-						</button>
-						<button type="button" class="btn btn-primary d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision" data-decision="implementar">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-								<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-								<polyline points="22 4 12 14.01 9 11.01"/>
-							</svg>
-							<span>Marcar como Implementado con Éxito</span>
-						</button>
-						<button type="button" class="btn btn-warning d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision text-dark" data-decision="revision">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<circle cx="12" cy="12" r="10"/>
-								<polyline points="12 6 12 12 16 14"/>
-							</svg>
-							<span>Retornar a En Revisión</span>
-						</button>
-						<button type="button" class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2 py-2 btn-submit-decision" data-decision="rechazar">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<line x1="18" y1="6" x2="6" y2="18"/>
-								<line x1="6" y1="6" x2="18" y2="18"/>
-							</svg>
-							<span>Rechazar Solicitud de Cambio</span>
-						</button>
+					<div class="mb-2">
+						<label for="evaluateDecisionSelect" class="form-label small fw-semibold text-secondary">Decisión del Comité CAB <span class="text-danger">*</span></label>
+						<select id="evaluateDecisionSelect" name="decision" class="form-select" required>
+							<option value="aprobar" selected>Aprobar Cambio (Autorizar Ventana)</option>
+							<option value="implementar">Marcar como Implementado con Éxito</option>
+							<option value="revision">Retornar a En Revisión</option>
+							<option value="rechazar">Rechazar Solicitud de Cambio</option>
+						</select>
 					</div>
 				</div>
-				<div class="modal-footer border-top px-4 py-2 bg-light">
-					<button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">Cancelar</button>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+					<button type="submit" class="btn btn-panel-action px-4">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
 				</div>
 			</form>
 		</div>
@@ -638,7 +613,7 @@
 <div class="modal fade" id="modalDeleteChange" tabindex="-1" aria-labelledby="modalDeleteChangeLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content border-0 shadow">
-			<form method="POST" id="formDeleteChange" action="#">
+			<form method="POST" id="formDeleteChange" action="#" data-turbo="false">
 				<input type="hidden" name="_csrf_token" id="delete_change_csrf" value="">
 				<div class="modal-header border-bottom px-4 py-3">
 					<h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2 min-w-0" id="modalDeleteChangeLabel">
@@ -681,12 +656,16 @@
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-	const csrfMapEl = document.getElementById('csrfTokensChangeData');
-	let csrfMap = {};
-	if (csrfMapEl) {
-		try { csrfMap = JSON.parse(csrfMapEl.textContent); } catch (e) {}
-	}
+(function() {
+	function initChangeModule() {
+		const changesTable = document.getElementById('changesTable');
+		if (!changesTable) return;
+
+		const csrfMapEl = document.getElementById('csrfTokensChangeData');
+		let csrfMap = {};
+		if (csrfMapEl) {
+			try { csrfMap = JSON.parse(csrfMapEl.textContent); } catch (e) {}
+		}
 	// -------------------------------------------------------------------------
 	// 1. Filtrado en tiempo real y paginación cliente
 	// -------------------------------------------------------------------------
@@ -832,146 +811,170 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	// -------------------------------------------------------------------------
-	// 3. Modal Detalle de Cambio (AJAX)
+	// 3. Modales de Acciones (Nativo Bootstrap con show.bs.modal y getOrCreateInstance)
 	// -------------------------------------------------------------------------
 	const modalDetailEl = document.getElementById('modalDetailChange');
-	const bsDetailModal = modalDetailEl ? new bootstrap.Modal(modalDetailEl) : null;
+	const modalEvaluateEl = document.getElementById('modalEvaluateChange');
+	const modalEditEl = document.getElementById('modalEditChange');
+	const modalDeleteEl = document.getElementById('modalDeleteChange');
 	let currentDetailChangeId = null;
 
-	document.querySelectorAll('.btn-detail-change').forEach(btn => {
-		btn.addEventListener('click', function () {
-			const changeId = this.dataset.id;
+	// Modal 3: Detalle del Cambio
+	if (modalDetailEl && !modalDetailEl.dataset.listenerAttached) {
+		modalDetailEl.dataset.listenerAttached = 'true';
+		modalDetailEl.addEventListener('show.bs.modal', function (event) {
+			const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-detail-change') || event.relatedTarget) : null;
+			if (!btn || !btn.dataset.id) return;
+
+			const changeId = btn.dataset.id;
 			currentDetailChangeId = changeId;
-			openDetailModal(changeId);
+
+			// Placeholder mientras carga
+			document.getElementById('detailChangeTitle').textContent = 'Cargando detalle...';
+			document.getElementById('detailChangeRequester').textContent = '...';
+			document.getElementById('detailChangeApprover').textContent = '...';
+			document.getElementById('detailChangeDescription').textContent = 'Cargando información técnica...';
+			document.getElementById('detailChangeCiList').innerHTML = '<span class="text-muted small">Cargando activos...</span>';
+
+			fetch(`/operations/changes/${changeId}/detail`)
+				.then(res => res.json())
+				.then(data => {
+					if (!data.success) return;
+					const c = data.change;
+
+					document.getElementById('detailChangeTitle').textContent = c.title;
+					document.getElementById('detailChangeRequester').textContent = c.requester ? c.requester.name : 'N/A';
+					document.getElementById('detailChangeApprover').textContent = c.approver ? c.approver.name : 'Pendiente de evaluación CAB';
+					document.getElementById('detailChangeDescription').textContent = c.description || 'Sin descripción técnica detallada.';
+
+					const riskBadge = document.getElementById('detailChangeRiskBadge');
+					riskBadge.textContent = 'Riesgo: ' + c.riskLevel;
+					riskBadge.className = 'badge px-2 py-1 fw-semibold ' + (
+						c.riskLevel === 'Crítico' ? 'bg-danger' :
+						c.riskLevel === 'Alto' ? 'bg-warning text-dark' :
+						c.riskLevel === 'Medio' ? 'bg-info text-dark' : 'bg-success'
+					);
+
+					const statusBadge = document.getElementById('detailChangeStatusBadge');
+					statusBadge.textContent = c.status;
+					statusBadge.className = 'badge px-2 py-1 fw-semibold ' + (
+						c.status === 'Aprobado' ? 'bg-primary' :
+						c.status === 'Implementado' ? 'bg-success' :
+						c.status === 'Rechazado' ? 'bg-danger' :
+						c.status === 'En Revisión' ? 'bg-warning text-dark' : 'bg-secondary'
+					);
+
+					const winText = document.getElementById('detailChangeWindowText');
+					if (c.scheduledStart) {
+						winText.textContent = c.scheduledStart + (c.scheduledEnd ? '  —  ' + c.scheduledEnd : '');
+					} else {
+						winText.textContent = 'Sin ventana programada';
+					}
+
+					const ciCount = document.getElementById('detailChangeCiCount');
+					const ciList = document.getElementById('detailChangeCiList');
+					ciCount.textContent = c.ciCount;
+					ciList.innerHTML = '';
+
+					if (c.ciItems && c.ciItems.length > 0) {
+						c.ciItems.forEach(ci => {
+							const chip = document.createElement('span');
+							chip.className = 'badge bg-white text-dark border p-2 d-inline-flex align-items-center gap-1.5 shadow-sm';
+							chip.innerHTML = `
+								<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+									<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+								</svg>
+								<strong>${ci.name}</strong>
+								<span class="text-muted small">(${ci.category}${ci.ip ? ' · ' + ci.ip : ''})</span>
+							`;
+							ciList.appendChild(chip);
+						});
+					} else {
+						ciList.innerHTML = '<span class="text-muted small">Ningún activo vinculado.</span>';
+					}
+				})
+				.catch(err => {
+					console.error('Error al cargar detalle del cambio:', err);
+				});
 		});
-	});
-
-	function openDetailModal(changeId) {
-		fetch(`/operations/changes/${changeId}/detail`)
-			.then(res => res.json())
-			.then(data => {
-				if (!data.success) return;
-				const c = data.change;
-
-				document.getElementById('detailChangeTitle').textContent = c.title;
-				document.getElementById('detailChangeRequester').textContent = c.requester ? c.requester.name : 'N/A';
-				document.getElementById('detailChangeApprover').textContent = c.approver ? c.approver.name : 'Pendiente de evaluación CAB';
-				document.getElementById('detailChangeDescription').textContent = c.description || 'Sin descripción técnica detallada.';
-
-				const riskBadge = document.getElementById('detailChangeRiskBadge');
-				riskBadge.textContent = 'Riesgo: ' + c.riskLevel;
-				riskBadge.className = 'badge px-2 py-1 fw-semibold ' + (
-					c.riskLevel === 'Crítico' ? 'bg-danger' :
-					c.riskLevel === 'Alto' ? 'bg-warning text-dark' :
-					c.riskLevel === 'Medio' ? 'bg-info text-dark' : 'bg-success'
-				);
-
-				const statusBadge = document.getElementById('detailChangeStatusBadge');
-				statusBadge.textContent = c.status;
-				statusBadge.className = 'badge px-2 py-1 fw-semibold ' + (
-					c.status === 'Aprobado' ? 'bg-primary' :
-					c.status === 'Implementado' ? 'bg-success' :
-					c.status === 'Rechazado' ? 'bg-danger' :
-					c.status === 'En Revisión' ? 'bg-warning text-dark' : 'bg-secondary'
-				);
-
-				const winText = document.getElementById('detailChangeWindowText');
-				if (c.scheduledStart) {
-					winText.textContent = c.scheduledStart + (c.scheduledEnd ? '  —  ' + c.scheduledEnd : '');
-				} else {
-					winText.textContent = 'Sin ventana programada';
-				}
-
-				const ciCount = document.getElementById('detailChangeCiCount');
-				const ciList = document.getElementById('detailChangeCiList');
-				ciCount.textContent = c.ciCount;
-				ciList.innerHTML = '';
-
-				if (c.ciItems && c.ciItems.length > 0) {
-					c.ciItems.forEach(ci => {
-						const chip = document.createElement('span');
-						chip.className = 'badge bg-white text-dark border p-2 d-inline-flex align-items-center gap-1.5 shadow-sm';
-						chip.innerHTML = `
-							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-								<rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-							</svg>
-							<strong>${ci.name}</strong>
-							<span class="text-muted small">(${ci.category}${ci.ip ? ' · ' + ci.ip : ''})</span>
-						`;
-						ciList.appendChild(chip);
-					});
-				} else {
-					ciList.innerHTML = '<span class="text-muted small">Ningún activo vinculado.</span>';
-				}
-
-				if (bsDetailModal) bsDetailModal.show();
-			});
 	}
 
-	// -------------------------------------------------------------------------
-	// 4. Modal Evaluar en CAB
-	// -------------------------------------------------------------------------
-	const modalEvaluateEl = document.getElementById('modalEvaluateChange');
-	const bsEvaluateModal = modalEvaluateEl ? new bootstrap.Modal(modalEvaluateEl) : null;
+	// Modal 4: Evaluar en CAB
 	const formEvaluate = document.getElementById('formEvaluateChange');
-	const evaluateDecisionInput = document.getElementById('evaluate_decision_input');
+	if (modalEvaluateEl && !modalEvaluateEl.dataset.listenerAttached) {
+		modalEvaluateEl.dataset.listenerAttached = 'true';
+		modalEvaluateEl.addEventListener('show.bs.modal', function (event) {
+			const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-evaluate-change') || event.relatedTarget) : null;
+			if (!btn) return;
 
-	document.querySelectorAll('.btn-evaluate-change').forEach(btn => {
-		btn.addEventListener('click', function () {
-			openEvaluateModal(this.dataset.id, this.dataset.title, this.dataset.risk);
+			const id = btn.dataset.id;
+			const title = btn.dataset.title;
+			const risk = btn.dataset.risk;
+
+			document.getElementById('evaluateChangeTitle').textContent = title || '-';
+			document.getElementById('evaluateChangeRisk').textContent = risk || '-';
+			document.getElementById('evaluate_change_csrf').value = csrfMap[id]?.evaluate || '';
+			if (formEvaluate) formEvaluate.action = `/operations/changes/${id}/evaluate`;
 		});
-	});
+	}
 
+	// Botón "Guardar" dentro de Detalle -> Abre modal de evaluación de forma secuencial sin colisión de backdrops
 	const btnDetailOpenEvaluate = document.getElementById('btnDetailOpenEvaluate');
-	if (btnDetailOpenEvaluate) {
+	if (btnDetailOpenEvaluate && !btnDetailOpenEvaluate.dataset.listenerAttached) {
+		btnDetailOpenEvaluate.dataset.listenerAttached = 'true';
 		btnDetailOpenEvaluate.addEventListener('click', function () {
-			if (currentDetailChangeId) {
-				if (bsDetailModal) bsDetailModal.hide();
-				fetch(`/operations/changes/${currentDetailChangeId}/detail`)
+			if (!currentDetailChangeId) return;
+
+			const bsDetail = typeof bootstrap !== 'undefined' && bootstrap.Modal ? bootstrap.Modal.getInstance(modalDetailEl) : null;
+			const targetId = currentDetailChangeId;
+
+			// Esperar que termine de cerrarse el modal de detalle antes de mostrar el de evaluación
+			modalDetailEl.addEventListener('hidden.bs.modal', function onDetailHidden() {
+				modalDetailEl.removeEventListener('hidden.bs.modal', onDetailHidden);
+
+				fetch(`/operations/changes/${targetId}/detail`)
 					.then(r => r.json())
 					.then(d => {
 						if (d.success) {
-							openEvaluateModal(d.change.id, d.change.title, d.change.riskLevel);
+							document.getElementById('evaluateChangeTitle').textContent = d.change.title;
+							document.getElementById('evaluateChangeRisk').textContent = d.change.riskLevel;
+							document.getElementById('evaluate_change_csrf').value = csrfMap[d.change.id]?.evaluate || '';
+							if (formEvaluate) formEvaluate.action = `/operations/changes/${d.change.id}/evaluate`;
+
+							if (typeof bootstrap !== 'undefined' && bootstrap.Modal && modalEvaluateEl) {
+								bootstrap.Modal.getOrCreateInstance(modalEvaluateEl).show();
+							}
 						}
 					});
+			}, { once: true });
+
+			if (bsDetail) {
+				bsDetail.hide();
+			} else if (modalEvaluateEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+				bootstrap.Modal.getOrCreateInstance(modalEvaluateEl).show();
 			}
 		});
 	}
 
-	function openEvaluateModal(id, title, risk) {
-		document.getElementById('evaluateChangeTitle').textContent = title;
-		document.getElementById('evaluateChangeRisk').textContent = risk;
-		document.getElementById('evaluate_change_csrf').value = csrfMap[id]?.evaluate || '';
-		formEvaluate.action = `/operations/changes/${id}/evaluate`;
-		if (bsEvaluateModal) bsEvaluateModal.show();
-	}
-
-	document.querySelectorAll('.btn-submit-decision').forEach(btn => {
-		btn.addEventListener('click', function () {
-			evaluateDecisionInput.value = this.dataset.decision;
-			formEvaluate.submit();
-		});
-	});
-
-	// -------------------------------------------------------------------------
-	// 5. Modal Editar Cambio (AJAX)
-	// -------------------------------------------------------------------------
-	const modalEditEl = document.getElementById('modalEditChange');
-	const bsEditModal = modalEditEl ? new bootstrap.Modal(modalEditEl) : null;
+	// Modal 2: Editar Cambio (AJAX)
 	const formEdit = document.getElementById('formEditChange');
+	if (modalEditEl && !modalEditEl.dataset.listenerAttached) {
+		modalEditEl.dataset.listenerAttached = 'true';
+		modalEditEl.addEventListener('show.bs.modal', function (event) {
+			const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-edit-change') || event.relatedTarget) : null;
+			if (!btn || !btn.dataset.id) return;
 
-	document.querySelectorAll('.btn-edit-change').forEach(btn => {
-		btn.addEventListener('click', function () {
-			const id = this.dataset.id;
+			const id = btn.dataset.id;
+			if (formEdit) formEdit.action = `/operations/changes/${id}/edit`;
+			document.getElementById('edit_change_csrf').value = csrfMap[id]?.edit || '';
+
 			fetch(`/operations/changes/${id}/detail`)
 				.then(r => r.json())
 				.then(data => {
 					if (!data.success) return;
 					const c = data.change;
 
-					formEdit.action = `/operations/changes/${id}/edit`;
-					document.getElementById('edit_change_csrf').value = csrfMap[id]?.edit || '';
 					document.getElementById('edit_change_title').value = c.title;
 					document.getElementById('edit_change_risk').value = c.riskLevel;
 					document.getElementById('edit_change_status').value = c.status;
@@ -983,31 +986,64 @@ document.addEventListener('DOMContentLoaded', function () {
 					document.querySelectorAll('.edit-ci-check').forEach(chk => {
 						chk.checked = linkedIds.includes(chk.value);
 					});
-
-					if (bsEditModal) bsEditModal.show();
+				})
+				.catch(err => {
+					console.error('Error al cargar datos para edición:', err);
 				});
 		});
-	});
+	}
 
-	// -------------------------------------------------------------------------
-	// 6. Modal Eliminar Cambio
-	// -------------------------------------------------------------------------
-	const modalDeleteEl = document.getElementById('modalDeleteChange');
-	const bsDeleteModal = modalDeleteEl ? new bootstrap.Modal(modalDeleteEl) : null;
+	// Modal 5: Eliminar Cambio
 	const formDelete = document.getElementById('formDeleteChange');
+	if (modalDeleteEl && !modalDeleteEl.dataset.listenerAttached) {
+		modalDeleteEl.dataset.listenerAttached = 'true';
+		modalDeleteEl.addEventListener('show.bs.modal', function (event) {
+			const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-delete-change') || event.relatedTarget) : null;
+			if (!btn) return;
 
-	document.querySelectorAll('.btn-delete-change').forEach(btn => {
-		btn.addEventListener('click', function () {
-			const id = this.dataset.id;
-			const title = this.dataset.title;
+			const id = btn.dataset.id;
+			const title = btn.dataset.title;
 
-			formDelete.action = `/operations/changes/${id}/delete`;
+			if (formDelete) formDelete.action = `/operations/changes/${id}/delete`;
 			document.getElementById('delete_change_csrf').value = csrfMap[id]?.delete || '';
-			document.getElementById('deleteChangeTitle').textContent = title;
-
-			if (bsDeleteModal) bsDeleteModal.show();
+			document.getElementById('deleteChangeTitle').textContent = title || '-';
 		});
-	});
-});
+	}
+
+	// -------------------------------------------------------------------------
+	// 4. Blindaje Global Anti-Backdrop Huérfano (Garantiza que la pantalla nunca quede en negro)
+	// -------------------------------------------------------------------------
+	if (!document.body.dataset.modalBackdropCleanupAttached) {
+		document.body.dataset.modalBackdropCleanupAttached = 'true';
+		document.addEventListener('hidden.bs.modal', function () {
+			setTimeout(function () {
+				if (!document.querySelector('.modal.show')) {
+					document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+					document.body.classList.remove('modal-open');
+					document.body.style.removeProperty('overflow');
+					document.body.style.removeProperty('padding-right');
+				}
+			}, 50);
+		});
+
+		function removeStrayBackdrops() {
+			if (!document.querySelector('.modal.show')) {
+				document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+				document.body.classList.remove('modal-open');
+			}
+		}
+		document.addEventListener('turbo:before-visit', removeStrayBackdrops);
+		document.addEventListener('turbo:before-render', removeStrayBackdrops);
+	}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initChangeModule);
+	} else {
+		initChangeModule();
+	}
+	document.addEventListener('turbo:load', initChangeModule);
+	document.addEventListener('turbo:render', initChangeModule);
+})();
 </script>
 {% endblock %}

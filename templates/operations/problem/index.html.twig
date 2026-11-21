@@ -258,7 +258,7 @@
 <div class="modal fade" id="modalCreateProblem" tabindex="-1" aria-labelledby="modalCreateProblemLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
 		<div class="modal-content border-0 shadow">
-			<form method="POST" action="{{ path('app_operations_problem_create') }}">
+			<form method="POST" action="{{ path('app_operations_problem_create') }}" data-turbo="false">
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_problem') }}">
 				<div class="modal-header border-bottom px-4 py-3">
 					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalCreateProblemLabel">
@@ -357,7 +357,7 @@
 <div class="modal fade" id="modalEditProblem" tabindex="-1" aria-labelledby="modalEditProblemLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
 		<div class="modal-content border-0 shadow">
-			<form method="POST" id="formEditProblem" action="">
+			<form method="POST" id="formEditProblem" action="" data-turbo="false">
 				<input type="hidden" name="_csrf_token" id="editCsrfToken" value="">
 				<div class="modal-header border-bottom px-4 py-3">
 					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalEditProblemLabel">
@@ -499,8 +499,9 @@
 					</div>
 				</div>
 			</div>
-			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end">
-				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+				<button type="button" class="btn btn-panel-action px-4" data-bs-dismiss="modal">Guardar</button>
+				<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
 			</div>
 		</div>
 	</div>
@@ -512,7 +513,7 @@
 <div class="modal fade" id="modalDeleteProblem" tabindex="-1" aria-labelledby="modalDeleteProblemLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered modal-sm">
 		<div class="modal-content border-0 shadow">
-			<form method="POST" id="formDeleteProblem" action="">
+			<form method="POST" id="formDeleteProblem" action="" data-turbo="false">
 				<input type="hidden" name="_csrf_token" id="deleteCsrfToken" value="">
 				<div class="modal-header bg-danger text-white px-3 py-2">
 					<h6 class="modal-title fw-bold mb-0" id="modalDeleteProblemLabel">Confirmar Eliminación</h6>
@@ -751,8 +752,10 @@
 						listEl.innerHTML = '<div class="text-muted small fst-italic py-2">No hay tickets vinculados a este problema.</div>';
 					}
 
-					const modal = new bootstrap.Modal(document.getElementById('modalDetailProblem'));
-					modal.show();
+					const modalEl = document.getElementById('modalDetailProblem');
+					if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+						bootstrap.Modal.getOrCreateInstance(modalEl).show();
+					}
 				} catch (err) {
 					console.error('Error al cargar detalle del problema:', err);
 				}
@@ -787,8 +790,10 @@
 						chk.checked = linkedIds.includes(chk.value);
 					});
 
-					const modal = new bootstrap.Modal(document.getElementById('modalEditProblem'));
-					modal.show();
+					const modalEl = document.getElementById('modalEditProblem');
+					if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+						bootstrap.Modal.getOrCreateInstance(modalEl).show();
+					}
 				} catch (err) {
 					console.error('Error al abrir edición:', err);
 				}
@@ -808,10 +813,27 @@
 					document.getElementById('deleteCsrfToken').value = csrfMap[id].delete;
 				}
 
-				const modal = new bootstrap.Modal(document.getElementById('modalDeleteProblem'));
-				modal.show();
+				const modalEl = document.getElementById('modalDeleteProblem');
+				if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+					bootstrap.Modal.getOrCreateInstance(modalEl).show();
+				}
 			});
 		});
+
+		// 4. Blindaje Anti-Backdrop Huérfano
+		if (!document.body.dataset.problemModalBackdropCleanupAttached) {
+			document.body.dataset.problemModalBackdropCleanupAttached = 'true';
+			document.addEventListener('hidden.bs.modal', function () {
+				setTimeout(function () {
+					if (!document.querySelector('.modal.show')) {
+						document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+						document.body.classList.remove('modal-open');
+						document.body.style.removeProperty('overflow');
+						document.body.style.removeProperty('padding-right');
+					}
+				}, 50);
+			});
+		}
 	}
 
 	if (document.readyState === 'loading') {

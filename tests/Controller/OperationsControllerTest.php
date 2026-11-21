@@ -273,4 +273,86 @@ final class OperationsControllerTest extends WebTestCase
         $deletedChange = $em->getRepository(Change::class)->find($change->getId());
         $this->assertNull($deletedChange);
     }
+
+    public function testMaintenanceIndexRedirectsAnonymous(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/operations/maintenance');
+
+        $this->assertResponseRedirects('http://localhost/');
+    }
+
+    public function testMaintenanceIndexLoadsForAuthenticatedUser(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAuthenticatedUser();
+
+        $client->loginUser($user);
+        $crawler = $client->request('GET', '/operations/maintenance');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Mantenimientos');
+        $this->assertSelectorExists('#calendarMonthGrid');
+        $this->assertSelectorExists('#modalScheduleMaintenance');
+        $this->assertSelectorExists('#modalRescheduleMaintenance');
+        $this->assertSelectorExists('#modalDetailMaintenance');
+    }
+
+    public function testMaintenanceScheduleAndReschedule(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAuthenticatedUser();
+        $client->loginUser($user);
+
+        // 1. Obtener token CSRF
+        $crawler = $client->request('GET', '/operations/maintenance');
+        $csrfToken = $crawler->filter('form[action*="maintenance/schedule"] input[name="_csrf_token"]')->attr('value');
+
+        // 2. Programar Mantenimiento
+        $client->request('POST', '/operations/maintenance/schedule', [
+            '_csrf_token' => $csrfToken,
+            'title' => 'Mantenimiento de Servidores Core Prod',
+            'description' => 'Parches de seguridad mensuales en cluster Linux.',
+            'risk_level' => ChangeRiskLevel::MEDIO->value,
+            'status' => ChangeStatus::APROBADO->value,
+            'scheduled_start' => '2026-11-28T23:00',
+            'scheduled_end' => '2026-11-29T03:00',
+        ]);
+
+        $this->assertResponseRedirects('/operations/maintenance');
+        $client->followRedirect();
+
+        // 3. Verificar en BD
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $maint = $em->getRepository(Change::class)->findOneBy(['title' => 'Mantenimiento de Servidores Core Prod']);
+        $this->assertNotNull($maint);
+        $this->assertSame('2026-11-28 23:00', $maint->getScheduledStart()?->format('Y-m-d H:i'));
+
+        $id = (string) $maint->getId();
+
+        // 4. Reprogramar
+        $crawler = $client->request('GET', '/operations/maintenance');
+        $csrfJson = $crawler->filter('#csrfTokensMaintenanceData')->text();
+        $csrfTokens = json_decode($csrfJson, true);
+        $reschedToken = $csrfTokens[$id] ?? null;
+        $this->assertNotNull($reschedToken);
+
+        $client->request('POST', '/operations/maintenance/' . $id . '/reschedule', [
+            '_csrf_token' => $reschedToken,
+            'scheduled_start' => '2026-11-30T01:00',
+            'scheduled_end' => '2026-11-30T04:00',
+        ]);
+
+        $this->assertResponseRedirects('/operations/maintenance');
+        $client->followRedirect();
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $updatedMaint = $em->getRepository(Change::class)->find($maint->getId());
+        $this->assertNotNull($updatedMaint);
+        $this->assertSame('2026-11-30 01:00', $updatedMaint->getScheduledStart()?->format('Y-m-d H:i'));
+
+        // Limpieza
+        $em->remove($updatedMaint);
+        $em->flush();
+    }
 }
