@@ -7,9 +7,11 @@ namespace App\Command;
 use App\Entity\CiCategory;
 use App\Entity\CiItem;
 use App\Entity\CiRelationship;
+use App\Entity\SlaPolicy;
 use App\Entity\Tenant;
 use App\Entity\Ticket;
 use App\Entity\TicketPriority;
+use App\Entity\TicketSla;
 use App\Entity\TicketStatus;
 use App\Entity\User;
 use App\Enum\CiCategoryType;
@@ -310,37 +312,34 @@ final class SeedDemoDataCommand extends Command
         $prAlta = $prioRepo->findOneBy(['name' => 'Alta']) ?? $prBaja;
         $prCritica = $prioRepo->findOneBy(['name' => 'Crítica']) ?? $prAlta;
 
+        $policyRepo = $this->em->getRepository(SlaPolicy::class);
+        $policiesConfig = [
+            ['name' => 'SLA Crítico (Incidentes Mayores)', 'priority' => $prCritica, 'resp' => 15, 'resol' => 120],
+            ['name' => 'SLA Alto (Servicios Principales)', 'priority' => $prAlta, 'resp' => 30, 'resol' => 240],
+            ['name' => 'SLA Medio (Operación Regular)', 'priority' => $prMedia, 'resp' => 60, 'resol' => 480],
+            ['name' => 'SLA Bajo (Requerimientos Menores)', 'priority' => $prBaja, 'resp' => 120, 'resol' => 1440],
+        ];
+
+        $policiesMap = [];
+        foreach ($policiesConfig as $pConfig) {
+            $pol = $policyRepo->findOneBy(['priority' => $pConfig['priority']]);
+            if (!$pol) {
+                $pol = new SlaPolicy();
+                $pol->setName($pConfig['name']);
+                $pol->setPriority($pConfig['priority']);
+                $pol->setTenant($tenant);
+                $pol->setResponseTimeMinutes($pConfig['resp']);
+                $pol->setResolutionTimeMinutes($pConfig['resol']);
+                $pol->setBusinessHoursOnly(true);
+                $this->em->persist($pol);
+            }
+            if ($pConfig['priority']) {
+                $policiesMap[$pConfig['priority']->getName()] = $pol;
+            }
+        }
+        $this->em->flush();
+
         $ticketDefinitions = [
-            [
-                'code' => 'INC-2026-0001',
-                'type' => TicketType::INCIDENTE,
-                'title' => 'Caída intermitente en conexión de base de datos MySQL',
-                'description' => 'Se reportan timeouts ocasionales en las consultas pesadas del cluster DB-CLUSTER-MYSQL durante el cierre contable.',
-                'status' => $stEnProceso,
-                'priority' => $prCritica,
-                'ci' => 'DB-CLUSTER-MYSQL',
-                'hoursAgo' => 3,
-            ],
-            [
-                'code' => 'INC-2026-0002',
-                'type' => TicketType::INCIDENTE,
-                'title' => 'Latencia elevada en el Gateway de APIs principales',
-                'description' => 'Los endpoints de facturación electrónica presentan tiempos de respuesta superiores a 2.5 segundos.',
-                'status' => $stEnProceso,
-                'priority' => $prAlta,
-                'ci' => 'API-GATEWAY-SVC',
-                'hoursAgo' => 5,
-            ],
-            [
-                'code' => 'REQ-2026-0003',
-                'type' => TicketType::PETICION,
-                'title' => 'Solicitud de ampliación de memoria RAM para VM-PROD-APP02',
-                'description' => 'Requerimiento de aumento de 16GB a 32GB de RAM para soportar la nueva versión del módulo de reportería.',
-                'status' => $stEnEspera,
-                'priority' => $prMedia,
-                'ci' => 'VM-PROD-APP02',
-                'hoursAgo' => 12,
-            ],
             [
                 'code' => 'INC-2026-0004',
                 'type' => TicketType::INCIDENTE,
@@ -349,7 +348,7 @@ final class SeedDemoDataCommand extends Command
                 'status' => $stNuevo,
                 'priority' => $prAlta,
                 'ci' => 'SW-CORE-CISCO01',
-                'hoursAgo' => 1,
+                'minutesAgo' => 25,
             ],
             [
                 'code' => 'REQ-2026-0005',
@@ -359,47 +358,7 @@ final class SeedDemoDataCommand extends Command
                 'status' => $stNuevo,
                 'priority' => $prBaja,
                 'ci' => 'SSL-CERT-WILDCARD',
-                'hoursAgo' => 2,
-            ],
-            [
-                'code' => 'INC-2026-0006',
-                'type' => TicketType::INCIDENTE,
-                'title' => 'Espacio en disco al 92% en volumen LUN-01 de almacenamiento SAN',
-                'description' => 'El pool de almacenamiento de backups superó el umbral de advertencia. Se ejecutó purga de snapshots antiguos.',
-                'status' => $stResuelto,
-                'priority' => $prAlta,
-                'ci' => 'SAN-DELL-STORAGE',
-                'hoursAgo' => 24,
-            ],
-            [
-                'code' => 'REQ-2026-0007',
-                'type' => TicketType::PETICION,
-                'title' => 'Mantenimiento preventivo de firmware en Servidor Rack 01',
-                'description' => 'Actualización de BIOS y controladora iDRAC del servidor principal Dell PowerEdge completada en ventana nocturna.',
-                'status' => $stCerrado,
-                'priority' => $prMedia,
-                'ci' => 'SRV-CORE-PROD01',
-                'hoursAgo' => 48,
-            ],
-            [
-                'code' => 'INC-2026-0008',
-                'type' => TicketType::INCIDENTE,
-                'title' => 'Pérdida de paquetes en interfaz WAN de Firewall perimetral',
-                'description' => 'El enlace secundario presentó microcortes. Se verificó con el proveedor de fibra óptica y se estabilizó la línea.',
-                'status' => $stResuelto,
-                'priority' => $prCritica,
-                'ci' => 'FW-FORTINET-EDGE',
-                'hoursAgo' => 36,
-            ],
-            [
-                'code' => 'REQ-2026-0009',
-                'type' => TicketType::PETICION,
-                'title' => 'Instalación de software contable y cliente VPN en estación de finanzas',
-                'description' => 'Configuración de acceso seguro remoto y certificación de firma electrónica para la contadora general.',
-                'status' => $stCerrado,
-                'priority' => $prBaja,
-                'ci' => 'WS-FINANCE-01',
-                'hoursAgo' => 72,
+                'minutesAgo' => 105,
             ],
             [
                 'code' => 'INC-2026-0010',
@@ -409,47 +368,152 @@ final class SeedDemoDataCommand extends Command
                 'status' => $stEnProceso,
                 'priority' => $prMedia,
                 'ci' => 'VM-PROD-APP01',
-                'hoursAgo' => 4,
+                'minutesAgo' => 195,
+            ],
+            [
+                'code' => 'INC-2026-0002',
+                'type' => TicketType::INCIDENTE,
+                'title' => 'Latencia elevada en el Gateway de APIs principales',
+                'description' => 'Los endpoints de facturación electrónica presentan tiempos de respuesta superiores a 2.5 segundos.',
+                'status' => $stEnProceso,
+                'priority' => $prAlta,
+                'ci' => 'API-GATEWAY-SVC',
+                'minutesAgo' => 170,
+            ],
+            [
+                'code' => 'REQ-2026-0003',
+                'type' => TicketType::PETICION,
+                'title' => 'Solicitud de ampliación de memoria RAM para VM-PROD-APP02',
+                'description' => 'Requerimiento de aumento de 16GB a 32GB de RAM para soportar la nueva versión del módulo de reportería.',
+                'status' => $stEnEspera,
+                'priority' => $prMedia,
+                'ci' => 'VM-PROD-APP02',
+                'minutesAgo' => 430,
+            ],
+            [
+                'code' => 'INC-2026-0001',
+                'type' => TicketType::INCIDENTE,
+                'title' => 'Caída intermitente en conexión de base de datos MySQL',
+                'description' => 'Se reportan timeouts ocasionales en las consultas pesadas del cluster DB-CLUSTER-MYSQL durante el cierre contable.',
+                'status' => $stEnProceso,
+                'priority' => $prCritica,
+                'ci' => 'DB-CLUSTER-MYSQL',
+                'minutesAgo' => 195,
+            ],
+            [
+                'code' => 'INC-2026-0006',
+                'type' => TicketType::INCIDENTE,
+                'title' => 'Espacio en disco al 92% en volumen LUN-01 de almacenamiento SAN',
+                'description' => 'El pool de almacenamiento de backups superó el umbral de advertencia. Se ejecutó purga de snapshots antiguos.',
+                'status' => $stResuelto,
+                'priority' => $prAlta,
+                'ci' => 'SAN-DELL-STORAGE',
+                'minutesAgo' => 360,
+                'resolvedInMinutes' => 120,
+            ],
+            [
+                'code' => 'INC-2026-0008',
+                'type' => TicketType::INCIDENTE,
+                'title' => 'Pérdida de paquetes en interfaz WAN de Firewall perimetral',
+                'description' => 'El enlace secundario presentó microcortes. Se verificó con el proveedor de fibra óptica y se estabilizó la línea.',
+                'status' => $stResuelto,
+                'priority' => $prCritica,
+                'ci' => 'FW-FORTINET-EDGE',
+                'minutesAgo' => 720,
+                'resolvedInMinutes' => 60,
+            ],
+            [
+                'code' => 'REQ-2026-0007',
+                'type' => TicketType::PETICION,
+                'title' => 'Mantenimiento preventivo de firmware en Servidor Rack 01',
+                'description' => 'Actualización de BIOS y controladora iDRAC del servidor principal Dell PowerEdge completada en ventana nocturna.',
+                'status' => $stCerrado,
+                'priority' => $prMedia,
+                'ci' => 'SRV-CORE-PROD01',
+                'minutesAgo' => 1440,
+                'resolvedInMinutes' => 180,
+            ],
+            [
+                'code' => 'REQ-2026-0009',
+                'type' => TicketType::PETICION,
+                'title' => 'Instalación de software contable y cliente VPN en estación de finanzas',
+                'description' => 'Configuración de acceso seguro remoto y certificación de firma electrónica para la contadora general.',
+                'status' => $stCerrado,
+                'priority' => $prBaja,
+                'ci' => 'WS-FINANCE-01',
+                'minutesAgo' => 2880,
+                'resolvedInMinutes' => 300,
             ],
         ];
 
         $ticketRepo = $this->em->getRepository(Ticket::class);
-        $createdTickets = 0;
+        $processedTickets = 0;
 
         foreach ($ticketDefinitions as $tDef) {
             $ticket = $ticketRepo->findOneBy(['ticketCode' => $tDef['code']]);
+            $createdDate = new \DateTimeImmutable(sprintf('-%d minutes', $tDef['minutesAgo']));
+
             if (!$ticket) {
                 $ticket = new Ticket();
                 $ticket->setTicketCode($tDef['code']);
                 $ticket->setType($tDef['type']);
-                $ticket->setTitle($tDef['title']);
-                $ticket->setDescription($tDef['description']);
-                $ticket->setStatus($tDef['status']);
-                $ticket->setPriority($tDef['priority']);
                 $ticket->setTenant($tenant);
                 $ticket->setRequester($user);
                 $ticket->setAssignee($user);
-
-                $createdDate = new \DateTimeImmutable(sprintf('-%d hours', $tDef['hoursAgo']));
-                $ticket->setCreatedAt($createdDate);
-                $ticket->setUpdatedAt($createdDate);
-
-                if ($tDef['status'] === $stResuelto || $tDef['status'] === $stCerrado) {
-                    $ticket->setResolvedAt($createdDate->modify('+2 hours'));
-                }
-
-                // Asociar activo CI correspondiente
-                if (isset($ciEntities[$tDef['ci']])) {
-                    $ticket->addCiItem($ciEntities[$tDef['ci']]);
-                }
-
-                $this->em->persist($ticket);
-                $createdTickets++;
             }
+
+            $ticket->setTitle($tDef['title']);
+            $ticket->setDescription($tDef['description']);
+            $ticket->setStatus($tDef['status']);
+            $ticket->setPriority($tDef['priority']);
+            $ticket->setCreatedAt($createdDate);
+            $ticket->setUpdatedAt($createdDate);
+
+            if ($tDef['status'] === $stResuelto || $tDef['status'] === $stCerrado) {
+                $ticket->setResolvedAt($createdDate->modify(sprintf('+%d minutes', $tDef['resolvedInMinutes'] ?? 120)));
+            } else {
+                $ticket->setResolvedAt(null);
+            }
+
+            // Asociar activo CI correspondiente
+            if (isset($ciEntities[$tDef['ci']]) && !$ticket->getCiItems()->contains($ciEntities[$tDef['ci']])) {
+                $ticket->addCiItem($ciEntities[$tDef['ci']]);
+            }
+
+            // Asociar o actualizar entidad TicketSla
+            $ticketSla = $ticket->getTicketSlas()->first() ?: null;
+            $matchingPolicy = $policiesMap[$tDef['priority']->getName()] ?? null;
+            if (!$ticketSla && $matchingPolicy) {
+                $ticketSla = new TicketSla();
+                $ticketSla->setTicket($ticket);
+                $ticketSla->setSlaPolicy($matchingPolicy);
+            }
+            if ($ticketSla && $matchingPolicy) {
+                $respDue = $createdDate->modify(sprintf('+%d minutes', $matchingPolicy->getResponseTimeMinutes()));
+                $resolDue = $createdDate->modify(sprintf('+%d minutes', $matchingPolicy->getResolutionTimeMinutes()));
+                $ticketSla->setResponseDueAt($respDue);
+                $ticketSla->setResolutionDueAt($resolDue);
+                $ticketSla->setFirstResponseAt($createdDate->modify('+10 minutes'));
+                if ($tDef['status'] === $stResuelto || $tDef['status'] === $stCerrado) {
+                    $resolvedDate = $ticket->getResolvedAt() ?? $resolDue;
+                    $ticketSla->setResolvedAt($resolvedDate);
+                    $ticketSla->setResolutionBreached($resolvedDate > $resolDue);
+                    $ticketSla->setResponseBreached($ticketSla->getFirstResponseAt() > $respDue);
+                } else {
+                    $ticketSla->setResolvedAt(null);
+                    $now = new \DateTimeImmutable();
+                    $ticketSla->setResponseBreached($now > $respDue && !$ticketSla->getFirstResponseAt());
+                    $ticketSla->setResolutionBreached($now > $resolDue);
+                }
+                $this->em->persist($ticketSla);
+            }
+
+            $this->em->persist($ticket);
+            $processedTickets++;
         }
         $this->em->flush();
 
-        $io->success(sprintf('Se crearon %d tickets en Mesa de Ayuda vinculados a sus respectivos activos.', $createdTickets));
+        $io->success(sprintf('Se procesaron %d tickets en Mesa de Ayuda con tiempos relativos actualizados.', $processedTickets));
 
         return Command::SUCCESS;
     }

@@ -92,7 +92,7 @@
 						<ul class="sidebar-submenu">
 							<li><a href="{{ path('app_sla_policy_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_sla_policy_' ? 'active' : '' }}">Políticas y Plazos</a></li>
 							<li><a href="{{ path('app_sla_compliance_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_sla_compliance_' ? 'active' : '' }}">Monitor de Cumplimiento</a></li>
-							<li><a href="#" class="sidebar-sublink">Alertas y Escalamiento</a></li>
+							<li><a href="{{ path('app_sla_escalation_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_sla_escalation_' ? 'active' : '' }}">Alertas y Escalamiento</a></li>
 						</ul>
 					</div>
 				</li>

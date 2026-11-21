@@ -172,7 +172,7 @@
 							<!-- Columna Prioridad -->
 							<td class="ps-3 py-3">
 								{% if policy.priority %}
-									<span class="small fw-semibold" style="color: var(--panel, #14212B);">{{ policy.priority.name }}</span>
+									<span class="small fw-semibold" style="color: {{ policy.priority.color|default('var(--panel, #14212B)') }};">{{ policy.priority.name }}</span>
 								{% else %}
 									<span class="small text-muted">Sin prioridad</span>
 								{% endif %}

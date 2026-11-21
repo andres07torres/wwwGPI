@@ -118,4 +118,81 @@ final class SlaControllerTest extends WebTestCase
         $em->remove($user);
         $em->flush();
     }
+
+    public function testEscalationsPageLoadsForAuthenticatedUser(): void
+    {
+        $client = static::createClient();
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+
+        $testEmail = 'sla_esc_user@example.com';
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $testEmail]);
+        if (!$user) {
+            $user = new User();
+            $user->setName('SLA Esc User');
+            $user->setUsername('sla_esc_user');
+            $user->setEmail($testEmail);
+            $user->setPassword($hasher->hashPassword($user, 'Password123#'));
+            $em->persist($user);
+            $em->flush();
+        }
+
+        $tenant = $em->getRepository(\App\Entity\Tenant::class)->findOneBy([]);
+        if (!$tenant) {
+            $tenant = new \App\Entity\Tenant();
+            $tenant->setName('Test Tenant');
+            $tenant->setDomain('test-tenant');
+            $em->persist($tenant);
+        }
+
+        $priority = $em->getRepository(\App\Entity\TicketPriority::class)->findOneBy([]);
+        if (!$priority) {
+            $priority = new \App\Entity\TicketPriority();
+            $priority->setName('Alta');
+            $priority->setLevel(3);
+            $priority->setColor('#f59e0b');
+            $priority->setTenant($tenant);
+            $em->persist($priority);
+        }
+
+        $status = $em->getRepository(\App\Entity\TicketStatus::class)->findOneBy([]);
+        if (!$status) {
+            $status = new \App\Entity\TicketStatus();
+            $status->setName('En Proceso');
+            $status->setOrderIndex(2);
+            $status->setIsClosedState(false);
+            $status->setTenant($tenant);
+            $em->persist($status);
+        }
+
+        $ticket = new \App\Entity\Ticket();
+        $ticket->setTicketCode('INC-TEST-' . bin2hex(random_bytes(2)));
+        $ticket->setTitle('Ticket de prueba escalamiento');
+        $ticket->setDescription('Descripción de prueba');
+        $ticket->setType(\App\Enum\TicketType::INCIDENTE);
+        $ticket->setTenant($tenant);
+        $ticket->setRequester($user);
+        $ticket->setAssignee($user);
+        $ticket->setPriority($priority);
+        $ticket->setStatus($status);
+        $ticket->setCreatedAt(new \DateTimeImmutable('-30 minutes'));
+        $ticket->setUpdatedAt(new \DateTimeImmutable('-30 minutes'));
+        $em->persist($ticket);
+        $em->flush();
+
+        $client->loginUser($user);
+        $client->request('GET', '/sla/escalations');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('h1', 'Alertas y Escalamiento SLA');
+        $this->assertSelectorExists('#escalationTable');
+        $this->assertSelectorExists('#modalEscalateTicket');
+        $this->assertSelectorExists('#modalEscalationRules');
+        $this->assertSelectorTextContains('#escalationTable', 'Consumo SLA');
+        $this->assertSelectorTextContains('#escalationTable', 'Ingreso:');
+
+        $em->remove($ticket);
+        $em->remove($user);
+        $em->flush();
+    }
 }

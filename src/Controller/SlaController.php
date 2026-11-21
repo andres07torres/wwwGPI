@@ -16,6 +16,7 @@ use App\Repository\TicketPriorityRepository;
 use App\Repository\TicketRepository;
 use App\Repository\TicketSlaRepository;
 use App\Repository\TicketStatusRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -115,37 +116,37 @@ final class SlaController extends AbstractController
 
         foreach ($tickets as $ticket) {
             $ticketSla = $ticket->getTicketSlas()->first() ?: null;
+            $matchingPolicy = $ticket->getPriority() ? ($policiesByPriority[$ticket->getPriority()->getId()] ?? ($allPolicies[0] ?? null)) : ($allPolicies[0] ?? null);
 
-            if (!$ticketSla && $ticket->getPriority()) {
-                $matchingPolicy = $policiesByPriority[$ticket->getPriority()->getId()] ?? ($allPolicies[0] ?? null);
-                if ($matchingPolicy) {
-                    $ticketSla = new TicketSla();
-                    $ticketSla->setTicket($ticket);
-                    $ticketSla->setSlaPolicy($matchingPolicy);
+            if (!$ticketSla && $matchingPolicy) {
+                $ticketSla = new TicketSla();
+                $ticketSla->setTicket($ticket);
+                $ticketSla->setSlaPolicy($matchingPolicy);
+                $em->persist($ticketSla);
+                $hasSlaCreated = true;
+            }
 
-                    $createdAt = $ticket->getCreatedAt();
-                    $respDue = $createdAt->modify(sprintf('+%d minutes', $matchingPolicy->getResponseTimeMinutes()));
-                    $resolDue = $createdAt->modify(sprintf('+%d minutes', $matchingPolicy->getResolutionTimeMinutes()));
-                    $ticketSla->setResponseDueAt($respDue);
-                    $ticketSla->setResolutionDueAt($resolDue);
+            if ($ticketSla && $matchingPolicy) {
+                $createdAt = $ticket->getCreatedAt();
+                $respDue = $createdAt->modify(sprintf('+%d minutes', $matchingPolicy->getResponseTimeMinutes()));
+                $resolDue = $createdAt->modify(sprintf('+%d minutes', $matchingPolicy->getResolutionTimeMinutes()));
+                $ticketSla->setResponseDueAt($respDue);
+                $ticketSla->setResolutionDueAt($resolDue);
 
-                    if ($ticket->getStatus() && $ticket->getStatus()->isClosedState()) {
-                        $ticketSla->setResolvedAt($ticket->getUpdatedAt() ?? $resolDue);
+                if ($ticket->getStatus() && $ticket->getStatus()->isClosedState()) {
+                    $resolvedAt = $ticket->getResolvedAt() ?? $ticket->getUpdatedAt() ?? $resolDue;
+                    $ticketSla->setResolvedAt($resolvedAt);
+                    if (!$ticketSla->getFirstResponseAt()) {
                         $ticketSla->setFirstResponseAt($createdAt->modify('+10 minutes'));
-                        $ticketSla->setResolutionBreached($ticketSla->getResolvedAt() > $resolDue);
-                        $ticketSla->setResponseBreached($ticketSla->getFirstResponseAt() > $respDue);
-                    } else {
-                        if ($now > $respDue && !$ticketSla->getFirstResponseAt()) {
-                            $ticketSla->setResponseBreached(true);
-                        }
-                        if ($now > $resolDue && !$ticketSla->getResolvedAt()) {
-                            $ticketSla->setResolutionBreached(true);
-                        }
                     }
-
-                    $em->persist($ticketSla);
-                    $hasSlaCreated = true;
+                    $ticketSla->setResolutionBreached($resolvedAt > $resolDue);
+                    $ticketSla->setResponseBreached($ticketSla->getFirstResponseAt() > $respDue);
+                } else {
+                    $ticketSla->setResolvedAt(null);
+                    $ticketSla->setResponseBreached($now > $respDue && !$ticketSla->getFirstResponseAt());
+                    $ticketSla->setResolutionBreached($now > $resolDue);
                 }
+                $hasSlaCreated = true;
             }
 
             if ($ticketSla) {
@@ -183,6 +184,290 @@ final class SlaController extends AbstractController
                 'breached' => $breachedCount,
             ],
         ]);
+    }
+
+    #[Route('/escalations', name: 'escalation_index', methods: ['GET'])]
+    public function escalationIndex(
+        TicketRepository $ticketRepository,
+        TicketSlaRepository $ticketSlaRepository,
+        TicketStatusRepository $statusRepository,
+        SlaPolicyRepository $policyRepository,
+        TicketPriorityRepository $priorityRepository,
+        TenantRepository $tenantRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+    ): Response {
+        $this->ensureDefaultPolicies($em, $policyRepository, $priorityRepository, $tenantRepository);
+
+        $tickets = $ticketRepository->createQueryBuilder('t')
+            ->leftJoin('t.priority', 'pr')
+            ->leftJoin('t.status', 'st')
+            ->leftJoin('t.requester', 'req')
+            ->leftJoin('t.assignee', 'asg')
+            ->leftJoin('t.ticketSlas', 'tsla')
+            ->leftJoin('tsla.slaPolicy', 'sp')
+            ->addSelect('pr', 'st', 'req', 'asg', 'tsla', 'sp')
+            ->orderBy('t.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $now = new \DateTimeImmutable();
+        $allPolicies = $policyRepository->findAll();
+        $policiesByPriority = [];
+        foreach ($allPolicies as $pol) {
+            if ($pol->getPriority()) {
+                $policiesByPriority[$pol->getPriority()->getId()] = $pol;
+            }
+        }
+
+        $escalatedItems = [];
+        $activeAlertsCount = 0;
+        $escalatedCount = 0;
+        $criticalRiskCount = 0;
+        $resolvedCount = 0;
+
+        foreach ($tickets as $ticket) {
+            $ticketSla = $ticket->getTicketSlas()->first() ?: null;
+            $matchingPolicy = $ticket->getPriority() ? ($policiesByPriority[$ticket->getPriority()->getId()] ?? ($allPolicies[0] ?? null)) : ($allPolicies[0] ?? null);
+
+            if (!$ticketSla && $matchingPolicy) {
+                $ticketSla = new TicketSla();
+                $ticketSla->setTicket($ticket);
+                $ticketSla->setSlaPolicy($matchingPolicy);
+                $em->persist($ticketSla);
+            }
+
+            if ($ticketSla && $matchingPolicy) {
+                $createdAt = $ticket->getCreatedAt();
+                $respDue = $createdAt->modify(sprintf('+%d minutes', $matchingPolicy->getResponseTimeMinutes()));
+                $resolDue = $createdAt->modify(sprintf('+%d minutes', $matchingPolicy->getResolutionTimeMinutes()));
+                $ticketSla->setResponseDueAt($respDue);
+                $ticketSla->setResolutionDueAt($resolDue);
+
+                if ($ticket->getStatus() && $ticket->getStatus()->isClosedState()) {
+                    $resolvedAt = $ticket->getResolvedAt() ?? $ticket->getUpdatedAt() ?? $resolDue;
+                    $ticketSla->setResolvedAt($resolvedAt);
+                    if (!$ticketSla->getFirstResponseAt()) {
+                        $ticketSla->setFirstResponseAt($createdAt->modify('+10 minutes'));
+                    }
+                    $ticketSla->setResolutionBreached($resolvedAt > $resolDue);
+                    $ticketSla->setResponseBreached($ticketSla->getFirstResponseAt() > $respDue);
+                } else {
+                    $ticketSla->setResolvedAt(null);
+                    $ticketSla->setResponseBreached($now > $respDue && !$ticketSla->getFirstResponseAt());
+                    $ticketSla->setResolutionBreached($now > $resolDue);
+                }
+            }
+
+            if ($ticketSla) {
+                $metric = $this->calculateSlaMetric($ticket, $ticketSla, $now);
+                $isClosed = $ticket->getStatus() && $ticket->getStatus()->isClosedState();
+                $createdAt = $ticket->getCreatedAt();
+                $resolDue = $ticketSla->getResolutionDueAt();
+                $totalSec = $resolDue ? max(1, $resolDue->getTimestamp() - $createdAt->getTimestamp()) : 1;
+
+                if ($isClosed) {
+                    $finishDate = $ticketSla->getResolvedAt() ?? $ticket->getResolvedAt() ?? $ticket->getUpdatedAt() ?? $now;
+                    $elapsedSec = max(0, $finishDate->getTimestamp() - $createdAt->getTimestamp());
+                    $elapsedRatio = min(100, (int) round(($elapsedSec / $totalSec) * 100));
+                    $elapsedTimeStr = $this->formatElapsedTime($elapsedSec);
+                    $timeStatusStr = 'Resuelto';
+                    $isBreached = ($finishDate > $resolDue);
+                } else {
+                    $elapsedSec = max(0, $now->getTimestamp() - $createdAt->getTimestamp());
+                    $elapsedRatio = (int) round(($elapsedSec / $totalSec) * 100);
+                    $elapsedTimeStr = $this->formatElapsedTime($elapsedSec);
+                    $diffSec = $resolDue ? ($resolDue->getTimestamp() - $now->getTimestamp()) : 0;
+                    if ($diffSec > 0) {
+                        $timeStatusStr = sprintf('Restan %s', $this->formatElapsedTime($diffSec));
+                    } else {
+                        $timeStatusStr = sprintf('Vencido hace %s', $this->formatElapsedTime(abs($diffSec)));
+                    }
+                    $isBreached = ($metric['overall_status'] === 'breached' || ($resolDue && $now > $resolDue));
+                }
+
+                $priorityLevel = $ticket->getPriority() ? $ticket->getPriority()->getLevel() : 1;
+
+                if ($isBreached && $priorityLevel >= 3) {
+                    $escalationLevel = 3;
+                    $escalationName = 'Nivel 3 · Coordinación TI';
+                    $escalateToRole = 'Coordinador TI / Gerencia';
+                } elseif ($metric['overall_status'] === 'at_risk' || $elapsedRatio >= 70 || $priorityLevel >= 3 || $isBreached) {
+                    $escalationLevel = 2;
+                    $escalationName = 'Nivel 2 · Especialista TI';
+                    $escalateToRole = 'Especialista TI Senior';
+                } else {
+                    $escalationLevel = 1;
+                    $escalationName = 'Nivel 1 · Mesa de Ayuda';
+                    $escalateToRole = 'Técnico de Soporte N1';
+                }
+
+                if ($isBreached) {
+                    $alertType = 'Vencido';
+                    $alertBadge = 'danger';
+                    $alertLabel = 'Vencido';
+                    $activeAlertsCount++;
+                } else {
+                    $alertType = 'En Tiempo';
+                    $alertBadge = 'panel';
+                    $alertLabel = 'En Tiempo';
+                }
+
+                if (!$isClosed && ($metric['overall_status'] === 'at_risk' || $elapsedRatio >= 70)) {
+                    $criticalRiskCount++;
+                }
+
+                if ($escalationLevel >= 2) {
+                    $escalatedCount++;
+                }
+                if ($isClosed) {
+                    $resolvedCount++;
+                }
+
+                $escalatedItems[] = [
+                    'ticket' => $ticket,
+                    'ticketSla' => $ticketSla,
+                    'policy' => $matchingPolicy ?? $ticketSla->getSlaPolicy(),
+                    'metric' => $metric,
+                    'escalation_level' => $escalationLevel,
+                    'escalation_name' => $escalationName,
+                    'escalate_to' => $escalateToRole,
+                    'alert_type' => $alertType,
+                    'alert_badge' => $alertBadge,
+                    'alert_label' => $alertLabel,
+                    'elapsed_ratio' => min(100, max(0, $elapsedRatio)),
+                    'elapsed_time_str' => $elapsedTimeStr,
+                    'time_status_str' => $timeStatusStr,
+                    'is_breached' => $isBreached,
+                    'is_closed' => $isClosed,
+                ];
+            }
+        }
+
+        $em->flush();
+
+        $agents = $userRepository->createQueryBuilder('u')
+            ->where('u.status = :status')
+            ->setParameter('status', true)
+            ->orderBy('u.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $priorities = $priorityRepository->findBy([], ['level' => 'DESC']);
+        $statuses = $statusRepository->findBy([], ['orderIndex' => 'ASC']);
+
+        return $this->render('sla/escalations.html.twig', [
+            'items' => $escalatedItems,
+            'priorities' => $priorities,
+            'statuses' => $statuses,
+            'agents' => $agents,
+            'stats' => [
+                'total' => count($escalatedItems),
+                'active_alerts' => $activeAlertsCount,
+                'escalated' => $escalatedCount,
+                'critical_risk' => $criticalRiskCount,
+                'resolved' => $resolvedCount,
+            ],
+        ]);
+    }
+
+    #[Route('/escalations/{id}/escalate', name: 'escalation_action', methods: ['POST'])]
+    public function escalateAction(
+        string $id,
+        Request $request,
+        TicketRepository $ticketRepository,
+        UserRepository $userRepository,
+        TicketStatusRepository $statusRepository,
+        EntityManagerInterface $em,
+        CsrfTokenManagerInterface $csrfTokenManager,
+    ): Response {
+        $token = new CsrfToken('escalate_ticket', (string) $request->request->get('_csrf_token'));
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            $this->addFlash('error', 'Token de seguridad inválido. Intenta de nuevo.');
+            return $this->redirectToRoute('app_sla_escalation_index');
+        }
+
+        try {
+            $uuid = Uuid::fromString($id);
+        } catch (\InvalidArgumentException) {
+            $this->addFlash('error', 'Identificador de ticket inválido.');
+            return $this->redirectToRoute('app_sla_escalation_index');
+        }
+
+        $ticket = $ticketRepository->find($uuid);
+        if (!$ticket) {
+            $this->addFlash('error', 'El ticket no fue encontrado.');
+            return $this->redirectToRoute('app_sla_escalation_index');
+        }
+
+        $newLevel = (int) $request->request->get('escalation_level', 2);
+        $targetUserId = $request->request->get('target_user_id');
+        $reason = trim((string) $request->request->get('reason', ''));
+        $technicalNote = trim((string) $request->request->get('technical_note', ''));
+
+        $oldAssignee = $ticket->getAssignee();
+        $oldStatus = $ticket->getStatus();
+
+        if ($targetUserId) {
+            try {
+                $targetUser = $userRepository->find(Uuid::fromString((string) $targetUserId));
+                if ($targetUser) {
+                    $ticket->setAssignee($targetUser);
+                }
+            } catch (\InvalidArgumentException) {}
+        }
+
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof \App\Entity\User) {
+            $comment = new \App\Entity\TicketComment();
+            $comment->setTicket($ticket);
+            $comment->setUser($currentUser);
+            $levelText = match ($newLevel) {
+                3 => 'Nivel 3 (Coordinación TI / Gerencia)',
+                2 => 'Nivel 2 (Soporte Especializado TI)',
+                default => 'Nivel 1 (Mesa de Ayuda)',
+            };
+            $content = sprintf("⚠️ ESCALAMIENTO A %s\nMotivo: %s", $levelText, $reason ?: 'Requerimiento de atención prioritaria por SLA');
+            if ($technicalNote !== '') {
+                $content .= "\nNota técnica: " . $technicalNote;
+            }
+            $comment->setContent($content);
+            $comment->setIsPrivate(true);
+            $em->persist($comment);
+
+            if ($ticket->getTenant()) {
+                $audit = new \App\Entity\AuditLog();
+                $audit->setTenant($ticket->getTenant());
+                $audit->setUser($currentUser);
+                $audit->setAction('ESCALAR_TICKET_SLA');
+                $audit->setEntityType('Ticket');
+                $audit->setEntityId($ticket->getId());
+                $audit->setOldValues([
+                    'assignee' => $oldAssignee ? $oldAssignee->getName() : null,
+                    'status' => $oldStatus ? $oldStatus->getName() : null,
+                ]);
+                $audit->setNewValues([
+                    'ticket_code' => $ticket->getTicketCode(),
+                    'escalation_level' => $newLevel,
+                    'assignee' => $ticket->getAssignee() ? $ticket->getAssignee()->getName() : null,
+                    'reason' => $reason,
+                ]);
+                $audit->setCreatedAt(new \DateTimeImmutable());
+                $em->persist($audit);
+            }
+        }
+
+        if ($ticket->getStatus() && $ticket->getStatus()->getCode() === 'NEW') {
+            $inProgress = $statusRepository->findOneBy(['code' => 'IN_PROGRESS']);
+            if ($inProgress) {
+                $ticket->setStatus($inProgress);
+            }
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', sprintf('Ticket %s escalado con éxito.', $ticket->getTicketCode()));
+        return $this->redirectToRoute('app_sla_escalation_index');
     }
 
     #[Route('/policies/save', name: 'policy_save', methods: ['POST'])]
@@ -254,6 +539,25 @@ final class SlaController extends AbstractController
         $policy->setResolutionTimeMinutes($resolutionTime);
         $policy->setBusinessHoursOnly($businessHoursOnly);
 
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof \App\Entity\User && $policy->getTenant()) {
+            $audit = new \App\Entity\AuditLog();
+            $audit->setTenant($policy->getTenant());
+            $audit->setUser($currentUser);
+            $audit->setAction($isNew ? 'CREAR_POLITICA_SLA' : 'ACTUALIZAR_POLITICA_SLA');
+            $audit->setEntityType('SlaPolicy');
+            $audit->setEntityId($policy->getId());
+            $audit->setNewValues([
+                'name' => $policy->getName(),
+                'priority' => $priority->getName(),
+                'response_time_minutes' => $responseTime,
+                'resolution_time_minutes' => $resolutionTime,
+                'business_hours_only' => $businessHoursOnly,
+            ]);
+            $audit->setCreatedAt(new \DateTimeImmutable());
+            $em->persist($audit);
+        }
+
         $em->flush();
 
         $actionMsg = $isNew ? 'creada' : 'actualizada';
@@ -288,6 +592,22 @@ final class SlaController extends AbstractController
         }
 
         $policyName = $policy->getName();
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof \App\Entity\User && $policy->getTenant()) {
+            $audit = new \App\Entity\AuditLog();
+            $audit->setTenant($policy->getTenant());
+            $audit->setUser($currentUser);
+            $audit->setAction('ELIMINAR_POLITICA_SLA');
+            $audit->setEntityType('SlaPolicy');
+            $audit->setEntityId($policy->getId());
+            $audit->setOldValues([
+                'name' => $policyName,
+                'priority' => $policy->getPriority() ? $policy->getPriority()->getName() : null,
+            ]);
+            $audit->setCreatedAt(new \DateTimeImmutable());
+            $em->persist($audit);
+        }
+
         $em->remove($policy);
         $em->flush();
 
@@ -521,5 +841,22 @@ final class SlaController extends AbstractController
         $hours = (int) floor($minutes / 60);
         $rem = $minutes % 60;
         return $rem > 0 ? sprintf('en %d h %d m', $hours, $rem) : sprintf('en %d h', $hours);
+    }
+
+    private function formatElapsedTime(int $seconds): string
+    {
+        $minutes = (int) round($seconds / 60);
+        if ($minutes < 1) {
+            return '< 1 min';
+        }
+        if ($minutes < 60) {
+            return sprintf('%d min', $minutes);
+        }
+        $hours = (int) floor($minutes / 60);
+        $remMinutes = $minutes % 60;
+        if ($remMinutes === 0) {
+            return sprintf('%d h', $hours);
+        }
+        return sprintf('%d h %d m', $hours, $remMinutes);
     }
 }

@@ -1,0 +1,649 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Alertas y Escalamiento SLA{% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo con Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Tiempos de Atención (SLA)</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Alertas y Escalamiento</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Alertas y Escalamiento SLA</h1>
+				<p class="text-muted mb-0">
+					Supervisión preventiva de umbrales SLA, monitoreo de riesgos de incumplimiento y gestión del flujo de escalamiento técnico.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalEscalationRules">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<polygon points="12 2 2 7 12 12 22 7 12 2"/>
+						<polyline points="2 17 12 22 22 17"/>
+						<polyline points="2 12 12 17 22 12"/>
+					</svg>
+					<span>Matriz de Escalamiento</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- =========================================================================
+	     FILA 1: CUATRO CARTAS EJECUTIVAS (KPIS)
+	     ========================================================================= -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Alertas Activas -->
+		<div class="col-6 col-lg-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Alertas SLA Activas">Alertas Activas</span>
+						<div class="kpi-card-value text-truncate">{{ stats.active_alerts }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Tickets que han superado umbrales preventivos o vencimiento">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+							<path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+						</svg>
+					</div>
+				</div>
+				<div class="kpi-card-footer text-muted">
+					<span class="text-truncate"><strong>{{ stats.critical_risk }}</strong> críticas / en riesgo</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: Casos Escalados -->
+		<div class="col-6 col-lg-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Tickets Escalados">Casos Escalados</span>
+						<div class="kpi-card-value text-truncate">{{ stats.escalated }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Casos transferidos a Nivel 2 o Nivel 3">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="17 11 12 6 7 11"/>
+							<polyline points="17 18 12 13 7 18"/>
+						</svg>
+					</div>
+				</div>
+				<div class="kpi-card-footer text-muted">
+					<span class="text-truncate">Nivel 2 (Especialista) &amp; Nivel 3</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Riesgo Inminente -->
+		<div class="col-6 col-lg-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Riesgo Inminente (>70%)">Riesgo Crítico</span>
+						<div class="kpi-card-value text-truncate">{{ stats.critical_risk }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Tickets con más del 70% del tiempo de resolución consumido">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+							<line x1="12" y1="9" x2="12" y2="13"/>
+							<line x1="12" y1="17" x2="12.01" y2="17"/>
+						</svg>
+					</div>
+				</div>
+				<div class="kpi-card-footer text-muted">
+					<span class="text-truncate">&gt; 70% tiempo consumido</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Casos Resueltos -->
+		<div class="col-6 col-lg-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid mb-2">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Tickets Atendidos / Resueltos">Resueltos</span>
+						<div class="kpi-card-value text-truncate">{{ stats.resolved }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Casos cerrados o resueltos">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+							<polyline points="22 4 12 14.01 9 11.01"/>
+						</svg>
+					</div>
+				</div>
+				<div class="kpi-card-footer text-muted">
+					<span class="text-truncate"><strong>{{ stats.total }}</strong> tickets monitoreados</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- =========================================================================
+	     FILA 2: TABLA PRINCIPAL CON BÚSQUEDA Y FILTROS EN TIEMPO REAL
+	     ========================================================================= -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+		<!-- Barra de Búsqueda y Filtros -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="row g-2 align-items-center">
+				<div class="col-12 col-md-4">
+					<div class="position-relative">
+						<input type="text" id="escalationSearchInput" class="form-control form-control-sm ps-4" placeholder="Buscar ticket, título, solicitante, técnico...">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+				<div class="col-6 col-md-2">
+					<select id="filterEscalationLevel" class="form-select form-select-sm">
+						<option value="">Todos los niveles</option>
+						<option value="Nivel 1">Nivel 1 · Mesa</option>
+						<option value="Nivel 2">Nivel 2 · Especialista</option>
+						<option value="Nivel 3">Nivel 3 · Coordinación</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<select id="filterAlertType" class="form-select form-select-sm">
+						<option value="">Todas las alertas</option>
+						<option value="Vencido">Vencido</option>
+						<option value="En Tiempo">En Tiempo</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<select id="filterPriority" class="form-select form-select-sm">
+						<option value="">Todas las prioridades</option>
+						{% for prio in priorities %}
+							<option value="{{ prio.name }}">{{ prio.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<select id="filterType" class="form-select form-select-sm">
+						<option value="">Todos los tipos</option>
+						<option value="Incidente">Incidente</option>
+						<option value="Petición">Petición</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tabla de Alertas y Escalamiento -->
+		<div class="table-responsive">
+			<table class="table align-middle table-hover mb-0" id="escalationTable">
+				<thead class="table-light">
+					<tr>
+						<th class="ps-3 py-3 text-secondary text-uppercase small fw-bold" style="width: 14%;">Ticket</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 9%;">Prioridad</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 18%;">Nivel de Escalamiento</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 15%;">Alerta SLA</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 16%;">Tiempo Consumido</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold" style="width: 18%;">Asignado &amp; Escalamiento</th>
+						<th class="py-3 text-secondary text-uppercase small fw-bold text-end pe-3" style="width: 10%;">Acción</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in items %}
+						{% set t = item.ticket %}
+						{% set tsla = item.ticketSla %}
+						{% set policy = item.policy %}
+						<tr class="escalation-row"
+							data-search="{{ t.ticketCode }} {{ t.title }} {{ t.requester ? t.requester.name : '' }} {{ t.assignee ? t.assignee.name : '' }}"
+							data-level="Nivel {{ item.escalation_level }}"
+							data-alert="{{ item.alert_type }}"
+							data-priority="{{ t.priority ? t.priority.name : '' }}"
+							data-type="{{ t.type.value }}">
+							<!-- Columna 1: Ticket -->
+							<td class="ps-3 py-2.5">
+								<div class="d-flex align-items-center gap-2">
+									<div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0" style="width: 28px; height: 28px; background-color: rgba(20, 33, 43, 0.08); color: var(--panel, #14212B);">
+										{% if t.type.value == 'Incidente' %}
+											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+												<circle cx="12" cy="12" r="10"/>
+												<line x1="12" y1="8" x2="12" y2="12"/>
+												<line x1="12" y1="16" x2="12.01" y2="16"/>
+											</svg>
+										{% else %}
+											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+												<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+												<polyline points="14 2 14 8 20 8"/>
+											</svg>
+										{% endif %}
+									</div>
+									<div class="min-w-0">
+										<div class="fw-bold font-monospace small" style="color: var(--panel, #14212B);">
+											{{ t.ticketCode }}
+										</div>
+										<div class="text-truncate text-dark small" style="max-width: 220px;" title="{{ t.title }}">
+											{{ t.title }}
+										</div>
+										<div class="text-muted" style="font-size: 10.5px;">
+											Ingreso: {{ t.createdAt|date('d/m/Y H:i') }}
+										</div>
+									</div>
+								</div>
+							</td>
+
+							<!-- Columna 2: Prioridad (Solo texto en color, sin fondo de botón) -->
+							<td class="py-2.5">
+								{% if t.priority %}
+									<span class="small fw-semibold" style="color: {{ t.priority.color|default('#14212B') }};">
+										{{ t.priority.name }}
+									</span>
+								{% else %}
+									<span class="small text-muted">Sin prioridad</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna 3: Nivel de Escalamiento (Texto limpio con color del navbar) -->
+							<td class="py-2.5">
+								<span class="small fw-semibold" style="color: var(--panel, #14212B);">
+									{{ item.escalation_name }}
+								</span>
+							</td>
+
+							<!-- Columna 4: Alerta SLA (Solo Vencido o En Tiempo con color corporativo) -->
+							<td class="py-2.5">
+								{% if (tsla and tsla.isResolutionBreached) or item.alert_type == 'Vencido' or item.is_breached %}
+									<span class="small fw-bold text-danger">Vencido</span>
+								{% else %}
+									<span class="small fw-bold" style="color: var(--panel, #14212B);">En Tiempo</span>
+								{% endif %}
+							</td>
+
+							<!-- Columna 5: Tiempo Consumido -->
+							<td class="py-2.5">
+								<div style="max-width: 155px;" title="Política: {{ policy ? policy.name : 'Estándar' }}{% if tsla and tsla.resolutionDueAt %} · Límite: {{ tsla.resolutionDueAt|date('d/m/Y H:i') }}{% endif %}">
+									<div class="d-flex justify-content-between align-items-center small mb-1">
+										<span class="text-muted" style="font-size: 11px;">Consumo SLA</span>
+										<span class="fw-bold" style="font-size: 11px; color: {{ item.elapsed_ratio >= 100 ? '#dc3545' : (item.elapsed_ratio >= 70 ? '#d97706' : 'var(--panel, #14212B)') }};">{{ item.elapsed_ratio }}%</span>
+									</div>
+									<div class="progress" style="height: 6px; background-color: #f1f5f9; border-radius: 9999px;">
+										{% set barColor = item.elapsed_ratio >= 100 ? 'bg-danger' : (item.elapsed_ratio >= 70 ? 'bg-warning' : 'bg-primary') %}
+										<div class="progress-bar {{ barColor }}" role="progressbar" style="width: {{ item.elapsed_ratio }}%; border-radius: 9999px;" aria-valuenow="{{ item.elapsed_ratio }}" aria-valuemin="0" aria-valuemax="100"></div>
+									</div>
+									<div class="d-flex justify-content-between align-items-center mt-1 text-muted" style="font-size: 10px;">
+										<span title="Tiempo transcurrido desde ingreso el {{ t.createdAt|date('d/m/Y H:i') }}">
+											{{ item.elapsed_time_str }}
+										</span>
+										<span class="{{ item.is_breached ? 'text-danger fw-semibold' : '' }}">
+											{{ item.time_status_str }}
+										</span>
+									</div>
+								</div>
+							</td>
+
+							<!-- Columna 6: Asignado & Escalamiento -->
+							<td class="py-2.5">
+								<div class="d-flex align-items-center gap-2">
+									<div class="sidebar-avatar flex-shrink-0" style="width: 28px; height: 28px; font-size: 11px; background-color: var(--panel, #14212B); color: #fff;">
+										{{ t.assignee ? (t.assignee.name|default(t.assignee.userIdentifier)|slice(0, 2)|upper) : '?' }}
+									</div>
+									<div class="min-w-0">
+										<div class="text-dark small fw-semibold text-truncate" style="max-width: 140px;" title="{{ t.assignee ? t.assignee.name : 'Sin asignar' }}">
+											{{ t.assignee ? t.assignee.name : 'Sin asignar' }}
+										</div>
+										<div class="text-muted text-truncate" style="font-size: 11px;" title="Ruta de escalamiento: {{ item.escalate_to }}">
+											&rarr; {{ item.escalate_to }}
+										</div>
+									</div>
+								</div>
+							</td>
+
+							<!-- Columna 7: Acción -->
+							<td class="py-2.5 text-end pe-3">
+								<button type="button" class="btn btn-sm btn-outline-panel d-inline-flex align-items-center gap-1.5 btn-open-escalate"
+									data-bs-toggle="modal"
+									data-bs-target="#modalEscalateTicket"
+									data-ticket-id="{{ t.id }}"
+									data-ticket-code="{{ t.ticketCode }}"
+									data-ticket-title="{{ t.title }}"
+									data-ticket-priority="{{ t.priority ? t.priority.name : 'Sin prioridad' }}"
+									data-ticket-priority-color="{{ t.priority ? t.priority.color : '#64748b' }}"
+									data-ticket-assignee-id="{{ t.assignee ? t.assignee.id : '' }}"
+									data-current-level="{{ item.escalation_level }}"
+									data-target-level="{{ item.escalation_level < 3 ? item.escalation_level + 1 : 3 }}">
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+										<polyline points="17 11 12 6 7 11"/>
+										<polyline points="17 18 12 13 7 18"/>
+									</svg>
+									<span>Escalar</span>
+								</button>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="7" class="text-center py-5 text-muted">
+								<div class="d-flex flex-column align-items-center justify-content-center">
+									<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted mb-2">
+										<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+										<path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+									</svg>
+									<p class="fw-semibold mb-0">No se encontraron tickets en monitoreo</p>
+									<span class="small text-muted">Todos los acuerdos de servicio se encuentran bajo control.</span>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Footer de la Tabla con Contador -->
+		<div class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+			<span class="small text-muted" id="escalationTableCounter">
+				Mostrando <strong>{{ items|length }}</strong> registros de alertas
+			</span>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 1: ESCALAR TICKET A ESPECIALISTA O COORDINACIÓN
+     ========================================================================= -->
+<div class="modal fade" id="modalEscalateTicket" tabindex="-1" aria-labelledby="modalEscalateTicketLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+			<!-- Header Responsive Estandarizado -->
+			<div class="modal-header border-bottom p-3 p-md-4 bg-white">
+				<div class="modal-ticket-header w-100">
+					<div class="modal-ticket-badge-row">
+						<div class="d-flex align-items-center justify-content-center rounded-2 text-white flex-shrink-0" style="width: 32px; height: 32px; background-color: var(--panel, #14212B);">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+								<polyline points="17 11 12 6 7 11"/>
+								<polyline points="17 18 12 13 7 18"/>
+							</svg>
+						</div>
+						<span class="badge font-monospace text-white py-1 px-2" style="background-color: var(--panel, #14212B);" id="modalEscalateCode">
+							INC-XXXX
+						</span>
+					</div>
+					<div class="modal-ticket-title-row">
+						<h5 class="modal-title fw-bold text-dark text-truncate mb-0" id="modalEscalateTicketLabel">
+							Escalar Ticket
+						</h5>
+					</div>
+				</div>
+				<button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+
+			<form id="formEscalateTicket" method="POST" action="">
+				<input type="hidden" name="_csrf_token" id="modalEscalateCsrf" value="{{ csrf_token('escalate_ticket') }}">
+				<div class="modal-body p-3 p-md-4">
+					<!-- Ficha Resumen del Ticket -->
+					<div class="p-3 rounded-2 bg-light border mb-3">
+						<div class="small text-muted mb-1" id="modalEscalateSummaryTitle">Título del incidente</div>
+						<div class="d-flex align-items-center gap-2">
+							<span class="badge rounded-pill fw-semibold" id="modalEscalatePriorityBadge" style="background-color: rgba(20, 33, 43, 0.1); color: var(--panel, #14212B);">
+								Prioridad
+							</span>
+							<span class="small text-muted" id="modalEscalateCurrentLevelText">Nivel Actual: Nivel 1</span>
+						</div>
+					</div>
+
+					<!-- Selección de Nivel de Escalamiento -->
+					<div class="mb-3">
+						<label class="form-label small fw-bold text-dark mb-1" for="selectEscalationLevel">
+							Nivel de Escalamiento Destino <span class="text-danger">*</span>
+						</label>
+						<select class="form-select form-select-sm" name="escalation_level" id="selectEscalationLevel" required>
+							<option value="2">Nivel 2 · Soporte Especializado TI (Especialista Senior)</option>
+							<option value="3">Nivel 3 · Coordinación TI / Gerencia de Infraestructura</option>
+							<option value="1">Nivel 1 · Retornar a Mesa de Ayuda</option>
+						</select>
+						<div class="form-text text-muted" style="font-size: 11px;">
+							Determina la jerarquía y el tiempo prioritario de intervención.
+						</div>
+					</div>
+
+					<!-- Especialista Destino -->
+					<div class="mb-3">
+						<label class="form-label small fw-bold text-dark mb-1" for="selectTargetUser">
+							Asignar Especialista Responsable
+						</label>
+						<select class="form-select form-select-sm" name="target_user_id" id="selectTargetUser">
+							<option value="">Mantener especialista actual / Asignación automática</option>
+							{% for agent in agents %}
+								<option value="{{ agent.id }}">{{ agent.name }} ({{ agent.roles|join(', ') }})</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<!-- Motivo del Escalamiento -->
+					<div class="mb-3">
+						<label class="form-label small fw-bold text-dark mb-1" for="selectEscalationReason">
+							Motivo del Escalamiento <span class="text-danger">*</span>
+						</label>
+						<select class="form-select form-select-sm" name="reason" id="selectEscalationReason" required>
+							<option value="Tiempo límite de SLA en riesgo crítico">Tiempo límite de SLA en riesgo crítico (&gt;70%)</option>
+							<option value="SLA incumplido - Requiere intervención urgente">SLA incumplido - Requiere intervención urgente</option>
+							<option value="Complejidad técnica supera nivel de mesa">Complejidad técnica supera nivel de mesa N1</option>
+							<option value="Aprobación de infraestructura o cambios requerida">Aprobación de infraestructura o cambios requerida</option>
+							<option value="Solicitud formal de supervisión / cliente">Solicitud formal de supervisión / cliente</option>
+							<option value="Otro motivo técnico">Otro motivo técnico</option>
+						</select>
+					</div>
+
+					<!-- Nota Técnica / Instrucciones -->
+					<div class="mb-2">
+						<label class="form-label small fw-bold text-dark mb-1" for="textareaTechnicalNote">
+							Nota Técnica / Instrucciones para el Especialista
+						</label>
+						<textarea class="form-control" name="technical_note" id="textareaTechnicalNote" rows="3" placeholder="Describe los diagnósticos preliminares realizados y la acción requerida..." style="font-size: 13px;"></textarea>
+						<div class="form-text text-muted" style="font-size: 11px;">
+							Esta nota se registrará internamente en el historial del ticket.
+						</div>
+					</div>
+				</div>
+
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-2">
+					<button type="submit" class="btn btn-panel-action">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary btn-modal-cancel" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: MATRIZ Y REGLAS DE ESCALAMIENTO ITIL
+     ========================================================================= -->
+<div class="modal fade" id="modalEscalationRules" tabindex="-1" aria-labelledby="modalEscalationRulesLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+			<div class="modal-header border-bottom p-3 p-md-4 bg-white">
+				<div class="d-flex align-items-center gap-2">
+					<div class="d-flex align-items-center justify-content-center rounded-2 text-white flex-shrink-0" style="width: 32px; height: 32px; background-color: var(--panel, #14212B);">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<polygon points="12 2 2 7 12 12 22 7 12 2"/>
+							<polyline points="2 17 12 22 22 17"/>
+							<polyline points="2 12 12 17 22 12"/>
+						</svg>
+					</div>
+					<div>
+						<h5 class="modal-title fw-bold text-dark mb-0" id="modalEscalationRulesLabel">
+							Matriz Jerárquica de Escalamiento ITIL
+						</h5>
+						<div class="text-muted small">Criterios de activación de alertas y rutas jerárquicas de resolución</div>
+					</div>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body p-3 p-md-4">
+				<div class="row g-3">
+					<!-- Nivel 1 -->
+					<div class="col-12 col-md-4">
+						<div class="card h-100 border rounded-3 p-3 bg-light">
+							<div class="d-flex align-items-center justify-content-between mb-2">
+								<span class="badge bg-secondary-subtle text-secondary border fw-bold">Nivel 1</span>
+								<span class="small text-muted" style="font-size: 11px;">0% - 50% SLA</span>
+							</div>
+							<h6 class="fw-bold text-dark mb-1">Mesa de Ayuda</h6>
+							<p class="small text-muted mb-2" style="font-size: 12px;">
+								Recepción, clasificación inicial y resolución de solicitudes estándar o incidentes conocidos.
+							</p>
+							<ul class="list-unstyled small text-muted mb-0" style="font-size: 11px;">
+								<li>&bull; Diagnóstico de primer contacto</li>
+								<li>&bull; Asignación a técnico de turno</li>
+								<li>&bull; Registro de información básica</li>
+							</ul>
+						</div>
+					</div>
+
+					<!-- Nivel 2 -->
+					<div class="col-12 col-md-4">
+						<div class="card h-100 border border-warning-subtle rounded-3 p-3 bg-warning-subtle bg-opacity-25">
+							<div class="d-flex align-items-center justify-content-between mb-2">
+								<span class="badge bg-warning-subtle text-dark border border-warning-subtle fw-bold">Nivel 2</span>
+								<span class="small text-warning-emphasis fw-semibold" style="font-size: 11px;">50% - 75% SLA</span>
+							</div>
+							<h6 class="fw-bold text-dark mb-1">Especialistas TI</h6>
+							<p class="small text-muted mb-2" style="font-size: 12px;">
+								Ingenieros de redes, servidores, bases de datos o aplicaciones con competencias técnicas avanzadas.
+							</p>
+							<ul class="list-unstyled small text-muted mb-0" style="font-size: 11px;">
+								<li>&bull; Notificación preventiva automática</li>
+								<li>&bull; Diagnóstico profundo y troubleshooting</li>
+								<li>&bull; Intervención prioritaria en sistemas</li>
+							</ul>
+						</div>
+					</div>
+
+					<!-- Nivel 3 -->
+					<div class="col-12 col-md-4">
+						<div class="card h-100 border border-danger-subtle rounded-3 p-3 bg-danger-subtle bg-opacity-25">
+							<div class="d-flex align-items-center justify-content-between mb-2">
+								<span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold">Nivel 3</span>
+								<span class="small text-danger fw-bold" style="font-size: 11px;">&gt; 75% o Vencido</span>
+							</div>
+							<h6 class="fw-bold text-dark mb-1">Coordinación &amp; Gerencia</h6>
+							<p class="small text-muted mb-2" style="font-size: 12px;">
+								Liderazgo de operaciones TI, coordinación de incidentes mayores y gestión de proveedores externos.
+							</p>
+							<ul class="list-unstyled small text-muted mb-0" style="font-size: 11px;">
+								<li>&bull; Alerta de riesgo crítico inmediato</li>
+								<li>&bull; Autorización de planes de contingencia</li>
+								<li>&bull; Convocatoria de comité de crisis</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center">
+				<button type="button" class="btn btn-panel-action" data-bs-dismiss="modal">Entendido</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% block page_scripts %}
+<script>
+(function() {
+	function initEscalationModule() {
+		const searchInput = document.getElementById('escalationSearchInput');
+		const filterLevel = document.getElementById('filterEscalationLevel');
+		const filterAlert = document.getElementById('filterAlertType');
+		const filterPriority = document.getElementById('filterPriority');
+		const filterType = document.getElementById('filterType');
+		const tableCounter = document.getElementById('escalationTableCounter');
+		const rows = document.querySelectorAll('.escalation-row');
+
+		function filterTable() {
+			const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+			const levelVal = filterLevel ? filterLevel.value : '';
+			const alertVal = filterAlert ? filterAlert.value : '';
+			const priorityVal = filterPriority ? filterPriority.value : '';
+			const typeVal = filterType ? filterType.value : '';
+
+			let visibleCount = 0;
+
+			rows.forEach(function(row) {
+				const rowSearch = (row.dataset.search || '').toLowerCase();
+				const rowLevel = row.dataset.level || '';
+				const rowAlert = row.dataset.alert || '';
+				const rowPriority = row.dataset.priority || '';
+				const rowType = row.dataset.type || '';
+
+				const matchesQuery = !query || rowSearch.indexOf(query) !== -1;
+				const matchesLevel = !levelVal || rowLevel.indexOf(levelVal) !== -1;
+				const matchesAlert = !alertVal || rowAlert === alertVal;
+				const matchesPriority = !priorityVal || rowPriority === priorityVal;
+				const matchesType = !typeVal || rowType === typeVal;
+
+				if (matchesQuery && matchesLevel && matchesAlert && matchesPriority && matchesType) {
+					row.classList.remove('d-none');
+					visibleCount++;
+				} else {
+					row.classList.add('d-none');
+				}
+			});
+
+			if (tableCounter) {
+				tableCounter.innerHTML = 'Mostrando <strong>' + visibleCount + '</strong> de <strong>' + rows.length + '</strong> registros de alertas';
+			}
+		}
+
+		if (searchInput) searchInput.addEventListener('input', filterTable);
+		if (filterLevel) filterLevel.addEventListener('change', filterTable);
+		if (filterAlert) filterAlert.addEventListener('change', filterTable);
+		if (filterPriority) filterPriority.addEventListener('change', filterTable);
+		if (filterType) filterType.addEventListener('change', filterTable);
+
+		// Precarga del Modal de Escalamiento al presionar "Escalar"
+		const formEscalate = document.getElementById('formEscalateTicket');
+		const codeEl = document.getElementById('modalEscalateCode');
+		const titleEl = document.getElementById('modalEscalateSummaryTitle');
+		const priorityBadge = document.getElementById('modalEscalatePriorityBadge');
+		const currentLevelText = document.getElementById('modalEscalateCurrentLevelText');
+		const selectTargetLevel = document.getElementById('selectEscalationLevel');
+		const selectTargetUser = document.getElementById('selectTargetUser');
+
+		document.querySelectorAll('.btn-open-escalate').forEach(function(btn) {
+			btn.addEventListener('click', function() {
+				const ticketId = this.dataset.ticketId || '';
+				const ticketCode = this.dataset.ticketCode || '';
+				const ticketTitle = this.dataset.ticketTitle || '';
+				const ticketPriority = this.dataset.ticketPriority || '';
+				const ticketPriorityColor = this.dataset.ticketPriorityColor || '#14212B';
+				const assigneeId = this.dataset.ticketAssigneeId || '';
+				const currentLevel = this.dataset.currentLevel || '1';
+				const targetLevel = this.dataset.targetLevel || '2';
+
+				if (formEscalate) {
+					formEscalate.action = '/sla/escalations/' + encodeURIComponent(ticketId) + '/escalate';
+				}
+				if (codeEl) codeEl.textContent = ticketCode;
+				if (titleEl) titleEl.textContent = ticketTitle;
+				if (priorityBadge) {
+					priorityBadge.textContent = ticketPriority;
+					priorityBadge.style.color = ticketPriorityColor;
+					priorityBadge.style.backgroundColor = ticketPriorityColor + '18';
+					priorityBadge.style.borderColor = ticketPriorityColor + '35';
+				}
+				if (currentLevelText) {
+					currentLevelText.textContent = 'Nivel Actual: Nivel ' + currentLevel;
+				}
+				if (selectTargetLevel) {
+					selectTargetLevel.value = targetLevel;
+				}
+				if (selectTargetUser && assigneeId) {
+					selectTargetUser.value = assigneeId;
+				}
+			});
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initEscalationModule);
+	} else {
+		initEscalationModule();
+	}
+	document.addEventListener('turbo:load', initEscalationModule);
+})();
+</script>
+{% endblock %}
+{% endblock %}
