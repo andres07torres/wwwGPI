@@ -1,0 +1,825 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Problemas (ITIL){% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo y Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Operaciones</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Problemas</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Problemas (ITIL)</h1>
+				<p class="text-muted mb-0">
+					Investigación de causa raíz, documentación de soluciones temporales (workarounds) y prevención de incidentes recurrentes.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateProblem">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"/>
+						<line x1="5" y1="12" x2="19" y2="12"/>
+					</svg>
+					<span>Registrar Problema</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Cartas de Indicadores Clave (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Total Problemas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Total Problemas">Total Problemas</span>
+						<div class="kpi-card-value text-truncate">{{ stats.total }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Problemas registrados">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+							<line x1="12" y1="9" x2="12" y2="13"/>
+							<line x1="12" y1="17" x2="12.01" y2="17"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: Bajo Investigación -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Bajo Investigación">Investigación</span>
+						<div class="kpi-card-value text-truncate text-warning">{{ stats.under_investigation }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="En análisis de causa raíz">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Causa Identificada -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Causa Identificada">Identificados</span>
+						<div class="kpi-card-value text-truncate text-primary">{{ stats.identified }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Causa conocida / Con workaround">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Resueltos -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Problemas Resueltos">Resueltos</span>
+						<div class="kpi-card-value text-truncate text-success">{{ stats.resolved }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Problemas solucionados">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+							<polyline points="22 4 12 14.01 9 11.01"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tarjeta Principal con Filtros y Tabla -->
+	<div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+		<!-- Filtros de búsqueda idénticos a los otros módulos (sin botón Buscar) -->
+		<div class="card-header bg-white border-bottom p-3">
+			<div class="row g-2 align-items-center">
+				<div class="col-12 col-md-8">
+					<div class="position-relative">
+						<input type="text" id="problemSearchInput" class="form-control form-control-sm ps-4" placeholder="Buscar por título, causa raíz o solución temporal...">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</div>
+				</div>
+				<div class="col-12 col-md-4">
+					<select id="filterStatus" class="form-select form-select-sm">
+						<option value="">Todos los Estados</option>
+						{% for st in statuses %}
+							<option value="{{ st.value }}">{{ st.value }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+		<div class="table-responsive">
+			<table class="table table-hover align-middle mb-0" id="problemsTable" style="font-size: 13px;">
+				<thead class="table-light text-secondary text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">
+					<tr>
+						<th class="ps-3 py-3">Problema / Título</th>
+						<th class="py-3">Estado</th>
+						<th class="py-3">Causa Raíz & Workaround</th>
+						<th class="py-3 text-center">Tickets Vinculados</th>
+						<th class="py-3">Registro / Cierre</th>
+						<th class="py-3 text-end pe-3">Acciones</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for p in problems %}
+						<tr class="problem-row" data-search="{{ (p.title ~ ' ' ~ p.description|default('') ~ ' ' ~ p.rootCause|default('') ~ ' ' ~ p.workaround|default(''))|lower }}" data-status="{{ p.status.value|lower }}">
+							<td class="ps-3 py-3" style="max-width: 300px;">
+								<div class="fw-bold text-dark text-truncate" title="{{ p.title }}">
+									{{ p.title }}
+								</div>
+								{% if p.description %}
+									<div class="text-muted small text-truncate" style="font-size: 11px;" title="{{ p.description }}">
+										{{ p.description }}
+									</div>
+								{% endif %}
+							</td>
+							<td class="py-3">
+								{% if p.status.value == 'Bajo Investigación' %}
+									<span class="badge bg-warning text-dark px-2.5 py-1.5 rounded-pill fw-semibold">
+										🔍 {{ p.status.value }}
+									</span>
+								{% elseif p.status.value == 'Identificado' %}
+									<span class="badge bg-info text-dark px-2.5 py-1.5 rounded-pill fw-semibold">
+										💡 {{ p.status.value }}
+									</span>
+								{% else %}
+									<span class="badge bg-success text-white px-2.5 py-1.5 rounded-pill fw-semibold">
+										✓ {{ p.status.value }}
+									</span>
+								{% endif %}
+							</td>
+							<td class="py-3" style="max-width: 250px;">
+								{% if p.workaround %}
+									<div class="d-flex align-items-center gap-1.5 text-success small fw-semibold text-truncate" title="Solución Temporal: {{ p.workaround }}">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+										<span>Workaround Disponible</span>
+									</div>
+								{% elseif p.rootCause %}
+									<div class="text-primary small text-truncate" title="Causa Raíz: {{ p.rootCause }}">
+										<strong>Causa:</strong> {{ p.rootCause }}
+									</div>
+								{% else %}
+									<span class="text-muted small fst-italic">En diagnóstico</span>
+								{% endif %}
+							</td>
+							<td class="py-3 text-center">
+								{% set tCount = p.tickets|length %}
+								{% if tCount > 0 %}
+									<span class="badge bg-light text-primary border border-primary-subtle px-2 py-1">
+										{{ tCount }} ticket{{ tCount > 1 ? 's' : '' }}
+									</span>
+								{% else %}
+									<span class="text-muted small">0</span>
+								{% endif %}
+							</td>
+							<td class="py-3 text-muted small" style="font-size: 11px;">
+								<div><strong>Creado:</strong> {{ p.createdAt|date('d/m/Y H:i') }}</div>
+								{% if p.resolvedAt %}
+									<div class="text-success"><strong>Resuelto:</strong> {{ p.resolvedAt|date('d/m/Y H:i') }}</div>
+								{% endif %}
+							</td>
+							<td class="py-3 text-end pe-3">
+								<div class="btn-group btn-group-sm">
+									<button type="button" class="btn btn-outline-secondary btn-detail-problem" data-id="{{ p.id }}" title="Ver detalles y workarounds">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+											<circle cx="12" cy="12" r="3"/>
+										</svg>
+									</button>
+									<button type="button" class="btn btn-outline-panel btn-edit-problem" data-id="{{ p.id }}" title="Editar problema">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M12 20h9"/>
+											<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+										</svg>
+									</button>
+									<button type="button" class="btn btn-outline-danger btn-delete-problem" data-id="{{ p.id }}" data-title="{{ p.title }}" title="Eliminar problema">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<polyline points="3 6 5 6 21 6"/>
+											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+										</svg>
+									</button>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+					<tr id="emptyProblemsRow" style="{{ problems|length == 0 ? '' : 'display: none;' }}">
+						<td colspan="6" class="text-center py-5 text-muted">
+							<div class="mb-2">
+								<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted opacity-50">
+									<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+								</svg>
+							</div>
+							<h6 class="fw-bold mb-1">No se encontraron problemas</h6>
+							<p class="small mb-0">No hay problemas que coincidan con los criterios seleccionados.</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Paginación de Problemas -->
+		<div class="card-footer bg-white border-top p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" id="problemPaginationFooter">
+			<div class="small text-secondary" id="problemPaginationInfo">
+				Mostrando <span class="fw-bold text-dark" id="problemPageStart">0</span> a <span class="fw-bold text-dark" id="problemPageEnd">0</span> de <span class="fw-bold text-dark" id="problemPageTotal">0</span> registros
+			</div>
+			<nav aria-label="Navegación de problemas">
+				<ul class="pagination pagination-sm mb-0 gap-1" id="problemPaginationNav"></ul>
+			</nav>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 1: REGISTRAR PROBLEMA
+     ========================================================================= -->
+<div class="modal fade" id="modalCreateProblem" tabindex="-1" aria-labelledby="modalCreateProblemLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" action="{{ path('app_operations_problem_create') }}">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_problem') }}">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalCreateProblemLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+							<line x1="12" y1="9" x2="12" y2="13"/>
+							<line x1="12" y1="17" x2="12.01" y2="17"/>
+						</svg>
+						<span class="text-break">Registrar Nuevo Problema ITIL</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-8">
+							<label for="create_title" class="form-label small fw-semibold text-secondary">Título del Problema <span class="text-danger">*</span></label>
+							<input type="text" id="create_title" name="title" class="form-control" required placeholder="Ej. Caídas intermitentes en Gateway de Pagos" maxlength="200">
+						</div>
+						<div class="col-12 col-md-4">
+							<label for="create_status" class="form-label small fw-semibold text-secondary">Estado Inicial <span class="text-danger">*</span></label>
+							<select id="create_status" name="status" class="form-select">
+								{% for st in statuses %}
+									<option value="{{ st.value }}">{{ st.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="create_description" class="form-label small fw-semibold text-secondary">Descripción del Problema</label>
+						<textarea id="create_description" name="description" class="form-control" rows="2" placeholder="Resumen del comportamiento anómalo o síntoma repetitivo observado en la infraestructura..."></textarea>
+					</div>
+
+					<div class="mb-3">
+						<label for="create_root_cause" class="form-label small fw-semibold text-secondary">Causa Raíz Identificada (Root Cause)</label>
+						<textarea id="create_root_cause" name="root_cause" class="form-control" rows="2" placeholder="Explicación técnica del origen real de la falla tras el diagnóstico..."></textarea>
+					</div>
+
+					<div class="mb-3">
+						<label for="create_workaround" class="form-label small fw-semibold text-secondary d-flex align-items-center justify-content-between">
+							<span>Solución Temporal (Workaround)</span>
+							<span class="badge bg-light text-muted border fw-normal" style="font-size: 10px;">Mitigación rápida</span>
+						</label>
+						<textarea id="create_workaround" name="workaround" class="form-control" rows="2" placeholder="Pasos que el equipo técnico puede seguir para desbloquear al usuario rápidamente..."></textarea>
+						<div class="form-text text-muted" style="font-size: 11px;">
+							Procedimiento provisional para restablecer el servicio a los usuarios mientras se implementa una corrección definitiva.
+						</div>
+					</div>
+
+					<div class="mb-2">
+						<label class="form-label small fw-semibold text-secondary d-flex align-items-center justify-content-between">
+							<span>Vincular Tickets / Incidentes Recurrentes</span>
+							<span class="badge bg-light text-muted border fw-normal" style="font-size: 10px;">Opcional</span>
+						</label>
+						<div class="position-relative mb-2">
+							<input type="text" id="createTicketSearchInput" class="form-control form-control-sm ps-4" placeholder="Filtrar tickets por código o asunto...">
+							<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+								<circle cx="11" cy="11" r="8"/>
+								<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+							</svg>
+						</div>
+						<div class="border rounded-2 p-2 bg-light bg-opacity-50" style="max-height: 155px; overflow-y: auto;">
+							{% for t in availableTickets %}
+								<div class="form-check py-1.5 px-3 border-bottom border-light-subtle d-flex align-items-center justify-content-between create-ticket-item" data-ticket-search="{{ (t.ticketCode|default('TICK') ~ ' ' ~ t.title)|lower }}">
+									<div class="d-flex align-items-center gap-2 min-w-0">
+										<input class="form-check-input mt-0 flex-shrink-0" type="checkbox" name="ticket_ids[]" value="{{ t.id }}" id="create_chk_{{ t.id }}">
+										<label class="form-check-label small text-dark text-truncate cursor-pointer" for="create_chk_{{ t.id }}">
+											<strong>{{ t.ticketCode|default('TICK') }}</strong> &mdash; {{ t.title }}
+										</label>
+									</div>
+									<span class="badge bg-white text-secondary border flex-shrink-0 ms-2" style="font-size: 10px;">
+										{{ t.priority ? t.priority.name : 'Normal' }}
+									</span>
+								</div>
+							{% else %}
+								<div class="text-muted small text-center py-2">No hay tickets disponibles para vincular.</div>
+							{% endfor %}
+						</div>
+						<div class="form-text text-muted" style="font-size: 11px;">
+							Marca los incidentes recurrentes que tienen su origen en este problema (ordenados correlativamente).
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end gap-2">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="submit" class="btn btn-panel-action">Guardar Problema</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: EDITAR PROBLEMA
+     ========================================================================= -->
+<div class="modal fade" id="modalEditProblem" tabindex="-1" aria-labelledby="modalEditProblemLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formEditProblem" action="">
+				<input type="hidden" name="_csrf_token" id="editCsrfToken" value="">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="modalEditProblemLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="M12 20h9"/>
+							<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+						</svg>
+						<span class="text-break">Editar Problema ITIL</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="row g-3 mb-3">
+						<div class="col-12 col-md-8">
+							<label for="editTitle" class="form-label small fw-semibold text-secondary">Título del Problema <span class="text-danger">*</span></label>
+							<input type="text" name="title" id="editTitle" class="form-control" required maxlength="200">
+						</div>
+						<div class="col-12 col-md-4">
+							<label for="editStatus" class="form-label small fw-semibold text-secondary">Estado <span class="text-danger">*</span></label>
+							<select name="status" id="editStatus" class="form-select">
+								{% for st in statuses %}
+									<option value="{{ st.value }}">{{ st.value }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="editDescription" class="form-label small fw-semibold text-secondary">Descripción</label>
+						<textarea name="description" id="editDescription" class="form-control" rows="2"></textarea>
+					</div>
+
+					<div class="mb-3">
+						<label for="editRootCause" class="form-label small fw-semibold text-secondary">Causa Raíz Identificada (Root Cause)</label>
+						<textarea name="root_cause" id="editRootCause" class="form-control" rows="2"></textarea>
+					</div>
+
+					<div class="mb-3">
+						<label for="editWorkaround" class="form-label small fw-semibold text-secondary d-flex align-items-center justify-content-between">
+							<span>Solución Temporal (Workaround)</span>
+							<span class="badge bg-light text-muted border fw-normal" style="font-size: 10px;">Mitigación rápida</span>
+						</label>
+						<textarea name="workaround" id="editWorkaround" class="form-control" rows="2"></textarea>
+					</div>
+
+					<div class="mb-2">
+						<label class="form-label small fw-semibold text-secondary d-flex align-items-center justify-content-between">
+							<span>Tickets Vinculados</span>
+							<span class="badge bg-light text-muted border fw-normal" style="font-size: 10px;">Opcional</span>
+						</label>
+						<div class="position-relative mb-2">
+							<input type="text" id="editTicketSearchInput" class="form-control form-control-sm ps-4" placeholder="Filtrar tickets por código o asunto...">
+							<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="position-absolute start-0 top-50 translate-middle-y ms-2 text-muted">
+								<circle cx="11" cy="11" r="8"/>
+								<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+							</svg>
+						</div>
+						<div class="border rounded-2 p-2 bg-light bg-opacity-50" style="max-height: 155px; overflow-y: auto;" id="editTicketsContainer">
+							{% for t in availableTickets %}
+								<div class="form-check py-1.5 px-3 border-bottom border-light-subtle d-flex align-items-center justify-content-between edit-ticket-item" data-ticket-search="{{ (t.ticketCode|default('TICK') ~ ' ' ~ t.title)|lower }}">
+									<div class="d-flex align-items-center gap-2 min-w-0">
+										<input class="form-check-input mt-0 flex-shrink-0 edit-ticket-chk" type="checkbox" name="ticket_ids[]" value="{{ t.id }}" id="edit_chk_{{ t.id }}">
+										<label class="form-check-label small text-dark text-truncate cursor-pointer" for="edit_chk_{{ t.id }}">
+											<strong>{{ t.ticketCode|default('TICK') }}</strong> &mdash; {{ t.title }}
+										</label>
+									</div>
+									<span class="badge bg-white text-secondary border flex-shrink-0 ms-2" style="font-size: 10px;">
+										{{ t.priority ? t.priority.name : 'Normal' }}
+									</span>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end gap-2">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="submit" class="btn btn-panel-action">Actualizar Problema</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 3: DETALLE COMPLETO Y WORKAROUND
+     ========================================================================= -->
+<div class="modal fade" id="modalDetailProblem" tabindex="-1" aria-labelledby="modalDetailProblemLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<div class="modal-header border-bottom px-4 py-3">
+				<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0 me-2" id="detailModalTitleHeader">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+						<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+						<circle cx="12" cy="12" r="3"/>
+					</svg>
+					<span class="text-truncate" id="detailModalTitle">Detalle del Problema</span>
+				</h5>
+				<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body px-4 py-3">
+				<div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+					<div>
+						<span class="text-muted small">Estado actual:</span>
+						<span id="detailStatusBadge" class="badge bg-secondary ms-1">Cargando...</span>
+					</div>
+					<div class="text-muted small" id="detailDates">
+						<!-- Fechas dinámicas -->
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Descripción General</h6>
+					<div id="detailDescription" class="p-3 bg-light rounded-2 small text-secondary">
+						Sin descripción registrada.
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<h6 class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Diagnóstico de Causa Raíz (Root Cause)</h6>
+					<div id="detailRootCause" class="p-3 rounded-2 small" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;">
+						En diagnóstico de investigación.
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<div class="d-flex align-items-center gap-1.5 mb-1">
+						<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-success"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+						<h6 class="fw-bold text-dark mb-0 small text-uppercase" style="letter-spacing: 0.5px;">Solución Temporal Documentada (Workaround)</h6>
+					</div>
+					<div id="detailWorkaround" class="p-3 rounded-2 small" style="background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;">
+						No se ha documentado un workaround provisional aún.
+					</div>
+				</div>
+
+				<div>
+					<h6 class="fw-bold text-dark mb-2 small text-uppercase" style="letter-spacing: 0.5px;">Incidentes / Tickets Vinculados (<span id="detailTicketsCount">0</span>)</h6>
+					<div id="detailTicketsList" class="d-flex flex-column gap-2">
+						<!-- Tickets generados dinámicamente -->
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end">
+				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 4: CONFIRMAR ELIMINACIÓN
+     ========================================================================= -->
+<div class="modal fade" id="modalDeleteProblem" tabindex="-1" aria-labelledby="modalDeleteProblemLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-sm">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formDeleteProblem" action="">
+				<input type="hidden" name="_csrf_token" id="deleteCsrfToken" value="">
+				<div class="modal-header bg-danger text-white px-3 py-2">
+					<h6 class="modal-title fw-bold mb-0" id="modalDeleteProblemLabel">Confirmar Eliminación</h6>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body p-3">
+					<p class="small text-muted mb-2">¿Estás seguro de que deseas eliminar este problema ITIL?</p>
+					<div class="fw-bold text-dark small p-2 bg-light rounded border text-truncate" id="deleteProblemTitle"></div>
+					<div class="form-text small text-danger mt-2" style="font-size: 11px;">
+						Esta acción no se puede deshacer. Los tickets asociados no se eliminarán.
+					</div>
+				</div>
+				<div class="modal-footer bg-light border-top p-2 d-flex justify-content-end gap-2">
+					<button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="submit" class="btn btn-sm btn-danger">Sí, Eliminar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Mapas CSRF para Edición y Eliminación dinámica -->
+<script type="application/json" id="csrfTokensProblemData">
+{
+	{% for p in problems %}
+		"{{ p.id }}": {
+			"edit": "{{ csrf_token('edit_problem_' ~ p.id) }}",
+			"delete": "{{ csrf_token('delete_problem_' ~ p.id) }}"
+		}{{ not loop.last ? ',' : '' }}
+	{% endfor %}
+}
+</script>
+
+<script>
+(function() {
+	function initProblemManagement() {
+		const csrfMapEl = document.getElementById('csrfTokensProblemData');
+		let csrfMap = {};
+		if (csrfMapEl) {
+			try { csrfMap = JSON.parse(csrfMapEl.textContent); } catch (e) {}
+		}
+
+		// Filtros en vivo y paginación estándar (sin botón Buscar)
+		const searchInput = document.getElementById('problemSearchInput');
+		const statusFilter = document.getElementById('filterStatus');
+		const rows = document.querySelectorAll('.problem-row');
+		const pageSize = 10;
+		let currentPage = 1;
+
+		function updatePagination(matchingRows) {
+			const total = matchingRows.length;
+			const totalPages = Math.max(1, Math.ceil(total / pageSize));
+			if (currentPage > totalPages) currentPage = totalPages;
+			if (currentPage < 1) currentPage = 1;
+
+			const startIndex = (currentPage - 1) * pageSize;
+			const endIndex = Math.min(startIndex + pageSize, total);
+
+			rows.forEach(r => r.style.display = 'none');
+			for (let i = startIndex; i < endIndex; i++) {
+				if (matchingRows[i]) matchingRows[i].style.display = '';
+			}
+
+			const startEl = document.getElementById('problemPageStart');
+			const endEl = document.getElementById('problemPageEnd');
+			const totalEl = document.getElementById('problemPageTotal');
+			const navEl = document.getElementById('problemPaginationNav');
+			const emptyRow = document.getElementById('emptyProblemsRow');
+
+			if (startEl) startEl.textContent = total === 0 ? '0' : (startIndex + 1);
+			if (endEl) endEl.textContent = endIndex;
+			if (totalEl) totalEl.textContent = total;
+
+			if (emptyRow) {
+				emptyRow.style.display = total === 0 ? '' : 'none';
+			}
+
+			if (navEl) {
+				navEl.innerHTML = '';
+				if (total <= pageSize && totalPages <= 1) {
+					if (total > 0) {
+						const singleLi = document.createElement('li');
+						singleLi.className = 'page-item active';
+						singleLi.innerHTML = `<button type="button" class="page-link">1</button>`;
+						navEl.appendChild(singleLi);
+					}
+					return;
+				}
+
+				const prevLi = document.createElement('li');
+				prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+				prevLi.innerHTML = `<button type="button" class="page-link" aria-label="Anterior">&laquo; Anterior</button>`;
+				prevLi.addEventListener('click', (e) => {
+					e.preventDefault();
+					if (currentPage > 1) {
+						currentPage--;
+						applyFilters(false);
+					}
+				});
+				navEl.appendChild(prevLi);
+
+				for (let p = 1; p <= totalPages; p++) {
+					const pageLi = document.createElement('li');
+					pageLi.className = `page-item ${p === currentPage ? 'active' : ''}`;
+					pageLi.innerHTML = `<button type="button" class="page-link">${p}</button>`;
+					pageLi.addEventListener('click', (e) => {
+						e.preventDefault();
+						currentPage = p;
+						applyFilters(false);
+					});
+					navEl.appendChild(pageLi);
+				}
+
+				const nextLi = document.createElement('li');
+				nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+				nextLi.innerHTML = `<button type="button" class="page-link" aria-label="Siguiente">Siguiente &raquo;</button>`;
+				nextLi.addEventListener('click', (e) => {
+					e.preventDefault();
+					if (currentPage < totalPages) {
+						currentPage++;
+						applyFilters(false);
+					}
+				});
+				navEl.appendChild(nextLi);
+			}
+		}
+
+		function applyFilters(resetPage = true) {
+			if (resetPage) currentPage = 1;
+			const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
+			const selectedStatus = (statusFilter ? statusFilter.value : '').toLowerCase().trim();
+
+			const matchingRows = [];
+			rows.forEach(row => {
+				const searchData = (row.dataset.search || '').toLowerCase();
+				const rowStatus = (row.dataset.status || '').toLowerCase();
+
+				const matchesSearch = !searchTerm || searchData.includes(searchTerm);
+				const matchesStatus = !selectedStatus || rowStatus === selectedStatus;
+
+				if (matchesSearch && matchesStatus) {
+					matchingRows.push(row);
+				}
+			});
+
+			updatePagination(matchingRows);
+		}
+
+		if (searchInput && !searchInput.dataset.initialized) {
+			searchInput.dataset.initialized = 'true';
+			searchInput.addEventListener('input', () => applyFilters(true));
+		}
+
+		if (statusFilter && !statusFilter.dataset.initialized) {
+			statusFilter.dataset.initialized = 'true';
+			statusFilter.addEventListener('change', () => applyFilters(true));
+		}
+
+		applyFilters(true);
+
+		// Filtro interactivo de tickets en modales
+		const createTicketSearch = document.getElementById('createTicketSearchInput');
+		if (createTicketSearch && !createTicketSearch.dataset.initialized) {
+			createTicketSearch.dataset.initialized = 'true';
+			createTicketSearch.addEventListener('input', function() {
+				const term = this.value.toLowerCase().trim();
+				document.querySelectorAll('.create-ticket-item').forEach(el => {
+					const str = el.dataset.ticketSearch || '';
+					el.style.display = (!term || str.includes(term)) ? '' : 'none';
+				});
+			});
+		}
+
+		const editTicketSearch = document.getElementById('editTicketSearchInput');
+		if (editTicketSearch && !editTicketSearch.dataset.initialized) {
+			editTicketSearch.dataset.initialized = 'true';
+			editTicketSearch.addEventListener('input', function() {
+				const term = this.value.toLowerCase().trim();
+				document.querySelectorAll('.edit-ticket-item').forEach(el => {
+					const str = el.dataset.ticketSearch || '';
+					el.style.display = (!term || str.includes(term)) ? '' : 'none';
+				});
+			});
+		}
+
+		// 1. Ver Detalle del Problema
+		document.querySelectorAll('.btn-detail-problem').forEach(btn => {
+			btn.addEventListener('click', async function() {
+				const id = this.getAttribute('data-id');
+				try {
+					const res = await fetch(`{{ path('app_operations_problem_index') }}/${id}/detail`);
+					const data = await res.json();
+					if (!data.success) return;
+
+					const p = data.problem;
+					document.getElementById('detailModalTitle').textContent = p.title;
+					document.getElementById('detailDescription').textContent = p.description || 'Sin descripción detallada.';
+					document.getElementById('detailRootCause').textContent = p.rootCause || 'Diagnóstico de causa raíz en curso.';
+					document.getElementById('detailWorkaround').textContent = p.workaround || 'No se ha registrado una solución temporal (workaround).';
+					document.getElementById('detailTicketsCount').textContent = p.ticketsCount;
+
+					// Estado Badge
+					const stBadge = document.getElementById('detailStatusBadge');
+					stBadge.textContent = p.status;
+					stBadge.className = 'badge px-2.5 py-1 rounded-pill ms-1 ';
+					if (p.status === 'Bajo Investigación') stBadge.className += 'bg-warning text-dark';
+					else if (p.status === 'Identificado') stBadge.className += 'bg-info text-dark';
+					else stBadge.className += 'bg-success text-white';
+
+					// Fechas
+					document.getElementById('detailDates').innerHTML = `
+						<span><strong>Registrado:</strong> ${p.createdAt}</span>
+						${p.resolvedAt ? `<span class="ms-2 text-success"><strong>Resuelto:</strong> ${p.resolvedAt}</span>` : ''}
+					`;
+
+					// Lista de Tickets
+					const listEl = document.getElementById('detailTicketsList');
+					listEl.innerHTML = '';
+					if (p.tickets && p.tickets.length > 0) {
+						p.tickets.forEach(t => {
+							const row = document.createElement('div');
+							row.className = 'd-flex align-items-center justify-content-between p-2 rounded border bg-light small';
+							row.innerHTML = `
+								<div class="min-w-0">
+									<span class="fw-bold text-dark">${t.code}</span>
+									<span class="text-secondary ms-1 text-truncate">${t.title}</span>
+								</div>
+								<div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
+									<span class="small fw-semibold" style="color: ${t.priorityColor};">${t.priority}</span>
+									<span class="badge bg-white text-dark border">${t.status}</span>
+								</div>
+							`;
+							listEl.appendChild(row);
+						});
+					} else {
+						listEl.innerHTML = '<div class="text-muted small fst-italic py-2">No hay tickets vinculados a este problema.</div>';
+					}
+
+					const modal = new bootstrap.Modal(document.getElementById('modalDetailProblem'));
+					modal.show();
+				} catch (err) {
+					console.error('Error al cargar detalle del problema:', err);
+				}
+			});
+		});
+
+		// 2. Editar Problema
+		document.querySelectorAll('.btn-edit-problem').forEach(btn => {
+			btn.addEventListener('click', async function() {
+				const id = this.getAttribute('data-id');
+				try {
+					const res = await fetch(`{{ path('app_operations_problem_index') }}/${id}/detail`);
+					const data = await res.json();
+					if (!data.success) return;
+
+					const p = data.problem;
+					document.getElementById('formEditProblem').action = `{{ path('app_operations_problem_index') }}/${id}/edit`;
+					document.getElementById('editTitle').value = p.title;
+					document.getElementById('editDescription').value = p.description || '';
+					document.getElementById('editRootCause').value = p.rootCause || '';
+					document.getElementById('editWorkaround').value = p.workaround || '';
+					document.getElementById('editStatus').value = p.status;
+
+					// Token CSRF
+					if (csrfMap[id] && csrfMap[id].edit) {
+						document.getElementById('editCsrfToken').value = csrfMap[id].edit;
+					}
+
+					// Seleccionar tickets vinculados
+					const linkedIds = (p.tickets || []).map(t => t.id);
+					document.querySelectorAll('.edit-ticket-chk').forEach(chk => {
+						chk.checked = linkedIds.includes(chk.value);
+					});
+
+					const modal = new bootstrap.Modal(document.getElementById('modalEditProblem'));
+					modal.show();
+				} catch (err) {
+					console.error('Error al abrir edición:', err);
+				}
+			});
+		});
+
+		// 3. Eliminar Problema
+		document.querySelectorAll('.btn-delete-problem').forEach(btn => {
+			btn.addEventListener('click', function() {
+				const id = this.getAttribute('data-id');
+				const title = this.getAttribute('data-title');
+
+				document.getElementById('formDeleteProblem').action = `{{ path('app_operations_problem_index') }}/${id}/delete`;
+				document.getElementById('deleteProblemTitle').textContent = title;
+
+				if (csrfMap[id] && csrfMap[id].delete) {
+					document.getElementById('deleteCsrfToken').value = csrfMap[id].delete;
+				}
+
+				const modal = new bootstrap.Modal(document.getElementById('modalDeleteProblem'));
+				modal.show();
+			});
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initProblemManagement);
+	} else {
+		initProblemManagement();
+	}
+	document.addEventListener('turbo:load', initProblemManagement);
+})();
+</script>
+{% endblock %}

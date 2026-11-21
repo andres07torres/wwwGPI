@@ -50,7 +50,7 @@
 					</a>
 					<div class="collapse {{ is_ticket_route ? 'show' : '' }}" id="menuMesaAyuda">
 						<ul class="sidebar-submenu">
-							<li><a href="{{ path('app_ticket_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') == 'app_ticket_index' ? 'active' : '' }}">Gestión de Tickets</a></li>
+							<li><a href="{{ path('app_ticket_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') == 'app_ticket_index' ? 'active' : '' }}">Tickets</a></li>
 							<li><a href="{{ path('app_ticket_kanban') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') == 'app_ticket_kanban' ? 'active' : '' }}">Tablero Kanban</a></li>
 						</ul>
 					</div>
@@ -109,9 +109,9 @@
 					</a>
 					<div class="collapse {{ is_operations_route ? 'show' : '' }}" id="menuOperaciones">
 						<ul class="sidebar-submenu">
-							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_problem_' ? 'active' : '' }}">Gestión de Problemas</a></li>
-							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_change_' ? 'active' : '' }}">Gestión de Cambios</a></li>
-							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_maintenance_' ? 'active' : '' }}">Calendario de Mantenimientos</a></li>
+							<li><a href="{{ path('app_operations_problem_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_problem_' ? 'active' : '' }}">Problemas</a></li>
+							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_change_' ? 'active' : '' }}">Cambios (CAB)</a></li>
+							<li><a href="#" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_operations_maintenance_' ? 'active' : '' }}">Mantenimientos</a></li>
 						</ul>
 					</div>
 				</li>
