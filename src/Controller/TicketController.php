@@ -36,11 +36,7 @@ final class TicketController extends AbstractController
         TicketStatusRepository $statusRepository,
         TicketPriorityRepository $priorityRepository,
         UserRepository $userRepository,
-        TenantRepository $tenantRepository,
-        EntityManagerInterface $em,
     ): Response {
-        $this->ensureDefaultTicketMetadata($em, $statusRepository, $priorityRepository, $tenantRepository);
-
         $tickets = $ticketRepository->findBy([], ['createdAt' => 'DESC']);
         $statuses = $statusRepository->findBy([], ['orderIndex' => 'ASC']);
         $priorities = $priorityRepository->findBy([], ['level' => 'ASC']);
@@ -61,11 +57,7 @@ final class TicketController extends AbstractController
         TicketStatusRepository $statusRepository,
         TicketPriorityRepository $priorityRepository,
         UserRepository $userRepository,
-        TenantRepository $tenantRepository,
-        EntityManagerInterface $em,
     ): Response {
-        $this->ensureDefaultTicketMetadata($em, $statusRepository, $priorityRepository, $tenantRepository);
-
         $statuses = $statusRepository->findBy([], ['orderIndex' => 'ASC']);
         $priorities = $priorityRepository->findBy([], ['level' => 'ASC']);
         $users = $userRepository->findBy(['status' => true], ['name' => 'ASC']);
@@ -372,63 +364,5 @@ final class TicketController extends AbstractController
                 'comments' => $comments,
             ],
         ]);
-    }
-
-    private function ensureDefaultTicketMetadata(
-        EntityManagerInterface $em,
-        TicketStatusRepository $statusRepository,
-        TicketPriorityRepository $priorityRepository,
-        TenantRepository $tenantRepository,
-    ): void {
-        $defaultTenant = $tenantRepository->findOneBy([]);
-        if (!$defaultTenant) {
-            $defaultTenant = new Tenant();
-            $defaultTenant->setName('Tenant Principal');
-            $defaultTenant->setDomain('default');
-            $defaultTenant->setStatus(true);
-            $em->persist($defaultTenant);
-            $em->flush();
-        }
-
-        $statusesConfig = [
-            ['name' => 'Nuevo', 'order' => 1, 'closed' => false],
-            ['name' => 'En Proceso', 'order' => 2, 'closed' => false],
-            ['name' => 'En Espera', 'order' => 3, 'closed' => false],
-            ['name' => 'Resuelto', 'order' => 4, 'closed' => true],
-            ['name' => 'Cerrado', 'order' => 5, 'closed' => true],
-        ];
-
-        foreach ($statusesConfig as $config) {
-            $st = $statusRepository->findOneBy(['name' => $config['name']]);
-            if (!$st) {
-                $st = new TicketStatus();
-                $st->setTenant($defaultTenant);
-                $st->setName($config['name']);
-                $st->setOrderIndex($config['order']);
-                $st->setIsClosedState($config['closed']);
-                $em->persist($st);
-            }
-        }
-
-        $prioritiesConfig = [
-            ['name' => 'Baja', 'level' => 1, 'color' => '#10b981'],
-            ['name' => 'Media', 'level' => 2, 'color' => '#3b82f6'],
-            ['name' => 'Alta', 'level' => 3, 'color' => '#f59e0b'],
-            ['name' => 'Crítica', 'level' => 4, 'color' => '#ef4444'],
-        ];
-
-        foreach ($prioritiesConfig as $pConfig) {
-            $pr = $priorityRepository->findOneBy(['name' => $pConfig['name']]);
-            if (!$pr) {
-                $pr = new TicketPriority();
-                $pr->setTenant($defaultTenant);
-                $pr->setName($pConfig['name']);
-                $pr->setLevel($pConfig['level']);
-                $pr->setColor($pConfig['color']);
-                $em->persist($pr);
-            }
-        }
-
-        $em->flush();
     }
 }

@@ -36,11 +36,7 @@ final class SlaController extends AbstractController
     public function policyIndex(
         SlaPolicyRepository $policyRepository,
         TicketPriorityRepository $priorityRepository,
-        TenantRepository $tenantRepository,
-        EntityManagerInterface $em,
     ): Response {
-        $this->ensureDefaultPolicies($em, $policyRepository, $priorityRepository, $tenantRepository);
-
         $policies = $policyRepository->createQueryBuilder('p')
             ->leftJoin('p.priority', 'pr')
             ->addSelect('pr')
@@ -82,11 +78,7 @@ final class SlaController extends AbstractController
         TicketStatusRepository $statusRepository,
         SlaPolicyRepository $policyRepository,
         TicketPriorityRepository $priorityRepository,
-        TenantRepository $tenantRepository,
-        EntityManagerInterface $em,
     ): Response {
-        $this->ensureDefaultPolicies($em, $policyRepository, $priorityRepository, $tenantRepository);
-
         $tickets = $ticketRepository->createQueryBuilder('t')
             ->leftJoin('t.priority', 'pr')
             ->leftJoin('t.status', 'st')
@@ -112,7 +104,6 @@ final class SlaController extends AbstractController
         $onTimeCount = 0;
         $atRiskCount = 0;
         $breachedCount = 0;
-        $hasSlaCreated = false;
 
         foreach ($tickets as $ticket) {
             $ticketSla = $ticket->getTicketSlas()->first() ?: null;
@@ -122,8 +113,6 @@ final class SlaController extends AbstractController
                 $ticketSla = new TicketSla();
                 $ticketSla->setTicket($ticket);
                 $ticketSla->setSlaPolicy($matchingPolicy);
-                $em->persist($ticketSla);
-                $hasSlaCreated = true;
             }
 
             if ($ticketSla && $matchingPolicy) {
@@ -163,10 +152,6 @@ final class SlaController extends AbstractController
             }
         }
 
-        if ($hasSlaCreated) {
-            $em->flush();
-        }
-
         $totalMonitored = count($monitoredTickets);
         $complianceRate = $totalMonitored > 0 ? (int) round((($totalMonitored - $breachedCount) / $totalMonitored) * 100) : 100;
         $priorities = $priorityRepository->findBy([], ['level' => 'DESC']);
@@ -193,12 +178,8 @@ final class SlaController extends AbstractController
         TicketStatusRepository $statusRepository,
         SlaPolicyRepository $policyRepository,
         TicketPriorityRepository $priorityRepository,
-        TenantRepository $tenantRepository,
         UserRepository $userRepository,
-        EntityManagerInterface $em,
     ): Response {
-        $this->ensureDefaultPolicies($em, $policyRepository, $priorityRepository, $tenantRepository);
-
         $tickets = $ticketRepository->createQueryBuilder('t')
             ->leftJoin('t.priority', 'pr')
             ->leftJoin('t.status', 'st')
@@ -234,7 +215,6 @@ final class SlaController extends AbstractController
                 $ticketSla = new TicketSla();
                 $ticketSla->setTicket($ticket);
                 $ticketSla->setSlaPolicy($matchingPolicy);
-                $em->persist($ticketSla);
             }
 
             if ($ticketSla && $matchingPolicy) {
@@ -343,8 +323,6 @@ final class SlaController extends AbstractController
                 ];
             }
         }
-
-        $em->flush();
 
         $agents = $userRepository->createQueryBuilder('u')
             ->where('u.status = :status')
@@ -622,98 +600,6 @@ final class SlaController extends AbstractController
 
         $this->addFlash($success ? 'success' : 'error', $message);
         return $this->redirectToRoute('app_sla_policy_index');
-    }
-
-    private function ensureDefaultPolicies(
-        EntityManagerInterface $em,
-        SlaPolicyRepository $policyRepository,
-        TicketPriorityRepository $priorityRepository,
-        TenantRepository $tenantRepository,
-    ): void {
-        $existingCount = $policyRepository->count([]);
-        if ($existingCount > 0) {
-            return;
-        }
-
-        $defaultTenant = $tenantRepository->findOneBy([]);
-        if (!$defaultTenant) {
-            $defaultTenant = new Tenant();
-            $defaultTenant->setName('Tenant Principal');
-            $defaultTenant->setDomain('default');
-            $defaultTenant->setStatus(true);
-            $em->persist($defaultTenant);
-            $em->flush();
-        }
-
-        // Asegurar que existan las prioridades si aún no están creadas
-        $prioritiesConfig = [
-            ['name' => 'Crítica', 'level' => 4, 'color' => '#ef4444'],
-            ['name' => 'Alta', 'level' => 3, 'color' => '#f59e0b'],
-            ['name' => 'Media', 'level' => 2, 'color' => '#3b82f6'],
-            ['name' => 'Baja', 'level' => 1, 'color' => '#10b981'],
-        ];
-
-        $prioritiesMap = [];
-        foreach ($prioritiesConfig as $pConfig) {
-            $pr = $priorityRepository->findOneBy(['name' => $pConfig['name']]);
-            if (!$pr) {
-                $pr = new TicketPriority();
-                $pr->setTenant($defaultTenant);
-                $pr->setName($pConfig['name']);
-                $pr->setLevel($pConfig['level']);
-                $pr->setColor($pConfig['color']);
-                $em->persist($pr);
-            }
-            $prioritiesMap[$pConfig['name']] = $pr;
-        }
-        $em->flush();
-
-        // Crear las políticas SLA por defecto estándar en la industria
-        $defaultPolicies = [
-            [
-                'name' => 'SLA Crítico - Disponibilidad 24/7',
-                'priority' => $prioritiesMap['Crítica'] ?? null,
-                'responseTime' => 15, // 15 minutos
-                'resolutionTime' => 120, // 2 horas
-                'businessHours' => false, // 24/7
-            ],
-            [
-                'name' => 'SLA Alto - Atención Rápida',
-                'priority' => $prioritiesMap['Alta'] ?? null,
-                'responseTime' => 30, // 30 minutos
-                'resolutionTime' => 240, // 4 horas
-                'businessHours' => false, // 24/7
-            ],
-            [
-                'name' => 'SLA Medio - Estándar Operativo',
-                'priority' => $prioritiesMap['Media'] ?? null,
-                'responseTime' => 60, // 1 hora
-                'resolutionTime' => 480, // 8 horas
-                'businessHours' => true, // Horario Laboral
-            ],
-            [
-                'name' => 'SLA Bajo - Consultas y Tareas Menores',
-                'priority' => $prioritiesMap['Baja'] ?? null,
-                'responseTime' => 120, // 2 horas
-                'resolutionTime' => 1440, // 24 horas
-                'businessHours' => true, // Horario Laboral
-            ],
-        ];
-
-        foreach ($defaultPolicies as $dPolicy) {
-            if ($dPolicy['priority']) {
-                $policy = new SlaPolicy();
-                $policy->setName($dPolicy['name']);
-                $policy->setPriority($dPolicy['priority']);
-                $policy->setResponseTimeMinutes($dPolicy['responseTime']);
-                $policy->setResolutionTimeMinutes($dPolicy['resolutionTime']);
-                $policy->setBusinessHoursOnly($dPolicy['businessHours']);
-                $policy->setTenant($defaultTenant);
-                $em->persist($policy);
-            }
-        }
-
-        $em->flush();
     }
 
     private function calculateSlaMetric(Ticket $ticket, TicketSla $ticketSla, \DateTimeImmutable $now): array

@@ -34,13 +34,10 @@ final class CmdbController extends AbstractController
         CiItemRepository $ciItemRepository,
         CiCategoryRepository $categoryRepository,
         TenantRepository $tenantRepository,
-        EntityManagerInterface $em,
     ): Response {
         if (!$this->getUser()) {
             return $this->redirectToRoute('app_login');
         }
-
-        $this->ensureDefaultCategories($em, $categoryRepository, $tenantRepository);
 
         $items = $ciItemRepository->findBy([], ['name' => 'ASC']);
         $categories = $categoryRepository->findBy([], ['name' => 'ASC']);
@@ -248,13 +245,10 @@ final class CmdbController extends AbstractController
         CiRelationshipRepository $relationshipRepository,
         TenantRepository $tenantRepository,
         CiCategoryRepository $categoryRepository,
-        EntityManagerInterface $em,
     ): Response {
         if (!$this->getUser()) {
             return $this->redirectToRoute('app_login');
         }
-
-        $this->ensureDefaultCategories($em, $categoryRepository, $tenantRepository);
 
         $tenantId = $request->query->get('tenant');
         $selectedTenant = null;
@@ -457,53 +451,5 @@ final class CmdbController extends AbstractController
 
         $this->addFlash($success ? 'success' : 'error', $message);
         return $this->redirectToRoute('app_cmdb_asset_index');
-    }
-
-    private function ensureDefaultCategories(
-        EntityManagerInterface $em,
-        CiCategoryRepository $categoryRepository,
-        TenantRepository $tenantRepository,
-    ): void {
-        $defaultTenant = $tenantRepository->findOneBy([]);
-        if (!$defaultTenant) {
-            $defaultTenant = new Tenant();
-            $defaultTenant->setName('Tenant Principal');
-            $defaultTenant->setDomain('default');
-            $defaultTenant->setStatus(true);
-            $em->persist($defaultTenant);
-            $em->flush();
-        }
-
-        $defaults = [
-            // Físicos
-            ['name' => 'Servidores en Rack', 'type' => CiCategoryType::FISICO],
-            ['name' => 'Laptops y Estaciones de Trabajo', 'type' => CiCategoryType::FISICO],
-            ['name' => 'Equipos de Red (Switches / Routers)', 'type' => CiCategoryType::FISICO],
-            ['name' => 'Almacenamiento (SAN / NAS)', 'type' => CiCategoryType::FISICO],
-            ['name' => 'Periféricos e Impresoras', 'type' => CiCategoryType::FISICO],
-            // Lógicos
-            ['name' => 'Sistemas Operativos', 'type' => CiCategoryType::LOGICO],
-            ['name' => 'Bases de Datos', 'type' => CiCategoryType::LOGICO],
-            ['name' => 'Aplicaciones y Servicios Web', 'type' => CiCategoryType::LOGICO],
-            ['name' => 'Servicios Cloud e Infraestructura', 'type' => CiCategoryType::LOGICO],
-            ['name' => 'Licencias y Certificados SSL', 'type' => CiCategoryType::LOGICO],
-        ];
-
-        $hasNew = false;
-        foreach ($defaults as $data) {
-            $cat = $categoryRepository->findOneBy(['name' => $data['name']]);
-            if (!$cat) {
-                $cat = new CiCategory();
-                $cat->setName($data['name']);
-                $cat->setType($data['type']);
-                $cat->setTenant($defaultTenant);
-                $em->persist($cat);
-                $hasNew = true;
-            }
-        }
-
-        if ($hasNew) {
-            $em->flush();
-        }
     }
 }

@@ -75,6 +75,24 @@ final class GuideControllerTest extends WebTestCase
 
         $em = static::getContainer()->get(EntityManagerInterface::class);
         $article = $em->getRepository(WikiArticle::class)->findOneBy(['isPublic' => true]);
+        if (!$article) {
+            $cat = $em->getRepository(WikiCategory::class)->findOneBy([]);
+            if (!$cat) {
+                $cat = new WikiCategory();
+                $cat->setName('Test Category');
+                $cat->setTenant($user->getTenant());
+                $em->persist($cat);
+            }
+            $article = new WikiArticle();
+            $article->setTitle('Test Public Article');
+            $article->setContent('Test content');
+            $article->setIsPublic(true);
+            $article->setCategory($cat);
+            $article->setTenant($user->getTenant());
+            $article->setAuthor($user);
+            $em->persist($article);
+            $em->flush();
+        }
         $this->assertNotNull($article);
 
         $initialViews = $article->getViewsCount();
@@ -114,6 +132,13 @@ final class GuideControllerTest extends WebTestCase
 
         $em = static::getContainer()->get(EntityManagerInterface::class);
         $cat = $em->getRepository(WikiCategory::class)->findOneBy([]);
+        if (!$cat) {
+            $cat = new WikiCategory();
+            $cat->setName('General');
+            $cat->setTenant($user->getTenant());
+            $em->persist($cat);
+            $em->flush();
+        }
         $this->assertNotNull($cat);
 
         $title = 'Guía de Prueba Funcional ' . uniqid();
@@ -206,6 +231,24 @@ final class GuideControllerTest extends WebTestCase
 
         $em = static::getContainer()->get(EntityManagerInterface::class);
         $procedure = $em->getRepository(WikiArticle::class)->findOneBy(['isPublic' => false]);
+        if (!$procedure) {
+            $cat = $em->getRepository(WikiCategory::class)->findOneBy([]);
+            if (!$cat) {
+                $cat = new WikiCategory();
+                $cat->setName('Test Category');
+                $cat->setTenant($user->getTenant());
+                $em->persist($cat);
+            }
+            $procedure = new WikiArticle();
+            $procedure->setTitle('Test Internal Procedure');
+            $procedure->setContent('Test runbook');
+            $procedure->setIsPublic(false);
+            $procedure->setCategory($cat);
+            $procedure->setTenant($user->getTenant());
+            $procedure->setAuthor($user);
+            $em->persist($procedure);
+            $em->flush();
+        }
         $this->assertNotNull($procedure);
 
         $initialViews = $procedure->getViewsCount();
@@ -234,6 +277,13 @@ final class GuideControllerTest extends WebTestCase
 
         $em = static::getContainer()->get(EntityManagerInterface::class);
         $cat = $em->getRepository(WikiCategory::class)->findOneBy([]);
+        if (!$cat) {
+            $cat = new WikiCategory();
+            $cat->setName('General');
+            $cat->setTenant($user->getTenant());
+            $em->persist($cat);
+            $em->flush();
+        }
         $this->assertNotNull($cat);
 
         $title = 'Procedimiento Técnico Test ' . uniqid();

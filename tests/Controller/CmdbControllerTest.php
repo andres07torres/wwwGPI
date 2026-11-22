@@ -84,6 +84,21 @@ final class CmdbControllerTest extends WebTestCase
         // Obtener un token CSRF y una categoría válida
         $token = $crawler->filter('#modalCreateCiItem input[name="_csrf_token"]')->attr('value');
         $category = $em->getRepository(CiCategory::class)->findOneBy([]);
+        if (!$category) {
+            $tenant = $em->getRepository(Tenant::class)->findOneBy([]) ?? new Tenant();
+            if (!$tenant->getId()) {
+                $tenant->setName('Test Tenant');
+                $tenant->setDomain('cmdbtest');
+                $tenant->setStatus(true);
+                $em->persist($tenant);
+            }
+            $category = new CiCategory();
+            $category->setName('Test Category');
+            $category->setType(CiCategoryType::FISICO);
+            $category->setTenant($tenant);
+            $em->persist($category);
+            $em->flush();
+        }
         $this->assertNotNull($category, 'Debe haber categorías en el sistema');
 
         $tenant = $em->getRepository(Tenant::class)->findOneBy([]);

@@ -32,11 +32,7 @@ final class UserController extends AbstractController
         RoleRepository $roleRepository,
         TenantRepository $tenantRepository,
         PermissionRepository $permissionRepository,
-        EntityManagerInterface $em,
     ): Response {
-        // Asegurar la existencia de roles y permisos base si la base de datos está vacía
-        $this->ensureDefaultRolesAndPermissions($em, $roleRepository, $permissionRepository, $tenantRepository);
-
         $users = $userRepository->findBy([], ['createdAt' => 'DESC']);
         $roles = $roleRepository->findAll();
         $tenants = $tenantRepository->findAll();
@@ -301,72 +297,5 @@ final class UserController extends AbstractController
 
         $this->addFlash($success ? 'success' : 'error', $message);
         return $this->redirectToRoute('app_user_index');
-    }
-
-    private function ensureDefaultRolesAndPermissions(
-        EntityManagerInterface $em,
-        RoleRepository $roleRepository,
-        PermissionRepository $permissionRepository,
-        TenantRepository $tenantRepository,
-    ): void {
-        $permissionsMap = [
-            'users.view' => 'Ver directorio de usuarios',
-            'users.create' => 'Crear nuevos usuarios',
-            'users.edit' => 'Editar usuarios existentes',
-            'users.delete' => 'Eliminar cuentas de usuario',
-            'roles.manage' => 'Gestionar roles y permisos',
-            'tickets.view' => 'Consultar mesa de ayuda',
-            'tickets.manage' => 'Gestionar ciclo de vida de tickets',
-            'cmdb.view' => 'Ver inventario de activos TI',
-            'cmdb.manage' => 'Administrar elementos de configuración (CMDB)',
-            'sla.manage' => 'Configurar políticas y cronómetros SLA',
-            'changes.approve' => 'Aprobar solicitudes en Comité CAB',
-            'wiki.write' => 'Publicar artículos en base de conocimiento',
-        ];
-
-        $permissionEntities = [];
-        foreach ($permissionsMap as $code => $name) {
-            $perm = $permissionRepository->findOneBy(['code' => $code]);
-            if (!$perm) {
-                $perm = new Permission();
-                $perm->setCode($code);
-                $perm->setName($name);
-                $em->persist($perm);
-            }
-            $permissionEntities[$code] = $perm;
-        }
-
-        $defaultTenant = $tenantRepository->findOneBy([]);
-        if (!$defaultTenant) {
-            $defaultTenant = new Tenant();
-            $defaultTenant->setName('Tenant Principal');
-            $defaultTenant->setDomain('default');
-            $defaultTenant->setStatus(true);
-            $em->persist($defaultTenant);
-        }
-
-        $rolesConfig = [
-            'Super Admin' => array_keys($permissionsMap),
-            'Administrador' => ['users.view', 'users.create', 'users.edit', 'roles.manage', 'tickets.view', 'tickets.manage', 'cmdb.view', 'cmdb.manage', 'sla.manage', 'wiki.write'],
-            'Especialista TI' => ['tickets.view', 'tickets.manage', 'cmdb.view', 'cmdb.manage', 'wiki.write'],
-            'Usuario' => ['tickets.view', 'tickets.manage'],
-        ];
-
-        foreach ($rolesConfig as $roleName => $allowedPermCodes) {
-            $role = $roleRepository->findOneBy(['name' => $roleName]);
-            if (!$role) {
-                $role = new Role();
-                $role->setName($roleName);
-                $role->setTenant($defaultTenant);
-                foreach ($allowedPermCodes as $code) {
-                    if (isset($permissionEntities[$code])) {
-                        $role->addPermission($permissionEntities[$code]);
-                    }
-                }
-                $em->persist($role);
-            }
-        }
-
-        $em->flush();
     }
 }

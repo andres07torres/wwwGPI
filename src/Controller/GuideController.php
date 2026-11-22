@@ -33,8 +33,6 @@ final class GuideController extends AbstractController
         Request $request,
         WikiArticleRepository $wikiArticleRepository,
         WikiCategoryRepository $wikiCategoryRepository,
-        TenantRepository $tenantRepository,
-        EntityManagerInterface $em,
     ): Response {
         /** @var User|null $currentUser */
         $currentUser = $this->getUser();
@@ -42,73 +40,8 @@ final class GuideController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // Obtener o inicializar categorías si la base de datos está vacía para autoservicio
         $allCategories = $wikiCategoryRepository->findAll();
-        if (empty($allCategories)) {
-            $tenant = $currentUser->getTenant() ?? $tenantRepository->findOneBy([]);
-            if ($tenant) {
-                $defaultCats = [
-                    ['name' => 'Acceso y Contraseñas', 'desc' => 'Recuperación de cuentas, doble factor (2FA) y credenciales.'],
-                    ['name' => 'Conectividad y Redes', 'desc' => 'Configuración de VPN, Wi-Fi corporativo y resolución de caídas de red.'],
-                    ['name' => 'Software y Aplicaciones', 'desc' => 'Instalación de paquetes, suite ofimática y licenciamiento.'],
-                    ['name' => 'Hardware y Equipos', 'desc' => 'Periféricos, estaciones de trabajo y solicitudes de periféricos.'],
-                    ['name' => 'Seguridad Informática', 'desc' => 'Reporte de phishing, antivirus y buenas prácticas de protección.'],
-                ];
-                foreach ($defaultCats as $catData) {
-                    $cat = new WikiCategory();
-                    $cat->setName($catData['name']);
-                    $cat->setDescription($catData['desc']);
-                    $cat->setTenant($tenant);
-                    $em->persist($cat);
-                }
-                $em->flush();
-                $allCategories = $wikiCategoryRepository->findAll();
-            }
-        }
-
-        // Artículos públicos (Autoservicio para clientes)
         $publicArticles = $wikiArticleRepository->findBy(['isPublic' => true], ['createdAt' => 'DESC']);
-
-        // Si no hay artículos, crear guías base iniciales para Autoservicio
-        if (empty($publicArticles) && !empty($allCategories)) {
-            $tenant = $currentUser->getTenant() ?? $tenantRepository->findOneBy([]);
-            if ($tenant) {
-                $sampleArticles = [
-                    [
-                        'title' => '¿Cómo restablecer mi contraseña institucional?',
-                        'category' => $allCategories[0],
-                        'content' => "Para restablecer su contraseña:\n\n1. Diríjase a la pantalla de inicio de sesión de GPI.\n2. Haga clic en '¿Olvidó su contraseña?'.\n3. Ingrese su correo corporativo institucional.\n4. Revise su bandeja de entrada (y carpeta de spam) donde recibirá un enlace temporal válido por 15 minutos.\n5. Defina su nueva contraseña cumpliendo con mínimo 10 caracteres, una mayúscula, un número y un símbolo.\n\nEn caso de no recibir el enlace, por favor abra un Ticket en la Mesa de Ayuda.",
-                        'views' => 42,
-                    ],
-                    [
-                        'title' => 'Guía de conexión a la VPN Corporativa (Fortinet / OpenVPN)',
-                        'category' => $allCategories[1] ?? $allCategories[0],
-                        'content' => "Pasos para conectar al entorno seguro de la organización:\n\n1. Inicie la aplicación FortiClient o cliente VPN autorizado en su estación de trabajo.\n2. Ingrese la dirección del gateway VPN: vpn.gpi-infra.corp.\n3. Utilice sus credenciales corporativas (usuario y clave).\n4. Confirme el código de verificación del autenticador (2FA/OTP).\n5. Verifique que el estado figure en 'Conectado - 100%'.\n\nSi experimenta problemas de latencia o corte de túnel, reinicie su adaptador de red antes de generar un incidente.",
-                        'views' => 89,
-                    ],
-                    [
-                        'title' => 'Configuración de correo electrónico en dispositivos móviles',
-                        'category' => $allCategories[2] ?? $allCategories[0],
-                        'content' => "Siga estos pasos para configurar su buzón en Android o iOS:\n\n1. Abra la app oficial de correo (Outlook o Mail nativo).\n2. Seleccione 'Agregar cuenta de Exchange / Office 365'.\n3. Ingrese su dirección corporativa completa y su contraseña.\n4. Acepte los permisos de seguridad y cifrado del dispositivo requeridos por la política de la empresa.\n5. Espere a que finalice la sincronización inicial de carpetas y calendario.",
-                        'views' => 27,
-                    ],
-                ];
-
-                foreach ($sampleArticles as $artData) {
-                    $art = new WikiArticle();
-                    $art->setTitle($artData['title']);
-                    $art->setContent($artData['content']);
-                    $art->setCategory($artData['category']);
-                    $art->setTenant($tenant);
-                    $art->setAuthor($currentUser);
-                    $art->setIsPublic(true);
-                    $art->setViewsCount($artData['views']);
-                    $em->persist($art);
-                }
-                $em->flush();
-                $publicArticles = $wikiArticleRepository->findBy(['isPublic' => true], ['createdAt' => 'DESC']);
-            }
-        }
 
         // Métricas / KPIs
         $totalArticles = count($publicArticles);
@@ -392,8 +325,6 @@ final class GuideController extends AbstractController
         Request $request,
         WikiArticleRepository $wikiArticleRepository,
         WikiCategoryRepository $wikiCategoryRepository,
-        TenantRepository $tenantRepository,
-        EntityManagerInterface $em,
     ): Response {
         /** @var User|null $currentUser */
         $currentUser = $this->getUser();
@@ -402,87 +333,8 @@ final class GuideController extends AbstractController
         }
 
         $allCategories = $wikiCategoryRepository->findAll();
-        // Si no existen categorías técnicas específicas, asegurar su creación
-        $technicalCatNames = [
-            'Infraestructura & Redes',
-            'DevOps & Servidores',
-            'Bases de Datos & Backup',
-            'Ciberseguridad & SOC',
-            'Soporte Técnico Especializado',
-        ];
-        $existingCatNames = array_map(fn($c) => $c->getName(), $allCategories);
-        $tenant = $currentUser->getTenant() ?? $tenantRepository->findOneBy([]);
-
-        if ($tenant) {
-            $createdCat = false;
-            foreach ($technicalCatNames as $name) {
-                if (!in_array($name, $existingCatNames, true)) {
-                    $cat = new WikiCategory();
-                    $cat->setName($name);
-                    $cat->setDescription('Procedimientos técnicos y protocolos de ' . $name);
-                    $cat->setTenant($tenant);
-                    $em->persist($cat);
-                    $createdCat = true;
-                }
-            }
-            if ($createdCat) {
-                $em->flush();
-                $allCategories = $wikiCategoryRepository->findAll();
-            }
-        }
-
         // Procedimientos internos para agentes (isPublic = false)
         $procedures = $wikiArticleRepository->findBy(['isPublic' => false], ['createdAt' => 'DESC']);
-
-        // Sembrar procedimientos técnicos de ejemplo si no existen
-        if (empty($procedures) && !empty($allCategories) && $tenant) {
-            $catMap = [];
-            foreach ($allCategories as $c) {
-                $catMap[$c->getName()] = $c;
-            }
-
-            $sampleProcedures = [
-                [
-                    'title' => 'Procedimiento de Mitigación de Caída de Enlace WAN / Red Principal',
-                    'catName' => 'Infraestructura & Redes',
-                    'content' => "## 1. Alcance y Detección\nAplicable ante pérdida de conectividad perimetral reportada por sondas SNMP o alerta de Zabbix.\n\n## 2. Diagnóstico Rápido\n1. Validar estado de interfaces en Switch Core: `show interfaces status | include WAN`.\n2. Ejecutar ping bidireccional hacia DNS público (1.1.1.1 / 8.8.8.8).\n3. Comprobar tabla de rutas BGP: `show ip bgp summary`.\n\n## 3. Conmutación a Enlace Secundario (Failover)\n1. Si la latencia supera 350ms o packet loss > 40%, forzar switchover en FortiGate:\n   `config system virtual-wan-link` -> `set status failover-backup`.\n2. Validar sesión IPSec hacia nodo secundario.\n\n## 4. Registro y Notificación\nNotificar al canal de guardia NOC y registrar el evento en el ticket correspondiente.",
-                    'views' => 64,
-                ],
-                [
-                    'title' => 'Protocolo de Rollback y Despliegue de Emergencia en Producción',
-                    'catName' => 'DevOps & Servidores',
-                    'content' => "## 1. Criterios de Aborto\nActivar inmediatamente si tras el despliegue se detecta tasa de errores HTTP 5xx > 2% o indisponibilidad de endpoint crítico durante 3 minutos consecutivos.\n\n## 2. Pasos de Reversión\n1. Conectar al orquestador Kubernetes o servidor host.\n2. Localizar versión estable previa: `helm history gpi-core -n prod`.\n3. Ejecutar rollback inmediato:\n   `helm rollback gpi-core <REVISION_ID> -n prod`.\n4. Si el despliegue es Docker Compose tradicional:\n   `docker compose -f docker-compose.prod.yml down`\n   `docker compose -f docker-compose.prod.yml up -d --build` con tag estable.\n\n## 3. Verificación de Salud\nVerificar endpoint `/api/health` y validar respuesta HTTP 200 con `{\"status\":\"healthy\"}`.\n\n## 4. Registro CAB\nRegistrar evento en el módulo de Gestión de Cambios (RFC de Emergencia).",
-                    'views' => 91,
-                ],
-                [
-                    'title' => 'Depuración y Rotación de Logs en Servidores de Base de Datos',
-                    'catName' => 'Bases de Datos & Backup',
-                    'content' => "## 1. Diagnóstico de Espacio en Disco\n1. Comprobar uso de partición `/var/lib/mysql` o `/var/log`:\n   `df -h /var/log`\n2. Identificar archivos de log sobredimensionados:\n   `ls -lhS /var/log/mysql/*.log | head -n 5`\n\n## 2. Purgado Seguro de Binary Logs\n1. Conectar a consola MySQL como DBA:\n   `PURGE BINARY LOGS BEFORE NOW() - INTERVAL 3 DAY;`\n2. Forzar rotación de logrotate del sistema operativo:\n   `logrotate -f /etc/logrotate.d/mysql-server`\n\n## 3. Verificación de Réplica\nValidar que la réplica no se encuentre retrasada tras la rotación:\n`SHOW REPLICA STATUS\\G;` (Seconds_Behind_Source = 0).",
-                    'views' => 38,
-                ],
-                [
-                    'title' => 'Aislamiento de Endpoint y Mitigación de Ransomware / Malware',
-                    'catName' => 'Ciberseguridad & SOC',
-                    'content' => "## 1. Identificación y Aislamiento Inmediato\n1. En consola EDR/Antivirus, activar comando 'Network Containment / Isolation' para el host comprometido.\n2. Si el host es virtual (Proxmox/VMware): desconectar virtual vNIC de inmediato.\n\n## 2. Preservación de Evidencia\n1. Extraer volcado de memoria volátil antes de apagar el equipo: `winpmem.exe -o memdump.raw`.\n2. Tomar snapshot forense en frío del disco virtual.\n\n## 3. Revocación de Credenciales\n1. Bloquear usuario en Directorio Activo / LDAP y resetear sesión SSO.\n2. Revocar tokens de API y llaves SSH activas del usuario afectado.\n\n## 4. Notificación y Escalamiento\nAlertar de inmediato al equipo de Seguridad Informática / CSIRT y clasificar como incidente P1.",
-                    'views' => 52,
-                ],
-            ];
-
-            foreach ($sampleProcedures as $pData) {
-                $category = $catMap[$pData['catName']] ?? $allCategories[0];
-                $art = new WikiArticle();
-                $art->setTitle($pData['title']);
-                $art->setContent($pData['content']);
-                $art->setCategory($category);
-                $art->setTenant($tenant);
-                $art->setAuthor($currentUser);
-                $art->setIsPublic(false); // Procedimiento interno para agentes
-                $art->setViewsCount($pData['views']);
-                $em->persist($art);
-            }
-            $em->flush();
-            $procedures = $wikiArticleRepository->findBy(['isPublic' => false], ['createdAt' => 'DESC']);
-        }
 
         // Estadísticas de Procedimientos (KPIs)
         $totalProcedures = count($procedures);

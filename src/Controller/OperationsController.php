@@ -137,11 +137,7 @@ final class OperationsController extends AbstractController
 
         $tenant = $currentUser->getTenant() ?? $tenantRepository->findOneBy([]);
         if (!$tenant) {
-            $tenant = new Tenant();
-            $tenant->setName('Tenant Principal');
-            $tenant->setDomain('default');
-            $tenant->setStatus(true);
-            $em->persist($tenant);
+            return $this->handleResponse($request, false, 'No se encontró una organización válida en el sistema.');
         }
 
         $status = ProblemStatus::tryFrom($statusStr) ?? ProblemStatus::BAJO_INVESTIGACION;
@@ -539,11 +535,7 @@ final class OperationsController extends AbstractController
 
         $tenant = $currentUser->getTenant() ?? $tenantRepository->findOneBy([]);
         if (!$tenant) {
-            $tenant = new Tenant();
-            $tenant->setName('Tenant Principal');
-            $tenant->setDomain('default');
-            $tenant->setStatus(true);
-            $em->persist($tenant);
+            return $this->handleResponse($request, false, 'No se encontró una organización válida en el sistema.');
         }
 
         $riskLevel = ChangeRiskLevel::tryFrom($riskStr) ?? ChangeRiskLevel::MEDIO;
@@ -1051,11 +1043,7 @@ final class OperationsController extends AbstractController
 
         $tenant = $currentUser->getTenant() ?? $tenantRepository->findOneBy([]);
         if (!$tenant) {
-            $tenant = new Tenant();
-            $tenant->setName('Tenant Principal');
-            $tenant->setDomain('default');
-            $tenant->setStatus(true);
-            $em->persist($tenant);
+            return $this->handleResponse($request, false, 'No se encontró una organización válida en el sistema.');
         }
 
         $riskLevel = ChangeRiskLevel::tryFrom($riskStr) ?? ChangeRiskLevel::MEDIO;
