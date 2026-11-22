@@ -170,4 +170,124 @@ final class GuideControllerTest extends WebTestCase
         $deleted = $em->getRepository(WikiArticle::class)->find($created->getId());
         $this->assertNull($deleted);
     }
+
+    public function testProceduresIndexRedirectsAnonymous(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/guides/procedures');
+
+        $this->assertResponseRedirects('http://localhost/');
+    }
+
+    public function testProceduresIndexLoadsForAuthenticatedUser(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAuthenticatedUser();
+        $client->loginUser($user);
+
+        $crawler = $client->request('GET', '/guides/procedures');
+        $this->assertResponseIsSuccessful();
+        $this->assertAnySelectorTextContains('h1', 'Procedimientos (Agentes)');
+        $this->assertSelectorExists('#procedureSearchInput');
+        $this->assertSelectorExists('#modalCreateProcedure');
+        $this->assertSelectorExists('#modalDetailProcedure');
+        $this->assertSelectorExists('#modalEditProcedure');
+        $this->assertSelectorExists('#modalDeleteProcedure');
+    }
+
+    public function testProcedureDetailReturnsJsonAndIncrementsViews(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAuthenticatedUser();
+        $client->loginUser($user);
+
+        $client->request('GET', '/guides/procedures');
+        $this->assertResponseIsSuccessful();
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $procedure = $em->getRepository(WikiArticle::class)->findOneBy(['isPublic' => false]);
+        $this->assertNotNull($procedure);
+
+        $initialViews = $procedure->getViewsCount();
+        $id = (string) $procedure->getId();
+
+        $client->request('GET', '/guides/procedures/' . $id . '/detail');
+        $this->assertResponseIsSuccessful();
+
+        $data = json_decode((string) $client->getResponse()->getContent(), true);
+        $this->assertTrue($data['success']);
+        $this->assertSame($id, $data['procedure']['id']);
+        $this->assertSame($initialViews + 1, $data['procedure']['viewsCount']);
+    }
+
+    public function testCreateProcedureLifecycle(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAuthenticatedUser();
+        $client->loginUser($user);
+
+        $crawler = $client->request('GET', '/guides/procedures');
+        $this->assertResponseIsSuccessful();
+
+        $csrfToken = $crawler->filter('form[action*="procedures/create"] input[name="_csrf_token"]')->attr('value');
+        $this->assertNotEmpty($csrfToken);
+
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $cat = $em->getRepository(WikiCategory::class)->findOneBy([]);
+        $this->assertNotNull($cat);
+
+        $title = 'Procedimiento Técnico Test ' . uniqid();
+        $client->request('POST', '/guides/procedures/create', [
+            '_csrf_token' => $csrfToken,
+            'title' => $title,
+            'content' => "## Pasos de prueba\n1. Validar telemetría\n2. Ejecutar script de contingencia.",
+            'category_id' => $cat->getId(),
+        ]);
+
+        $this->assertResponseRedirects('/guides/procedures');
+        $client->followRedirect();
+
+        $created = $em->getRepository(WikiArticle::class)->findOneBy(['title' => $title]);
+        $this->assertNotNull($created);
+        $this->assertFalse($created->isPublic());
+        $id = (string) $created->getId();
+
+        // Obtener tokens CSRF para editar y eliminar
+        $crawler = $client->request('GET', '/guides/procedures');
+        $csrfJson = $crawler->filter('#csrfTokensProcedureData')->text();
+        $csrfTokens = json_decode($csrfJson, true);
+        $editToken = $csrfTokens[$id]['edit'] ?? null;
+        $deleteToken = $csrfTokens[$id]['delete'] ?? null;
+        $this->assertNotNull($editToken);
+        $this->assertNotNull($deleteToken);
+
+        // Test Edit
+        $updatedTitle = $title . ' (Editado)';
+        $client->request('POST', '/guides/procedures/' . $id . '/edit', [
+            '_csrf_token' => $editToken,
+            'title' => $updatedTitle,
+            'content' => 'Runbook editado.',
+            'category_id' => $cat->getId(),
+        ]);
+
+        $this->assertResponseRedirects('/guides/procedures');
+        $client->followRedirect();
+
+        $em->clear();
+        $updated = $em->getRepository(WikiArticle::class)->find($created->getId());
+        $this->assertNotNull($updated);
+        $this->assertSame($updatedTitle, $updated->getTitle());
+
+        // Test Delete
+        $client->request('POST', '/guides/procedures/' . $id . '/delete', [
+            '_csrf_token' => $deleteToken,
+        ]);
+
+        $this->assertResponseRedirects('/guides/procedures');
+        $client->followRedirect();
+
+        $em->clear();
+        $deleted = $em->getRepository(WikiArticle::class)->find($created->getId());
+        $this->assertNull($deleted);
+    }
 }

@@ -1,0 +1,866 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}GPI · Procedimientos (Agentes){% endblock %}
+
+{% block content %}
+<div class="user-module-wrapper">
+	<!-- Encabezado del Módulo y Breadcrumbs -->
+	<div class="mb-4">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb mb-2 small">
+				<li class="breadcrumb-item"><a href="{{ path('app_home') }}" class="text-decoration-none text-muted">Inicio</a></li>
+				<li class="breadcrumb-item text-muted">Guías</li>
+				<li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">Procedimientos (Agentes)</li>
+			</ol>
+		</nav>
+		<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+			<div class="pe-md-3">
+				<h1 class="h3 fw-bold text-dark mb-1">Procedimientos (Agentes)</h1>
+				<p class="text-muted mb-0">
+					Runbooks técnicos internos, protocolos de operación, contingencia y procedimientos estándar para agentes técnicos.
+				</p>
+			</div>
+			<div class="d-flex align-items-center justify-content-end gap-2 flex-shrink-0 flex-wrap">
+				<button type="button" class="btn btn-panel-action shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateProcedure">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="12" y1="5" x2="12" y2="19"/>
+						<line x1="5" y1="12" x2="19" y2="12"/>
+					</svg>
+					<span>Nuevo Procedimiento</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Cartas de Indicadores Clave (KPIs) -->
+	<div class="row g-3 mb-4">
+		<!-- KPI 1: Total Procedimientos -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Total Runbooks Técnicos">Procedimientos</span>
+						<div class="kpi-card-value text-truncate">{{ stats.totalProcedures }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Runbooks técnicos registrados">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+							<polyline points="14 2 14 8 20 8"/>
+							<line x1="16" y1="13" x2="8" y2="13"/>
+							<line x1="16" y1="17" x2="8" y2="17"/>
+							<polyline points="10 9 9 9 8 9"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 2: Categorías Técnicas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Categorías Técnicas">Categorías</span>
+						<div class="kpi-card-value text-truncate" style="color: var(--panel, #14212B);">{{ stats.totalCategories }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Especialidades técnicas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="3" y="3" width="7" height="7"/>
+							<rect x="14" y="3" width="7" height="7"/>
+							<rect x="14" y="14" width="7" height="7"/>
+							<rect x="3" y="14" width="7" height="7"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 3: Ejecuciones & Consultas -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Ejecuciones y Lecturas">Consultas</span>
+						<div class="kpi-card-value text-truncate text-success">{{ stats.totalExecutions }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Ejecuciones y consultas acumuladas">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KPI 4: Nuevas este mes -->
+		<div class="col-6 col-md-3">
+			<div class="card kpi-card border-0 shadow-sm rounded-3 h-100 bg-white">
+				<div class="kpi-card-grid">
+					<div class="min-w-0">
+						<span class="kpi-card-label text-truncate" title="Procedimientos agregados este mes">Nuevas (Mes)</span>
+						<div class="kpi-card-value text-truncate" style="color: var(--panel, #14212B);">{{ stats.newThisMonth }}</div>
+					</div>
+					<div class="kpi-icon-panel" title="Procedimientos agregados recientemente">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"/>
+							<polyline points="12 6 12 12 16 14"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Barra de Búsqueda y Filtros Técnicos -->
+	<div class="card border-0 shadow-sm rounded-3 mb-4 bg-white p-3">
+		<div class="row g-3 align-items-center justify-content-between">
+			<!-- Buscador en tiempo real -->
+			<div class="col-12 col-md-6 col-lg-5">
+				<div class="input-group">
+					<span class="input-group-text bg-white border-end-0 text-muted">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<circle cx="11" cy="11" r="8"/>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+						</svg>
+					</span>
+					<input type="text" id="procedureSearchInput" class="form-control border-start-0 ps-0" placeholder="Buscar runbook, comandos, contingencia, failover, logs...">
+				</div>
+			</div>
+
+			<!-- Selector de Especialidades / Categorías -->
+			<div class="col-12 col-md-4 col-lg-4">
+				<select id="procedureCategoryFilter" class="form-select">
+					<option value="">Todas las Especialidades ({{ categories|length }})</option>
+					{% for cat in categories %}
+						<option value="{{ cat.id }}">{{ cat.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+
+			<!-- Alternador de Vistas (Tarjetas vs Tabla) -->
+			<div class="col-12 col-md-2 col-lg-3 text-md-end">
+				<div class="btn-group btn-group-sm" role="group" aria-label="Cambiar vista">
+					<button type="button" class="btn btn-outline-secondary active" id="btnViewCards" title="Vista Tarjetas Runbook">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<rect x="3" y="3" width="7" height="7"/>
+							<rect x="14" y="3" width="7" height="7"/>
+							<rect x="14" y="14" width="7" height="7"/>
+							<rect x="3" y="14" width="7" height="7"/>
+						</svg>
+						<span class="d-none d-lg-inline ms-1">Tarjetas</span>
+					</button>
+					<button type="button" class="btn btn-outline-secondary" id="btnViewTable" title="Vista Tabla">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<line x1="8" y1="6" x2="21" y2="6"/>
+							<line x1="8" y1="12" x2="21" y2="12"/>
+							<line x1="8" y1="18" x2="21" y2="18"/>
+							<line x1="3" y1="6" x2="3.01" y2="6"/>
+							<line x1="3" y1="12" x2="3.01" y2="12"/>
+							<line x1="3" y1="18" x2="3.01" y2="18"/>
+						</svg>
+						<span class="d-none d-lg-inline ms-1">Tabla</span>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Pills de Categorías Rápidas -->
+		<div class="d-flex flex-wrap gap-2 mt-3 pt-2 border-top" id="categoryPillsContainer">
+			<button type="button" class="btn btn-xs category-pill active btn-panel-action" data-cat-id="">
+				Todos los Procedimientos ({{ procedures|length }})
+			</button>
+			{% for cat in categories %}
+				<button type="button" class="btn btn-xs category-pill btn-outline-secondary" data-cat-id="{{ cat.id }}">
+					{{ cat.name }}
+				</button>
+			{% endfor %}
+		</div>
+	</div>
+
+	<!-- =========================================================================
+	     VISTA 1: TARJETAS DE PROCEDIMIENTOS (CARDS GRID)
+	     ========================================================================= -->
+	<div id="proceduresCardsContainer" class="row g-3 mb-4">
+		{% for p in procedures %}
+			<div class="col-12 col-md-6 col-xl-4 procedure-card-col" 
+				 data-id="{{ p.id }}"
+				 data-title="{{ p.title|lower }}" 
+				 data-content="{{ p.content|lower }}" 
+				 data-category-id="{{ p.category ? p.category.id : '' }}" 
+				 data-category-name="{{ p.category ? p.category.name|lower : '' }}">
+				<div class="card h-100 border-0 shadow-sm rounded-3 bg-white p-3 d-flex flex-column justify-content-between procedure-card-item">
+					<div>
+						<!-- Cabecera de la tarjeta con categoría en texto plano y consultas -->
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<span class="guide-category-text text-truncate" style="max-width: 200px;">
+								{{ p.category ? p.category.name : 'General' }}
+							</span>
+							<span class="text-muted small d-inline-flex align-items-center gap-1" title="Veces consultado">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+								</svg>
+								<span class="executions-counter-{{ p.id }}">{{ p.viewsCount }}</span>
+							</span>
+						</div>
+
+						<!-- Título del Procedimiento -->
+						<h5 class="card-title fw-bold text-dark h6 mb-2 lh-base">
+							<a href="javascript:void(0)" class="text-decoration-none text-dark hover-primary btn-open-detail" data-bs-toggle="modal" data-bs-target="#modalDetailProcedure" data-id="{{ p.id }}">
+								{{ p.title }}
+							</a>
+						</h5>
+
+						<!-- Extracto técnico -->
+						<p class="card-text text-muted small mb-3 text-break line-clamp-3 font-monospace" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 58px; font-size: 12px;">
+							{{ p.content }}
+						</p>
+					</div>
+
+					<!-- Pie de la Tarjeta con Autor y Acciones -->
+					<div class="pt-3 border-top d-flex align-items-center justify-content-between gap-2 mt-auto">
+						<div class="text-muted small text-truncate" style="max-width: 140px;">
+							<span class="fw-medium text-dark">{{ p.author ? p.author.name : 'Ingeniería GPI' }}</span>
+							<span class="d-block text-muted" style="font-size: 11px;">{{ p.createdAt|date('d/m/Y') }}</span>
+						</div>
+						<div class="d-inline-flex align-items-center gap-1">
+							<!-- Botón Leer Detalle -->
+							<button type="button" class="btn btn-sm btn-outline-panel btn-icon-action btn-open-detail" data-bs-toggle="modal" data-bs-target="#modalDetailProcedure" data-id="{{ p.id }}" title="Ver runbook completo">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+									<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+								</svg>
+							</button>
+
+							<!-- Botón Editar -->
+							<button type="button" class="btn btn-sm btn-outline-panel btn-icon-action btn-open-edit" data-bs-toggle="modal" data-bs-target="#modalEditProcedure" data-id="{{ p.id }}" title="Editar procedimiento">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M12 20h9"/>
+									<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+								</svg>
+							</button>
+
+							<!-- Botón Eliminar -->
+							<button type="button" class="btn btn-sm btn-outline-danger btn-icon-action btn-open-delete" data-bs-toggle="modal" data-bs-target="#modalDeleteProcedure" data-id="{{ p.id }}" data-title="{{ p.title|e('html_attr') }}" title="Eliminar procedimiento">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<polyline points="3 6 5 6 21 6"/>
+									<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+								</svg>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+
+	<!-- =========================================================================
+	     VISTA 2: TABLA DE ADMINISTRACIÓN DE RUNBOOKS (TABLE LIST)
+	     ========================================================================= -->
+	<div id="proceduresTableContainer" class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4 d-none">
+		<div class="table-responsive">
+			<table class="table table-hover align-middle mb-0" id="proceduresTable">
+				<thead class="bg-light border-bottom">
+					<tr class="small text-secondary text-uppercase">
+						<th class="ps-3 py-3" style="width: 44%;">Procedimiento / Runbook</th>
+						<th class="py-3">Especialidad</th>
+						<th class="py-3 text-center">Consultas</th>
+						<th class="py-3">Autor</th>
+						<th class="py-3">Fecha</th>
+						<th class="pe-3 py-3 text-end">Acciones</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for p in procedures %}
+						<tr class="procedure-table-row" 
+							data-id="{{ p.id }}"
+							data-title="{{ p.title|lower }}" 
+							data-content="{{ p.content|lower }}" 
+							data-category-id="{{ p.category ? p.category.id : '' }}" 
+							data-category-name="{{ p.category ? p.category.name|lower : '' }}">
+							<td class="ps-3 py-3">
+								<a href="javascript:void(0)" class="fw-semibold text-dark text-decoration-none btn-open-detail hover-primary" data-bs-toggle="modal" data-bs-target="#modalDetailProcedure" data-id="{{ p.id }}">
+									{{ p.title }}
+								</a>
+							</td>
+							<td class="py-3">
+								<span class="guide-category-text">
+									{{ p.category ? p.category.name : 'General' }}
+								</span>
+							</td>
+							<td class="py-3 text-center">
+								<span class="badge bg-light text-muted border fw-semibold">
+									<span class="executions-counter-{{ p.id }}">{{ p.viewsCount }}</span>
+								</span>
+							</td>
+							<td class="py-3 text-secondary small">
+								{{ p.author ? p.author.name : 'Ingeniería GPI' }}
+							</td>
+							<td class="py-3 text-secondary small">
+								{{ p.createdAt|date('d/m/Y') }}
+							</td>
+							<td class="pe-3 py-3 text-end">
+								<div class="d-inline-flex align-items-center gap-1">
+									<!-- Detalle -->
+									<button type="button" class="btn btn-sm btn-outline-panel btn-icon-action btn-open-detail" data-bs-toggle="modal" data-bs-target="#modalDetailProcedure" data-id="{{ p.id }}" title="Ver runbook">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+											<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+										</svg>
+									</button>
+
+									<!-- Editar -->
+									<button type="button" class="btn btn-sm btn-outline-panel btn-icon-action btn-open-edit" data-bs-toggle="modal" data-bs-target="#modalEditProcedure" data-id="{{ p.id }}" title="Editar procedimiento">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M12 20h9"/>
+											<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+										</svg>
+									</button>
+
+									<!-- Eliminar -->
+									<button type="button" class="btn btn-sm btn-outline-danger btn-icon-action btn-open-delete" data-bs-toggle="modal" data-bs-target="#modalDeleteProcedure" data-id="{{ p.id }}" data-title="{{ p.title|e('html_attr') }}" title="Eliminar procedimiento">
+										<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<polyline points="3 6 5 6 21 6"/>
+											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+										</svg>
+									</button>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- Estado vacío cuando no hay resultados de búsqueda -->
+	<div id="proceduresEmptyState" class="card border-0 shadow-sm rounded-3 p-5 text-center bg-white" style="display: none;">
+		<div class="avatar-circle-lg bg-light text-muted mx-auto mb-3">
+			<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<circle cx="11" cy="11" r="8"/>
+				<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+			</svg>
+		</div>
+		<h5 class="fw-bold text-dark mb-1">No se encontraron procedimientos</h5>
+		<p class="text-muted small mb-0">Intenta con otros términos o selecciona otra especialidad técnica.</p>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 1: NUEVO PROCEDIMIENTO TÉCNICO
+     ========================================================================= -->
+<div class="modal fade" id="modalCreateProcedure" tabindex="-1" aria-labelledby="modalCreateProcedureLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" action="{{ path('app_guide_procedures_create') }}" data-turbo="false">
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('create_procedure') }}">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0" id="modalCreateProcedureLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+							<polyline points="14 2 14 8 20 8"/>
+							<line x1="12" y1="18" x2="12" y2="12"/>
+							<line x1="9" y1="15" x2="15" y2="15"/>
+						</svg>
+						<span class="text-break">Registrar Nuevo Procedimiento (Runbook)</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<!-- Título del Procedimiento -->
+					<div class="mb-3">
+						<label class="form-label small fw-semibold text-secondary" for="create_procedure_title">Título del Procedimiento Técnico <span class="text-danger">*</span></label>
+						<input type="text" class="form-control" id="create_procedure_title" name="title" required placeholder="Ej: Protocolo de Failover de Firewall Perimetral">
+					</div>
+
+					<!-- Categoría Técnica -->
+					<div class="row g-2 mb-3">
+						<div class="col-12 col-md-6">
+							<label class="form-label small fw-semibold text-secondary" for="create_procedure_category">Especialidad / Categoría Existente</label>
+							<select class="form-select" id="create_procedure_category" name="category_id">
+								<option value="">Selecciona una categoría...</option>
+								{% for cat in categories %}
+									<option value="{{ cat.id }}">{{ cat.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="col-12 col-md-6">
+							<label class="form-label small fw-semibold text-secondary" for="create_procedure_new_category">O Crear Nueva Especialidad</label>
+							<input type="text" class="form-control" id="create_procedure_new_category" name="new_category_name" placeholder="Nueva especialidad...">
+						</div>
+					</div>
+
+					<!-- Contenido Técnico / Pasos del Runbook -->
+					<div class="mb-2">
+						<label class="form-label small fw-semibold text-secondary" for="create_procedure_content">Runbook / Pasos Técnicos del Procedimiento <span class="text-danger">*</span></label>
+						<textarea class="form-control font-monospace" id="create_procedure_content" name="content" rows="10" required placeholder="Describe paso a paso los comandos, diagnósticos y criterios de mitigación..." style="font-size: 13px;"></textarea>
+						<div class="form-text text-muted small">
+							Puedes incluir comandos de consola, bloques de código y checklists técnicos.
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+					<button type="submit" class="btn btn-panel-action px-4">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: LECTURA DETALLADA DEL RUNBOOK (AJAX)
+     ========================================================================= -->
+<div class="modal fade" id="modalDetailProcedure" tabindex="-1" aria-labelledby="modalDetailProcedureLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<div class="modal-header border-bottom px-4 py-3">
+				<div class="min-w-0 me-2">
+					<span id="detailProcedureCategory" class="guide-category-text mb-1 d-inline-block">General</span>
+					<h5 class="modal-title fw-bold text-dark text-break mb-0" id="detailProcedureTitle">Cargando procedimiento...</h5>
+				</div>
+				<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+			</div>
+			<div class="modal-body px-4 py-3">
+				<!-- Metadatos del Runbook -->
+				<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 px-3 bg-light rounded-3 mb-3 small text-muted border">
+					<div class="d-flex align-items-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+							<circle cx="12" cy="7" r="4"/>
+						</svg>
+						<span>Autor: <strong class="text-dark" id="detailProcedureAuthor">-</strong></span>
+					</div>
+					<div class="d-flex align-items-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+							<line x1="16" y1="2" x2="16" y2="6"/>
+							<line x1="8" y1="2" x2="8" y2="6"/>
+							<line x1="3" y1="10" x2="21" y2="10"/>
+						</svg>
+						<span id="detailProcedureDate">-</span>
+					</div>
+					<div class="d-flex align-items-center gap-2 text-success">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+						</svg>
+						<span><strong id="detailProcedureViews">0</strong> consultas</span>
+					</div>
+				</div>
+
+				<!-- Contenido del Procedimiento -->
+				<div class="p-3 bg-white border rounded-3 text-dark text-break lh-base font-monospace" id="detailProcedureContent" style="white-space: pre-wrap; font-size: 0.9rem; max-height: 480px; overflow-y: auto;">
+					Cargando runbook...
+				</div>
+			</div>
+			<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+				<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 3: EDITAR PROCEDIMIENTO
+     ========================================================================= -->
+<div class="modal fade" id="modalEditProcedure" tabindex="-1" aria-labelledby="modalEditProcedureLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formEditProcedure" action="#" data-turbo="false">
+				<input type="hidden" name="_csrf_token" id="edit_procedure_csrf" value="">
+				<div class="modal-header border-bottom px-4 py-3">
+					<h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 min-w-0" id="modalEditProcedureLabel">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0" style="color: var(--panel, #14212B);">
+							<path d="M12 20h9"/>
+							<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+						</svg>
+						<span class="text-break">Editar Procedimiento Técnico</span>
+					</h5>
+					<button type="button" class="btn-close flex-shrink-0 mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body px-4 py-3">
+					<div class="mb-3">
+						<label class="form-label small fw-semibold text-secondary" for="edit_procedure_title">Título del Procedimiento <span class="text-danger">*</span></label>
+						<input type="text" class="form-control" id="edit_procedure_title" name="title" required>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label small fw-semibold text-secondary" for="edit_procedure_category">Especialidad / Categoría</label>
+						<select class="form-select" id="edit_procedure_category" name="category_id">
+							{% for cat in categories %}
+								<option value="{{ cat.id }}">{{ cat.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="mb-2">
+						<label class="form-label small fw-semibold text-secondary" for="edit_procedure_content">Runbook / Pasos del Procedimiento <span class="text-danger">*</span></label>
+						<textarea class="form-control font-monospace" id="edit_procedure_content" name="content" rows="10" required style="font-size: 13px;"></textarea>
+					</div>
+				</div>
+				<div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-center gap-3">
+					<button type="submit" class="btn btn-panel-action px-4">Guardar</button>
+					<button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- =========================================================================
+     MODAL 4: CONFIRMAR ELIMINACIÓN DE PROCEDIMIENTO
+     ========================================================================= -->
+<div class="modal fade" id="modalDeleteProcedure" tabindex="-1" aria-labelledby="modalDeleteProcedureLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+		<div class="modal-content border-0 shadow">
+			<form method="POST" id="formDeleteProcedure" action="#" data-turbo="false">
+				<input type="hidden" name="_csrf_token" id="delete_procedure_csrf" value="">
+				<div class="modal-body text-center p-4">
+					<div class="avatar-circle-lg bg-danger-subtle text-danger mx-auto mb-3">
+						<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="3 6 5 6 21 6"/>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+						</svg>
+					</div>
+					<h5 class="fw-bold text-dark mb-1">¿Eliminar procedimiento?</h5>
+					<p class="text-muted small mb-2">
+						¿Está seguro de que desea eliminar permanentemente este runbook técnico?
+					</p>
+					<div class="p-2 bg-light border rounded-3 mb-3 fw-semibold text-dark text-break small" id="deleteProcedureTitle">-</div>
+					<div class="alert alert-warning small mb-0 py-1.5 text-start">
+						Esta acción removerá el protocolo técnico del repositorio de agentes.
+					</div>
+				</div>
+				<div class="modal-footer border-0 px-3 pb-4 pt-0 d-flex flex-row flex-nowrap justify-content-center gap-3">
+					<button type="submit" class="btn btn-danger px-4 py-2 fw-semibold rounded-3" style="min-width: 120px;">Eliminar</button>
+					<button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-3" data-bs-dismiss="modal" style="min-width: 120px;">Cancelar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Mapas CSRF para Edición y Eliminación dinámica -->
+<script type="application/json" id="csrfTokensProcedureData">
+{
+	{% for p in procedures %}
+		"{{ p.id }}": {
+			"edit": "{{ csrf_token('edit_procedure_' ~ p.id) }}",
+			"delete": "{{ csrf_token('delete_procedure_' ~ p.id) }}"
+		}{% if not loop.last %},{% endif %}
+	{% endfor %}
+}
+</script>
+
+<style>
+.guide-category-text {
+	color: #14212B !important;
+	background: transparent !important;
+	background-color: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	font-weight: 600;
+	font-size: 0.85rem;
+	padding: 0 !important;
+	margin: 0 !important;
+	border-radius: 0 !important;
+	display: inline-block;
+}
+.btn-outline-panel {
+	color: #14212B !important;
+	border: 1px solid #14212B !important;
+	background-color: transparent !important;
+	font-weight: 500;
+	border-radius: 6px;
+	transition: all 0.2s ease-in-out;
+}
+.btn-outline-panel:hover,
+.btn-outline-panel:focus,
+.btn-outline-panel:active {
+	background-color: #14212B !important;
+	border-color: #14212B !important;
+	color: #FFFFFF !important;
+}
+.btn-outline-panel:hover svg,
+.btn-outline-panel:focus svg,
+.btn-outline-panel:active svg {
+	stroke: #FFFFFF !important;
+}
+.btn-icon-action {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	transition: all 0.15s ease-in-out;
+}
+.btn-icon-action:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+.category-pill {
+	border-radius: 20px;
+	padding: 4px 12px;
+	font-weight: 500;
+	transition: all 0.15s ease;
+}
+.category-pill.active {
+	background-color: #14212B !important;
+	border-color: #14212B !important;
+	color: #FFFFFF !important;
+}
+.category-pill:not(.active):hover {
+	border-color: #14212B !important;
+	color: #14212B !important;
+}
+#btnViewCards.active,
+#btnViewTable.active {
+	background-color: #14212B !important;
+	border-color: #14212B !important;
+	color: #FFFFFF !important;
+}
+.procedure-card-item {
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+	border: 1px solid #eef2f6 !important;
+}
+.procedure-card-item:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06) !important;
+}
+.hover-primary:hover {
+	color: #14212B !important;
+}
+.modal {
+	z-index: 1060 !important;
+}
+.modal-backdrop {
+	z-index: 1050 !important;
+}
+</style>
+
+<script>
+(function() {
+	function initProceduresModule() {
+		const searchInput = document.getElementById('procedureSearchInput');
+		const categorySelect = document.getElementById('procedureCategoryFilter');
+		const cardCols = Array.from(document.querySelectorAll('.procedure-card-col'));
+		const tableRows = Array.from(document.querySelectorAll('.procedure-table-row'));
+		const emptyState = document.getElementById('proceduresEmptyState');
+		const cardsContainer = document.getElementById('proceduresCardsContainer');
+		const tableContainer = document.getElementById('proceduresTableContainer');
+
+		const csrfMapEl = document.getElementById('csrfTokensProcedureData');
+		let csrfMap = {};
+		if (csrfMapEl) {
+			try { csrfMap = JSON.parse(csrfMapEl.textContent); } catch (e) { csrfMap = {}; }
+		}
+
+		let activeCatId = '';
+
+		// 1. Filtrado en tiempo real (Buscador y Categorías)
+		function applyProcedureFilters() {
+			const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+			const selectedCat = activeCatId || (categorySelect ? categorySelect.value : '');
+
+			let visibleCount = 0;
+
+			// Filtrar Tarjetas
+			cardCols.forEach(col => {
+				const title = col.dataset.title || '';
+				const content = col.dataset.content || '';
+				const catId = col.dataset.categoryId || '';
+				const catName = col.dataset.categoryName || '';
+
+				const matchesQ = !q || title.includes(q) || content.includes(q) || catName.includes(q);
+				const matchesCat = !selectedCat || catId === selectedCat;
+
+				if (matchesQ && matchesCat) {
+					col.style.display = '';
+					visibleCount++;
+				} else {
+					col.style.display = 'none';
+				}
+			});
+
+			// Filtrar Filas de Tabla
+			tableRows.forEach(row => {
+				const title = row.dataset.title || '';
+				const content = row.dataset.content || '';
+				const catId = row.dataset.categoryId || '';
+				const catName = row.dataset.categoryName || '';
+
+				const matchesQ = !q || title.includes(q) || content.includes(q) || catName.includes(q);
+				const matchesCat = !selectedCat || catId === selectedCat;
+
+				row.style.display = (matchesQ && matchesCat) ? '' : 'none';
+			});
+
+			// Mostrar u ocultar estado vacío
+			if (emptyState) {
+				emptyState.style.display = (visibleCount === 0) ? '' : 'none';
+			}
+		}
+
+		if (searchInput) searchInput.addEventListener('input', applyProcedureFilters);
+		if (categorySelect) {
+			categorySelect.addEventListener('change', function() {
+				activeCatId = this.value;
+				updatePillsActiveState(activeCatId);
+				applyProcedureFilters();
+			});
+		}
+
+		// Pills de Categorías
+		document.querySelectorAll('.category-pill').forEach(pill => {
+			pill.addEventListener('click', function() {
+				activeCatId = this.dataset.catId || '';
+				if (categorySelect) categorySelect.value = activeCatId;
+				updatePillsActiveState(activeCatId);
+				applyProcedureFilters();
+			});
+		});
+
+		function updatePillsActiveState(catId) {
+			document.querySelectorAll('.category-pill').forEach(p => {
+				const isMatch = (p.dataset.catId || '') === catId;
+				p.classList.toggle('active', isMatch);
+				p.classList.toggle('btn-panel-action', isMatch);
+				p.classList.toggle('btn-outline-secondary', !isMatch);
+			});
+		}
+
+		// 2. Alternador de Vistas (Tarjetas vs Tabla)
+		const btnViewCards = document.getElementById('btnViewCards');
+		const btnViewTable = document.getElementById('btnViewTable');
+
+		function setView(view) {
+			if (view === 'table') {
+				cardsContainer?.classList.add('d-none');
+				tableContainer?.classList.remove('d-none');
+				btnViewCards?.classList.remove('active');
+				btnViewTable?.classList.add('active');
+				try { localStorage.setItem('gpi_procedure_view', 'table'); } catch(e) {}
+			} else {
+				cardsContainer?.classList.remove('d-none');
+				tableContainer?.classList.add('d-none');
+				btnViewCards?.classList.add('active');
+				btnViewTable?.classList.remove('active');
+				try { localStorage.setItem('gpi_procedure_view', 'cards'); } catch(e) {}
+			}
+		}
+
+		btnViewCards?.addEventListener('click', () => setView('cards'));
+		btnViewTable?.addEventListener('click', () => setView('table'));
+
+		try {
+			const savedView = localStorage.getItem('gpi_procedure_view');
+			if (savedView === 'table') setView('table');
+		} catch(e) {}
+
+		// 3. Modales Dinámicos
+		const modalDetailEl = document.getElementById('modalDetailProcedure');
+		const modalEditEl = document.getElementById('modalEditProcedure');
+		const modalDeleteEl = document.getElementById('modalDeleteProcedure');
+
+		// Modal 2: Detalle del Procedimiento
+		if (modalDetailEl && !modalDetailEl.dataset.listenerAttached) {
+			modalDetailEl.dataset.listenerAttached = 'true';
+			modalDetailEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-open-detail') || event.relatedTarget) : null;
+				if (!btn || !btn.dataset.id) return;
+
+				const id = btn.dataset.id;
+				document.getElementById('detailProcedureTitle').textContent = 'Cargando runbook...';
+				document.getElementById('detailProcedureContent').textContent = 'Cargando contenido técnico...';
+
+				fetch(`/guides/procedures/${id}/detail`)
+					.then(r => r.json())
+					.then(d => {
+						if (!d.success) return;
+						const proc = d.procedure;
+						document.getElementById('detailProcedureTitle').textContent = proc.title;
+						document.getElementById('detailProcedureCategory').textContent = proc.category ? proc.category.name : 'General';
+						document.getElementById('detailProcedureAuthor').textContent = proc.author ? proc.author.name : 'Ingeniería GPI';
+						document.getElementById('detailProcedureDate').textContent = proc.createdAt;
+						document.getElementById('detailProcedureViews').textContent = proc.viewsCount;
+						document.getElementById('detailProcedureContent').textContent = proc.content;
+
+						document.querySelectorAll(`.executions-counter-${id}`).forEach(el => {
+							el.textContent = proc.viewsCount;
+						});
+					})
+					.catch(err => console.error('Error al cargar runbook:', err));
+			});
+		}
+
+		// Modal 3: Editar Procedimiento
+		const formEdit = document.getElementById('formEditProcedure');
+		if (modalEditEl && !modalEditEl.dataset.listenerAttached) {
+			modalEditEl.dataset.listenerAttached = 'true';
+			modalEditEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-open-edit') || event.relatedTarget) : null;
+				if (!btn || !btn.dataset.id) return;
+
+				const id = btn.dataset.id;
+				if (formEdit) formEdit.action = `/guides/procedures/${id}/edit`;
+				document.getElementById('edit_procedure_csrf').value = csrfMap[id]?.edit || '';
+
+				fetch(`/guides/procedures/${id}/detail`)
+					.then(r => r.json())
+					.then(d => {
+						if (!d.success) return;
+						const proc = d.procedure;
+						document.getElementById('edit_procedure_title').value = proc.title;
+						document.getElementById('edit_procedure_content').value = proc.content;
+						if (proc.category && proc.category.id) {
+							document.getElementById('edit_procedure_category').value = proc.category.id;
+						}
+					})
+					.catch(err => console.error('Error al cargar datos:', err));
+			});
+		}
+
+		// Modal 4: Eliminar Procedimiento
+		const formDelete = document.getElementById('formDeleteProcedure');
+		if (modalDeleteEl && !modalDeleteEl.dataset.listenerAttached) {
+			modalDeleteEl.dataset.listenerAttached = 'true';
+			modalDeleteEl.addEventListener('show.bs.modal', function(event) {
+				const btn = event.relatedTarget ? (event.relatedTarget.closest('.btn-open-delete') || event.relatedTarget) : null;
+				if (!btn) return;
+
+				const id = btn.dataset.id;
+				const title = btn.dataset.title;
+
+				if (formDelete) formDelete.action = `/guides/procedures/${id}/delete`;
+				document.getElementById('delete_procedure_csrf').value = csrfMap[id]?.delete || '';
+				document.getElementById('deleteProcedureTitle').textContent = title || '-';
+			});
+		}
+
+		// Blindaje Global Anti-Backdrop Huérfano
+		if (!document.body.dataset.procedureModalBackdropCleanupAttached) {
+			document.body.dataset.procedureModalBackdropCleanupAttached = 'true';
+			document.addEventListener('hidden.bs.modal', function () {
+				setTimeout(function () {
+					if (!document.querySelector('.modal.show')) {
+						document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+						document.body.classList.remove('modal-open');
+						document.body.style.removeProperty('overflow');
+						document.body.style.removeProperty('padding-right');
+					}
+				}, 50);
+			});
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initProceduresModule);
+	} else {
+		initProceduresModule();
+	}
+	document.addEventListener('turbo:load', initProceduresModule);
+	document.addEventListener('turbo:render', initProceduresModule);
+})();
+</script>
+{% endblock %}

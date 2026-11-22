@@ -130,25 +130,26 @@
 					<div class="collapse {{ is_guide_route ? 'show' : '' }}" id="menuGuias">
 						<ul class="sidebar-submenu">
 							<li><a href="{{ path('app_guide_self_service_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_guide_self_service_' ? 'active' : '' }}">Autoservicio (Clientes)</a></li>
-							<li><a href="#" class="sidebar-sublink">Procedimientos (Agentes)</a></li>
+							<li><a href="{{ path('app_guide_procedures_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_guide_procedures_' ? 'active' : '' }}">Procedimientos (Agentes)</a></li>
 						</ul>
 					</div>
 				</li>
 
-				<!-- 6. Core -->
+				<!-- 6. Administración del Sistema -->
+				{% set is_admin_route = app.request.attributes.get('_route') starts with 'app_admin_' %}
 				<li>
-					<a class="sidebar-link" data-bs-toggle="collapse" href="#menuCore" role="button" aria-expanded="false" aria-controls="menuCore">
+					<a class="sidebar-link {{ is_admin_route ? 'active' : '' }}" data-bs-toggle="collapse" href="#menuAdmin" role="button" aria-expanded="{{ is_admin_route ? 'true' : 'false' }}" aria-controls="menuAdmin">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
 						</svg>
-						<span>Core</span>
+						<span>Administración del Sistema</span>
 						<svg class="sidebar-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
 					</a>
-					<div class="collapse" id="menuCore">
+					<div class="collapse {{ is_admin_route ? 'show' : '' }}" id="menuAdmin">
 						<ul class="sidebar-submenu">
-							<li><a href="#" class="sidebar-sublink">Tenants (Multicliente)</a></li>
-							<li><a href="#" class="sidebar-sublink">Control de Acceso (RBAC)</a></li>
-							<li><a href="#" class="sidebar-sublink">Auditoría (Logs)</a></li>
+							<li><a href="{{ path('app_admin_organization_index') }}" class="sidebar-sublink {{ app.request.attributes.get('_route') starts with 'app_admin_organization_' ? 'active' : '' }}">Organizaciones</a></li>
+							<li><a href="#" class="sidebar-sublink">Roles y Permisos</a></li>
+							<li><a href="#" class="sidebar-sublink">Registro de Auditoría</a></li>
 						</ul>
 					</div>
 				</li>
